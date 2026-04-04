@@ -1,3 +1,42 @@
 @import "tailwindcss";
 
 @variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  @media (min-width: 1536px) {
+    html {
+      font-size: 18px; /* Scales the entire app up by 12.5% for 27-inch screens */
+    }
+  }
+  @media (min-width: 1920px) {
+    html {
+      font-size: 22px; /* Scales everything by 37.5% for 4K and ultrawide screens */
+    }
+  }
+  @media (min-width: 2560px) {
+    html {
+      font-size: 26px; /* Scales everything substantially for 5K+ screens */
+    }
+  }
+}
+
+@layer utilities {
+  .animate-marquee-ltr {
+    animation: marquee-ltr 25s linear infinite;
+  }
+  .animate-marquee-rtl {
+    animation: marquee-rtl 25s linear infinite;
+  }
+  .pause-on-hover:hover {
+    animation-play-state: paused;
+  }
+
+  @keyframes marquee-ltr {
+    0% { transform: translateX(-50%); }
+    100% { transform: translateX(0%); }
+  }
+  @keyframes marquee-rtl {
+    0% { transform: translateX(0%); }
+    100% { transform: translateX(-50%); }
+  }
+}

@@ -10,7 +10,7 @@ export default function Header() {
   return (
     <>
       {/* Floating Pill Header */}
-      <div className="fixed top-0 left-0 right-0 z-50 flex justify-center mt-4 px-3 pointer-events-none">
+      <div className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-4 pb-2 px-3 pointer-events-none bg-slate-50 dark:bg-black transition-colors duration-300">
         <header className="pointer-events-auto w-full max-w-6xl bg-white dark:bg-zinc-950 border border-slate-200 dark:border-white/10 shadow-[0_4px_24px_rgba(0,0,0,0.06)] rounded-full h-14 sm:h-16 flex items-center justify-between px-3 sm:px-5 transition-all duration-300">
 
           {/* Logo and Name */}
@@ -25,9 +25,9 @@ export default function Header() {
 
           {/* Desktop Nav Links */}
           <nav className="hidden md:flex items-center justify-center gap-8 font-medium text-sm text-slate-600 dark:text-slate-300">
-            <Link to="/" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Home</Link>
-            <Link to="/" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">About</Link>
-            <Link to="/" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Contact</Link>
+            <a href="#home" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Home</a>
+            <a href="#convenors" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Convenors</a>
+            <a href="#events" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Events</a>
           </nav>
 
           {/* Right Side Controls */}
@@ -37,13 +37,13 @@ export default function Header() {
             {/* Desktop Auth Buttons */}
             <Link
               to="/login"
-              className="text-sm font-semibold text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white hidden sm:block px-4 py-2 rounded-full hover:bg-slate-100/50 dark:hover:bg-white/10 transition-colors"
+              className="text-sm font-semibold text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white hidden md:block px-4 py-2 rounded-full hover:bg-slate-100/50 dark:hover:bg-white/10 transition-colors"
             >
               Log in
             </Link>
             <Link
               to="/register"
-              className="text-sm font-semibold bg-slate-900 dark:bg-white text-white dark:text-black hidden sm:block px-5 py-2 rounded-full hover:bg-indigo-600 dark:hover:bg-indigo-500 transition-all shadow-md"
+              className="text-sm font-semibold bg-slate-900 dark:bg-white text-white dark:text-black hidden md:block px-5 py-2 rounded-full hover:bg-indigo-600 dark:hover:bg-indigo-500 transition-all shadow-md"
             >
               Get Started
             </Link>
@@ -64,27 +64,27 @@ export default function Header() {
       {/* Mobile Dropdown Menu */}
       {menuOpen && (
         <div className="fixed top-[4.5rem] left-3 right-3 z-40 bg-white dark:bg-zinc-950 border border-slate-200 dark:border-white/10 rounded-3xl shadow-xl p-5 flex flex-col gap-3 md:hidden">
-          <Link
-            to="/"
+          <a
+            href="#home"
             onClick={() => setMenuOpen(false)}
             className="text-base font-semibold text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 px-2 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
           >
             Home
-          </Link>
-          <Link
-            to="/"
+          </a>
+          <a
+            href="#convenors"
             onClick={() => setMenuOpen(false)}
             className="text-base font-semibold text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 px-2 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
           >
-            About
-          </Link>
-          <Link
-            to="/"
+            Convenors
+          </a>
+          <a
+            href="#events"
             onClick={() => setMenuOpen(false)}
             className="text-base font-semibold text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 px-2 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
           >
-            Contact
-          </Link>
+            Events
+          </a>
 
           <div className="border-t border-slate-100 dark:border-white/10 pt-3 flex flex-col gap-2">
             <Link

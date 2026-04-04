@@ -1,45 +1,84 @@
-import { Users, BookOpen, Activity, ArrowUpRight } from 'lucide-react';
+import { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
+import { ArrowDown, Star, ChevronRight } from 'lucide-react';
+import ConvenorSection from './ConvenorSection';
+import EventsSection from './EventsSection';
 
 export default function HomePage() {
-  const stats = [
-    { label: 'Active Students', value: '1,482', icon: Users, color: 'text-blue-600', bg: 'bg-blue-100' },
-    { label: 'Courses Online', value: '342', icon: BookOpen, color: 'text-indigo-600', bg: 'bg-indigo-100' },
-    { label: 'Server Load', value: '98.2%', icon: Activity, color: 'text-emerald-600', bg: 'bg-emerald-100' },
-  ];
+  const location = useLocation();
+
+  // Smooth scroll to hash on load/navigation
+  useEffect(() => {
+    if (location.hash) {
+      const el = document.querySelector(location.hash);
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [location]);
+
+  const scrollTo = (id) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   return (
-    <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 ease-out">
-      <header className="mb-10">
-        <h1 className="text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight transition-colors duration-500">Overview</h1>
-        <p className="text-slate-500 dark:text-slate-400 mt-2 text-lg transition-colors duration-500 font-medium">Welcome back. Here is what's happening today.</p>
-      </header>
+    <div className="w-full">
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-        {stats.map((stat, i) => (
-          <div key={i} className="bg-white dark:bg-[#080808] rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-white/5 hover:shadow-xl hover:shadow-indigo-500/10 dark:hover:border-indigo-500/30 transition-all duration-500 group">
-            <div className="flex justify-between items-start mb-4">
-              <div className={`p-3 rounded-2xl ${stat.bg} dark:bg-opacity-10 group-hover:scale-110 transition-transform duration-300`}>
-                <stat.icon className={`w-6 h-6 ${stat.color} dark:text-white`} />
-              </div>
-              <span className="flex items-center text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-2 py-1 rounded-full transition-colors duration-500">
-                +12% <ArrowUpRight className="w-3 h-3 ml-1" />
-              </span>
-            </div>
-            <h3 className="text-3xl font-black text-slate-800 dark:text-white transition-colors duration-500">{stat.value}</h3>
-            <p className="text-slate-500 dark:text-slate-400 font-medium mt-1 transition-colors duration-500">{stat.label}</p>
-          </div>
-        ))}
-      </div>
+      {/* ───── HERO SECTION ───── */}
+      <section id="home" className="min-h-screen flex flex-col items-center justify-center text-center px-4 pt-32 pb-20">
+        <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black text-slate-900 dark:text-white tracking-tight leading-tight mb-6 max-w-4xl">
+          One Platform for Every{' '}
+          <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+            College Club
+          </span>
+        </h1>
 
-      <div className="bg-white dark:bg-[#080808] rounded-3xl shadow-sm border border-slate-100 dark:border-white/5 p-8 min-h-[400px] flex items-center justify-center transition-all duration-500">
-        <div className="text-center">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-indigo-50 dark:bg-indigo-900/20 mb-6 transition-colors duration-500">
-            <Activity className="w-10 h-10 text-indigo-500 dark:text-indigo-400 animate-pulse" />
-          </div>
-          <h2 className="text-2xl font-bold text-slate-800 dark:text-white transition-colors duration-500">Activity Graph</h2>
-          <p className="text-slate-500 dark:text-slate-400 mt-3 max-w-md mx-auto transition-colors duration-500">This section can be populated with charts and rich data visualizations powered by libraries like Recharts or Chart.js.</p>
+        <p className="text-lg sm:text-xl text-slate-500 dark:text-slate-400 max-w-2xl mb-10 leading-relaxed">
+          The ultimate hub for campus life. Effortlessly discover new communities, seamlessly manage events, and give your college full visibility into student engagement.
+        </p>
+
+        <div className="flex flex-col sm:flex-row items-center gap-4">
+          <button className="px-8 py-4 bg-indigo-600 text-white font-bold rounded-full hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-500/30 hover:-translate-y-0.5 flex items-center gap-2">
+            Get Started Free <ChevronRight className="w-5 h-5" />
+          </button>
+          <button
+            onClick={() => scrollTo('convenors')}
+            className="px-8 py-4 bg-white dark:bg-white/5 text-slate-700 dark:text-slate-200 font-bold rounded-full border border-slate-200 dark:border-white/10 hover:border-indigo-300 dark:hover:border-indigo-600 transition-all"
+          >
+            Learn More
+          </button>
         </div>
-      </div>
+
+        {/* Stats */}
+        <div className="mt-20 grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-16">
+          {[
+            { value: '42+', label: 'Active Clubs' },
+            { value: '18', label: 'Upcoming Events' },
+            { value: '3,500+', label: 'Student Members' },
+          ].map((stat, i) => (
+            <div key={i} className="text-center">
+              <p className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white">{stat.value}</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 font-medium">{stat.label}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Scroll Cue */}
+        <button
+          onClick={() => scrollTo('convenors')}
+          className="mt-16 flex flex-col items-center gap-2 text-slate-400 hover:text-indigo-500 transition-colors"
+        >
+          <span className="text-xs font-medium">Meet the Convenors</span>
+          <ArrowDown className="w-5 h-5 animate-bounce" />
+        </button>
+      </section>
+
+      {/* ───── CONVENOR SECTION ───── */}
+      <ConvenorSection />
+
+      {/* ───── EVENTS SECTION ───── */}
+      <EventsSection />
+
     </div>
   );
 }
