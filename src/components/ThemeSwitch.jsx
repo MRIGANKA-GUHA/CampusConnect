@@ -1,27 +1,37 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 
 const ThemeSwitch = () => {
-  const handleToggle = (e) => {
-    if (e.target.checked) {
+  // Initialize from localStorage or current DOM class — whichever is set
+  const [isDark, setIsDark] = useState(() => {
+    const stored = localStorage.getItem('theme');
+    if (stored) return stored === 'dark';
+    return document.documentElement.classList.contains('dark');
+  });
+
+  // Apply theme to DOM + persist whenever it changes
+  useEffect(() => {
+    if (isDark) {
       document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
     } else {
       document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
     }
-  };
+  }, [isDark]);
 
   return (
     <StyledWrapper>
       <label htmlFor="theme" className="theme">
         <span className="theme__toggle-wrap">
-          <input 
-            id="theme" 
-            className="theme__toggle" 
-            type="checkbox" 
-            role="switch" 
-            name="theme" 
-            defaultValue="dark" 
-            onChange={handleToggle}
+          <input
+            id="theme"
+            className="theme__toggle"
+            type="checkbox"
+            role="switch"
+            name="theme"
+            checked={isDark}
+            onChange={(e) => setIsDark(e.target.checked)}
           />
           <span className="theme__icon">
             <span className="theme__icon-part" />

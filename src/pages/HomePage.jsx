@@ -39,7 +39,7 @@ export default function HomePage() {
 
         <div className="flex flex-col sm:flex-row items-center gap-4">
           <button className="px-8 py-4 bg-indigo-600 text-white font-bold rounded-full hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-500/30 hover:-translate-y-0.5 flex items-center gap-2">
-            Get Started Free <ChevronRight className="w-5 h-5" />
+            Get Started <ChevronRight className="w-5 h-5" />
           </button>
           <button
             onClick={() => scrollTo('convenors')}
