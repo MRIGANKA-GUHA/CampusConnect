@@ -1,11 +1,37 @@
-import { useEffect } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { ArrowDown, Star, ChevronRight } from 'lucide-react';
 import ConvenorSection from './ConvenorSection';
 import EventsSection from './EventsSection';
 
+const FULL_TEXT = 'One Platform for Every College Club';
+
 export default function HomePage() {
   const location = useLocation();
+  const [displayed, setDisplayed] = useState('');
+  const [cursorVisible, setCursorVisible] = useState(true);
+  const [typingDone, setTypingDone] = useState(false);
+  const indexRef = useRef(0);
+
+  // Typewriter effect
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (indexRef.current < FULL_TEXT.length) {
+        setDisplayed(FULL_TEXT.slice(0, indexRef.current + 1));
+        indexRef.current += 1;
+      } else {
+        clearInterval(interval);
+        setTypingDone(true);
+      }
+    }, 55);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Cursor blink
+  useEffect(() => {
+    const blink = setInterval(() => setCursorVisible(v => !v), 530);
+    return () => clearInterval(blink);
+  }, []);
 
   // Smooth scroll to hash on load/navigation
   useEffect(() => {
@@ -21,56 +47,86 @@ export default function HomePage() {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  // Determine which part of typed text is before/within 'College Club'
+  const gradientStart = FULL_TEXT.indexOf('College Club');
+  const plainPart = displayed.slice(0, gradientStart);
+  const gradientPart = displayed.slice(gradientStart);
+
   return (
     <div className="w-full">
 
       {/* ───── HERO SECTION ───── */}
       <section id="home" className="min-h-screen flex flex-col items-center justify-center text-center px-4 pt-32 pb-20">
         <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black text-slate-900 dark:text-white tracking-tight leading-tight mb-6 max-w-4xl">
-          One Platform for Every{' '}
-          <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-            College Club
-          </span>
+          {displayed.length <= gradientStart ? (
+            <>
+              {displayed}
+              <span className={`inline-block w-[3px] h-[0.85em] align-middle ml-[2px] rounded-sm transition-opacity duration-100 ${cursorVisible ? 'opacity-100' : 'opacity-0'}`}
+                style={{ background: 'linear-gradient(to bottom, #4f46e5, #7c3aed, #ec4899, #f59e0b)' }}
+              />
+            </>
+          ) : (
+            <>
+              {plainPart}
+              <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                {gradientPart}
+              </span>
+              {!typingDone && (
+                <span className={`inline-block w-[3px] h-[0.85em] align-middle ml-[2px] rounded-sm transition-opacity duration-100 ${cursorVisible ? 'opacity-100' : 'opacity-0'}`}
+                  style={{ background: 'linear-gradient(to bottom, #4f46e5, #7c3aed, #ec4899, #f59e0b)' }}
+                />
+              )}
+            </>
+          )}
         </h1>
 
-        <p className="text-lg sm:text-xl text-slate-500 dark:text-slate-400 max-w-2xl mb-10 leading-relaxed">
-          The ultimate hub for campus life. Effortlessly discover new communities, seamlessly manage events, and give your college full visibility into student engagement.
-        </p>
+        {/* Content revealed after typing completes */}
+        <div className={`flex flex-col items-center transition-all duration-500 ${typingDone ? '' : 'pointer-events-none'}`}>
 
-        <div className="flex flex-col sm:flex-row items-center gap-4">
-          <button className="px-8 py-4 bg-indigo-600 text-white font-bold rounded-full hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-500/30 hover:-translate-y-0.5 flex items-center gap-2">
-            Get Started <ChevronRight className="w-5 h-5" />
-          </button>
+          <p className={`text-lg sm:text-xl text-slate-500 dark:text-slate-400 max-w-2xl mb-10 leading-relaxed text-center ${typingDone ? 'animate-fade-up-slow' : 'opacity-0'}`}
+            style={{ animationDelay: '100ms' }}>
+            The ultimate hub for campus life. Effortlessly discover new communities, seamlessly manage events, and give your college full visibility into student engagement.
+          </p>
+
+          <div className={`flex flex-col sm:flex-row items-center gap-4 ${typingDone ? 'animate-fade-up-slow' : 'opacity-0'}`}
+            style={{ animationDelay: '300ms' }}>
+            <button className="px-8 py-4 bg-indigo-600 text-white font-bold rounded-full hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-500/30 hover:-translate-y-0.5 flex items-center gap-2">
+              Get Started
+            </button>
+            <button
+              onClick={() => scrollTo('convenors')}
+              className="px-8 py-4 bg-white dark:bg-white/5 text-slate-700 dark:text-slate-200 font-bold rounded-full border border-slate-200 dark:border-white/10 hover:border-indigo-300 dark:hover:border-indigo-600 transition-all"
+            >
+              Learn More
+            </button>
+          </div>
+
+          {/* Stats */}
+          <div className={`mt-20 grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-16 ${typingDone ? 'animate-fade-up-slow' : 'opacity-0'}`}
+            style={{ animationDelay: '500ms' }}>
+            {[
+              { value: '42+', label: 'Active Clubs' },
+              { value: '18', label: 'Upcoming Events' },
+              { value: '3,500+', label: 'Student Members' },
+            ].map((stat, i) => (
+              <div key={i} className="text-center">
+                <p className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white">{stat.value}</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 font-medium">{stat.label}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Scroll Cue */}
           <button
             onClick={() => scrollTo('convenors')}
-            className="px-8 py-4 bg-white dark:bg-white/5 text-slate-700 dark:text-slate-200 font-bold rounded-full border border-slate-200 dark:border-white/10 hover:border-indigo-300 dark:hover:border-indigo-600 transition-all"
+            className={`mt-16 flex flex-col items-center gap-2 text-slate-400 hover:text-indigo-500 transition-colors ${typingDone ? 'animate-fade-up-slow' : 'opacity-0'}`}
+            style={{ animationDelay: '700ms' }}
           >
-            Learn More
+            <span className="text-xs font-medium">Meet the Convenors</span>
+            <ArrowDown className="w-5 h-5 animate-bounce" />
           </button>
-        </div>
 
-        {/* Stats */}
-        <div className="mt-20 grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-16">
-          {[
-            { value: '42+', label: 'Active Clubs' },
-            { value: '18', label: 'Upcoming Events' },
-            { value: '3,500+', label: 'Student Members' },
-          ].map((stat, i) => (
-            <div key={i} className="text-center">
-              <p className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white">{stat.value}</p>
-              <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 font-medium">{stat.label}</p>
-            </div>
-          ))}
         </div>
-
-        {/* Scroll Cue */}
-        <button
-          onClick={() => scrollTo('convenors')}
-          className="mt-16 flex flex-col items-center gap-2 text-slate-400 hover:text-indigo-500 transition-colors"
-        >
-          <span className="text-xs font-medium">Meet the Convenors</span>
-          <ArrowDown className="w-5 h-5 animate-bounce" />
-        </button>
       </section>
 
       {/* ───── CONVENOR SECTION ───── */}

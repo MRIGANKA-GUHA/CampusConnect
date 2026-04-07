@@ -57,4 +57,34 @@
       transform: translateX(-50%);
     }
   }
+
+  .animate-word-reveal {
+    animation: word-reveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  @keyframes word-reveal {
+    0% {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-up-slow {
+    animation: fade-up-slow 1.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  @keyframes fade-up-slow {
+    0% {
+      opacity: 0;
+      transform: translateY(24px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 }
