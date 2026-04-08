@@ -73,13 +73,13 @@ export default function RegisterPage() {
   const handlePaste = (e) => {
     const data = e.clipboardData.getData("text").slice(0, 6);
     if (!/^\d+$/.test(data)) return;
-    
+
     const newOtp = [...otp];
     data.split("").forEach((char, index) => {
       newOtp[index] = char;
     });
     setOtp(newOtp);
-    
+
     // Focus last filled or next empty
     const nextIndex = data.length < 6 ? data.length : 5;
     inputRefs.current[nextIndex].focus();
@@ -99,13 +99,9 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="relative min-h-screen w-full font-sans flex items-center justify-center py-8 sm:py-12 bg-slate-50 dark:bg-[#060608] selection:bg-indigo-500/30">
-      
-      {/* ── Animated Background ── */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] right-[-5%] w-[600px] h-[600px] rounded-full bg-gradient-to-br from-violet-400/20 to-indigo-400/10 dark:from-violet-600/10 dark:to-indigo-600/5 blur-[80px]" />
-        <div className="absolute bottom-[-15%] left-[-5%] w-[700px] h-[700px] rounded-full bg-gradient-to-br from-indigo-300/20 to-purple-400/10 dark:from-indigo-600/10 dark:to-purple-600/5 blur-[100px]" />
-      </div>
+    <div className="relative min-h-screen w-full font-sans flex items-center justify-center py-8 sm:py-12 bg-slate-50 dark:bg-black selection:bg-indigo-500/30">
+
+
 
       {/* ── Top Bar ── */}
       <div className="absolute top-6 left-6 z-20">
@@ -116,19 +112,19 @@ export default function RegisterPage() {
 
       {/* ── Main Container ── */}
       <div className="relative z-10 w-full max-w-[480px] sm:max-w-[560px] md:max-w-[640px] mx-4 sm:mx-auto">
-        
+
         {/* Glow behind card */}
         <div className="absolute -inset-1 rounded-[2.5rem] bg-gradient-to-b from-indigo-500/20 to-purple-500/0 blur-xl opacity-50 dark:opacity-20 pointer-events-none" />
 
-        <div className="relative bg-white/80 dark:bg-[#0e0e14]/90 backdrop-blur-xl rounded-[2rem] border border-white/50 dark:border-white/10 p-6 sm:p-10 shadow-2xl shadow-indigo-900/5 dark:shadow-black/60">
-          
+        <div className="relative bg-white/70 dark:bg-white/[0.05] backdrop-blur-[100px] backdrop-saturate-[180%] rounded-[2.5rem] border border-white/40 dark:border-white/10 border-t-white/30 p-8 sm:p-12 shadow-2xl dark:shadow-[0_20px_50px_rgba(0,0,0,0.6)]">
+
           <div className="text-center mb-8">
             <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
               {step === 0 ? "Create an account" : "Verify your Email"}
             </h1>
             <p className="text-sm text-slate-500 mt-2">
-              {step === 0 
-                ? "Join CampusConnect to explore & manage" 
+              {step === 0
+                ? "Join CampusConnect to explore & manage"
                 : `We've sent a 6-digit code to ${email}`}
             </p>
           </div>
@@ -144,7 +140,7 @@ export default function RegisterPage() {
             <form onSubmit={handleRegister} className="flex flex-col gap-4">
               {/* Segmented Control Toggle */}
               <div className="relative flex bg-slate-100/70 dark:bg-white/5 p-1 rounded-xl sm:rounded-full shadow-inner border border-slate-200/50 dark:border-white/5 overflow-hidden">
-                <div 
+                <div
                   className="absolute top-1 bottom-1 left-1 w-[calc(50%-0.25rem)] bg-white dark:bg-[#1a1a24] rounded-lg sm:rounded-full shadow-sm border border-slate-200/50 dark:border-white/10 transition-transform duration-300 ease-out"
                   style={{ transform: accountType === 'student' ? 'translateX(0)' : 'translateX(100%)' }}
                 />
@@ -171,7 +167,7 @@ export default function RegisterPage() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Full Name"
-                  className="flex-1 w-full px-5 py-4 bg-slate-50 dark:bg-[#13131a] border border-slate-200 dark:border-white/10 rounded-2xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 transition-all text-sm font-semibold"
+                  className="flex-1 w-full px-5 py-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 transition-all text-sm font-semibold"
                 />
                 <input
                   type="text"
@@ -179,7 +175,7 @@ export default function RegisterPage() {
                   value={rollNo}
                   onChange={(e) => setRollNo(e.target.value)}
                   placeholder="Roll No (e.g. 30942)"
-                  className="flex-1 w-full px-5 py-4 bg-slate-50 dark:bg-[#13131a] border border-slate-200 dark:border-white/10 rounded-2xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 transition-all text-sm font-semibold"
+                  className="flex-1 w-full px-5 py-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 transition-all text-sm font-semibold"
                 />
               </div>
 
@@ -189,7 +185,7 @@ export default function RegisterPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="University Email Address"
-                className="w-full px-5 py-4 bg-slate-50 dark:bg-[#13131a] border border-slate-200 dark:border-white/10 rounded-2xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 transition-all text-sm font-semibold"
+                className="w-full px-5 py-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 transition-all text-sm font-semibold"
               />
 
               <div className="relative w-full">
@@ -225,8 +221,8 @@ export default function RegisterPage() {
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   disabled={loading}
                   onClick={() => handleSocialLogin(loginWithGoogle)}
                   className="flex items-center justify-center gap-3 py-3.5 bg-white dark:bg-[#13131a] border border-slate-200 dark:border-white/10 rounded-2xl hover:bg-slate-50 dark:hover:bg-white/5 hover:border-slate-300 dark:hover:border-white/20 transition-all text-sm font-bold text-slate-700 dark:text-slate-300 disabled:opacity-50"
@@ -239,8 +235,8 @@ export default function RegisterPage() {
                   </svg>
                   Google
                 </button>
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   disabled={loading}
                   onClick={() => handleSocialLogin(loginWithGithub)}
                   className="flex items-center justify-center gap-3 py-3.5 bg-white dark:bg-[#13131a] border border-slate-200 dark:border-white/10 rounded-2xl hover:bg-slate-50 dark:hover:bg-white/5 hover:border-slate-300 dark:hover:border-white/20 transition-all text-sm font-bold text-slate-700 dark:text-slate-300 disabled:opacity-50"

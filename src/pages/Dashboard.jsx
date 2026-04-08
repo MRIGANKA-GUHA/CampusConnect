@@ -18,19 +18,15 @@ export default function Dashboard() {
   if (!user) return null;
 
   return (
-    <div className="relative min-h-screen w-full overflow-hidden font-sans bg-slate-50 dark:bg-[#060608] flex flex-col">
-      {/* ── Background Decorations ── */}
-      <div className="absolute inset-0 -z-10">
-        <div className="absolute top-[-10%] right-[-5%] w-[600px] h-[600px] rounded-full bg-violet-400/10 blur-[80px]" />
-        <div className="absolute bottom-[-15%] left-[-5%] w-[700px] h-[700px] rounded-full bg-indigo-400/10 blur-[100px]" />
-      </div>
+    <div className="relative min-h-screen w-full overflow-hidden font-sans bg-slate-50 dark:bg-black flex flex-col">
+
 
       {/* ── Top Nav ── */}
       <nav className="w-full px-8 py-6 flex justify-between items-center z-20">
         <Link to="/" className="flex items-center gap-2 text-slate-500 hover:text-indigo-600 transition-colors text-sm font-semibold">
           <ArrowLeft className="w-4 h-4" /> Back to Site
         </Link>
-        <button 
+        <button
           onClick={handleLogout}
           className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:bg-red-50 hover:text-red-600 transition-all text-sm font-bold"
         >
@@ -41,7 +37,7 @@ export default function Dashboard() {
       {/* ── Main Content ── */}
       <main className="flex-1 flex flex-col items-center justify-center p-6">
         <div className="w-full max-w-2xl">
-          <div className="relative rounded-3xl bg-white/70 dark:bg-[#0e0e14]/80 backdrop-blur-2xl border border-white/80 dark:border-white/10 p-10 shadow-2xl">
+          <div className="relative rounded-3xl bg-white/70 dark:bg-white/[0.05] backdrop-blur-[100px] backdrop-saturate-[180%] border border-white/40 dark:border-white/10 border-t-white/30 p-10 shadow-2xl dark:shadow-[0_20px_50px_rgba(0,0,0,0.6)]">
             <div className="flex flex-col items-center mb-8">
               <div className="w-24 h-24 rounded-full bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center mb-4 border-4 border-white dark:border-white/10 shadow-xl overflow-hidden">
                 {user.photoURL ? (

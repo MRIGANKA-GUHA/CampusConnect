@@ -40,13 +40,9 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative min-h-screen w-full font-sans flex items-center justify-center py-8 sm:py-12 bg-slate-50 dark:bg-[#060608] selection:bg-indigo-500/30">
-      
-      {/* ── Animated Background ── */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] left-[-5%] w-[600px] h-[600px] rounded-full bg-gradient-to-br from-violet-400/20 to-indigo-400/10 dark:from-violet-600/10 dark:to-indigo-600/5 blur-[80px]" />
-        <div className="absolute bottom-[-15%] right-[-5%] w-[700px] h-[700px] rounded-full bg-gradient-to-br from-indigo-300/20 to-purple-400/10 dark:from-indigo-600/10 dark:to-purple-600/5 blur-[100px]" />
-      </div>
+    <div className="relative min-h-screen w-full font-sans flex items-center justify-center py-8 sm:py-12 bg-slate-50 dark:bg-black selection:bg-indigo-500/30">
+
+
 
       {/* ── Top Bar ── */}
       <div className="absolute top-6 left-6 z-20">
@@ -57,12 +53,12 @@ export default function LoginPage() {
 
       {/* ── Main Container ── */}
       <div className="relative z-10 w-full max-w-[480px] sm:max-w-[560px] md:max-w-[640px] mx-4 sm:mx-auto">
-        
+
         {/* Glow behind card */}
         <div className="absolute -inset-1 rounded-[2.5rem] bg-gradient-to-b from-indigo-500/20 to-purple-500/0 blur-xl opacity-50 dark:opacity-20 pointer-events-none" />
 
-        <div className="relative bg-white/80 dark:bg-[#0e0e14]/90 backdrop-blur-xl rounded-[2rem] border border-white/50 dark:border-white/10 p-6 sm:p-10 shadow-2xl shadow-indigo-900/5 dark:shadow-black/60">
-          
+        <div className="relative bg-white/70 dark:bg-white/[0.05] backdrop-blur-[100px] backdrop-saturate-[180%] rounded-[2.5rem] border border-white/40 dark:border-white/10 border-t-white/30 p-8 sm:p-12 shadow-2xl dark:shadow-[0_20px_50px_rgba(0,0,0,0.6)]">
+
           <div className="text-center mb-8">
             <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">Welcome back</h1>
             <p className="text-sm text-slate-500 mt-2">Sign in to your CampusConnect account</p>
@@ -76,7 +72,7 @@ export default function LoginPage() {
           )}
 
           <form onSubmit={handleEmailLogin} className="flex flex-col gap-4">
-            
+
             {/* Form Fields using robust squircle inputs */}
             <input
               type="email"
@@ -84,7 +80,7 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="University Email Address"
-              className="w-full px-5 py-4 bg-slate-50 dark:bg-[#13131a] border border-slate-200 dark:border-white/10 rounded-2xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 transition-all text-sm font-semibold"
+              className="w-full px-5 py-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 transition-all text-sm font-semibold"
             />
 
             <div className="relative w-full">
@@ -94,7 +90,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter Password"
-                className="w-full px-5 py-4 pr-12 bg-slate-50 dark:bg-[#13131a] border border-slate-200 dark:border-white/10 rounded-2xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 transition-all text-sm font-semibold"
+                className="w-full px-5 py-4 pr-12 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 transition-all text-sm font-semibold"
               />
               <button
                 type="button"
@@ -139,8 +135,8 @@ export default function LoginPage() {
 
             {/* Social Oauth */}
             <div className="grid grid-cols-2 gap-3">
-              <button 
-                type="button" 
+              <button
+                type="button"
                 disabled={loading}
                 onClick={() => handleSocialLogin(loginWithGoogle)}
                 className="flex items-center justify-center gap-3 py-3.5 bg-white dark:bg-[#13131a] border border-slate-200 dark:border-white/10 rounded-2xl hover:bg-slate-50 dark:hover:bg-white/5 hover:border-slate-300 dark:hover:border-white/20 transition-all text-sm font-bold text-slate-700 dark:text-slate-300 disabled:opacity-50"
@@ -153,8 +149,8 @@ export default function LoginPage() {
                 </svg>
                 Google
               </button>
-              <button 
-                type="button" 
+              <button
+                type="button"
                 disabled={loading}
                 onClick={() => handleSocialLogin(loginWithGithub)}
                 className="flex items-center justify-center gap-3 py-3.5 bg-white dark:bg-[#13131a] border border-slate-200 dark:border-white/10 rounded-2xl hover:bg-slate-50 dark:hover:bg-white/5 hover:border-slate-300 dark:hover:border-white/20 transition-all text-sm font-bold text-slate-700 dark:text-slate-300 disabled:opacity-50"
