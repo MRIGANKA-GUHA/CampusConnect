@@ -34,7 +34,13 @@
     animation: marquee-rtl 25s linear infinite;
   }
 
-  .pause-on-hover:hover {
+  @media (hover: hover) {
+    .pause-on-hover:hover {
+      animation-play-state: paused;
+    }
+  }
+
+  .pause-on-hover:active {
     animation-play-state: paused;
   }
 
@@ -67,6 +73,7 @@
       opacity: 0;
       transform: translateY(30px);
     }
+
     100% {
       opacity: 1;
       transform: translateY(0);
@@ -82,6 +89,7 @@
       opacity: 0;
       transform: translateY(24px);
     }
+
     100% {
       opacity: 1;
       transform: translateY(0);

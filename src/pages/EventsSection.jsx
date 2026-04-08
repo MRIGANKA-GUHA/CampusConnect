@@ -62,49 +62,49 @@ export default function EventsSection() {
           {events.map((evt, i) => (
             <div 
               key={i}
-              className="group relative bg-white dark:bg-[#080808] rounded-3xl p-6 sm:p-8 border border-slate-100 dark:border-white/5 hover:border-indigo-100 dark:hover:border-white/10 hover:shadow-2xl hover:shadow-indigo-500/10 dark:hover:shadow-indigo-500/5 transition-all duration-300 flex flex-col sm:flex-row gap-6 sm:gap-8 items-center sm:items-start text-center sm:text-left overflow-hidden"
+              className="group relative bg-white dark:bg-[#080808] rounded-2xl sm:rounded-3xl p-4 sm:p-8 border border-slate-100 dark:border-white/5 sm:hover:border-indigo-100 sm:dark:hover:border-white/10 sm:hover:shadow-2xl sm:hover:shadow-indigo-500/10 transition-all duration-300 flex flex-row gap-3 sm:gap-8 items-center sm:items-start text-left overflow-hidden"
             >
               {/* Date Block */}
-              <div className="shrink-0 relative w-24 h-24 rounded-2xl overflow-hidden flex flex-col items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-300">
+              <div className="shrink-0 relative w-16 h-16 sm:w-24 sm:h-24 rounded-xl sm:rounded-2xl overflow-hidden flex flex-col items-center justify-center shadow-sm sm:shadow-lg sm:group-hover:scale-105 transition-transform duration-300">
                 <div className={`absolute inset-0 bg-gradient-to-br ${evt.color} opacity-90`}></div>
-                <span className="relative text-white/90 text-sm font-bold tracking-widest uppercase mb-1">{evt.month}</span>
-                <span className="relative text-white text-3xl font-black leading-none">{evt.day}</span>
+                <span className="relative text-white/90 text-[10px] sm:text-sm font-bold tracking-widest uppercase mb-0.5 sm:mb-1">{evt.month}</span>
+                <span className="relative text-white text-xl sm:text-3xl font-black leading-none">{evt.day}</span>
               </div>
 
               {/* Event Details */}
-              <div className="flex-1 flex flex-col justify-center">
-                <div className="flex items-center justify-center sm:justify-start gap-2 mb-2">
-                  <span className="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 px-3 py-1 rounded-full">
+              <div className="flex-1 flex flex-col justify-center min-w-0">
+                <div className="flex items-center justify-start gap-2 mb-1 sm:mb-2">
+                  <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 px-2 py-0.5 sm:px-3 sm:py-1 rounded-full truncate">
                     {evt.club}
                   </span>
                   {evt.active && (
-                    <span className="flex h-2 w-2 relative">
+                    <span className="flex h-1.5 w-1.5 sm:h-2 sm:w-2 relative shrink-0">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                      <span className="relative inline-flex rounded-full h-full w-full bg-red-500"></span>
                     </span>
                   )}
                 </div>
                 
-                <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                <h3 className="text-sm sm:text-2xl font-bold text-slate-900 dark:text-white mb-1 sm:mb-4 sm:group-hover:text-indigo-600 sm:dark:group-hover:text-indigo-400 transition-colors truncate sm:whitespace-normal">
                   {evt.title}
                 </h3>
                 
-                <div className="flex flex-col sm:flex-row gap-3 sm:gap-6 text-sm font-medium text-slate-500 dark:text-slate-400">
-                  <div className="flex items-center justify-center sm:justify-start gap-2">
-                    <Clock className="w-4 h-4 opacity-70" />
-                    {evt.time}
+                <div className="flex flex-col sm:flex-row gap-1 sm:gap-6 text-[11px] sm:text-sm font-medium text-slate-500 dark:text-slate-400">
+                  <div className="flex items-center justify-start gap-1.5">
+                    <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 opacity-70 shrink-0" />
+                    <span className="truncate">{evt.time}</span>
                   </div>
-                  <div className="flex items-center justify-center sm:justify-start gap-2">
-                    <MapPin className="w-4 h-4 opacity-70" />
-                    {evt.location}
+                  <div className="flex items-center justify-start gap-1.5">
+                    <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 opacity-70 shrink-0" />
+                    <span className="truncate">{evt.location}</span>
                   </div>
                 </div>
               </div>
 
               {/* RSVP Action */}
-              <div className="shrink-0 flex items-center justify-center pt-4 sm:pt-0 sm:pl-4 border-t sm:border-t-0 sm:border-l border-slate-100 dark:border-white/5 w-full sm:w-auto h-full">
-                <button className="w-12 h-12 rounded-full bg-slate-50 dark:bg-white/5 flex items-center justify-center text-slate-400 group-hover:bg-indigo-600 group-hover:text-white transition-all shadow-sm group-hover:shadow-lg group-hover:-rotate-45 duration-300">
-                  <ArrowRight className="w-5 h-5" />
+              <div className="shrink-0 flex items-center justify-center pl-2 sm:pl-4 sm:border-l sm:border-slate-100 sm:dark:border-white/5 h-full">
+                <button className="w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-slate-50 dark:bg-white/5 flex items-center justify-center text-slate-400 sm:group-hover:bg-indigo-600 sm:group-hover:text-white transition-all shadow-sm sm:group-hover:shadow-lg sm:group-hover:-rotate-45 duration-300">
+                  <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
               </div>
             </div>

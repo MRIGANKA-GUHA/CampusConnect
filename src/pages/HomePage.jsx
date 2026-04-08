@@ -88,30 +88,30 @@ export default function HomePage() {
             The ultimate hub for campus life. Effortlessly discover new communities, seamlessly manage events, and give your college full visibility into student engagement.
           </p>
 
-          <div className={`flex flex-col sm:flex-row items-center gap-4 ${typingDone ? 'animate-fade-up-slow' : 'opacity-0'}`}
+          <div className={`flex flex-row w-full justify-center items-center gap-3 sm:gap-4 px-2 max-w-sm sm:max-w-none ${typingDone ? 'animate-fade-up-slow' : 'opacity-0'}`}
             style={{ animationDelay: '300ms' }}>
-            <button className="px-8 py-4 bg-indigo-600 text-white font-bold rounded-full hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-500/30 hover:-translate-y-0.5 flex items-center gap-2">
+            <button className="px-5 py-3 sm:px-8 sm:py-4 text-sm sm:text-base bg-indigo-600 text-white font-bold rounded-full hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-500/30 hover:-translate-y-0.5 flex items-center justify-center gap-2 flex-1 sm:flex-none">
               Get Started
             </button>
             <button
               onClick={() => scrollTo('convenors')}
-              className="px-8 py-4 bg-white dark:bg-white/5 text-slate-700 dark:text-slate-200 font-bold rounded-full border border-slate-200 dark:border-white/10 hover:border-indigo-300 dark:hover:border-indigo-600 transition-all"
+              className="px-5 py-3 sm:px-8 sm:py-4 text-sm sm:text-base bg-white dark:bg-white/5 text-slate-700 dark:text-slate-200 font-bold rounded-full border border-slate-200 dark:border-white/10 hover:border-indigo-300 dark:hover:border-indigo-600 transition-all flex-1 sm:flex-none text-center whitespace-nowrap"
             >
               Learn More
             </button>
           </div>
 
           {/* Stats */}
-          <div className={`mt-20 grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-16 ${typingDone ? 'animate-fade-up-slow' : 'opacity-0'}`}
+          <div className={`mt-16 sm:mt-20 w-full max-w-3xl mx-auto flex flex-row items-center justify-between divide-x divide-slate-200 dark:divide-white/10 py-5 sm:py-0 rounded-3xl sm:rounded-none bg-white/40 dark:bg-white/5 sm:bg-transparent sm:dark:bg-transparent border border-slate-200/60 dark:border-white/10 sm:border-0 shadow-sm sm:shadow-none backdrop-blur-md sm:backdrop-blur-none ${typingDone ? 'animate-fade-up-slow' : 'opacity-0'}`}
             style={{ animationDelay: '500ms' }}>
             {[
-              { value: '42+', label: 'Active Clubs' },
-              { value: '18', label: 'Upcoming Events' },
-              { value: '3,500+', label: 'Student Members' },
+              { value: '42+', label: 'Clubs' },
+              { value: '18', label: 'Events' },
+              { value: '3.5k+', label: 'Members' },
             ].map((stat, i) => (
-              <div key={i} className="text-center">
-                <p className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white">{stat.value}</p>
-                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 font-medium">{stat.label}</p>
+              <div key={i} className="flex-1 flex flex-col items-center justify-center px-1 sm:px-8">
+                <p className="text-2xl sm:text-4xl font-black text-slate-900 dark:text-white">{stat.value}</p>
+                <p className="text-[11px] sm:text-sm text-slate-500 dark:text-slate-400 mt-1 sm:mt-2 font-bold uppercase tracking-wider">{stat.label}</p>
               </div>
             ))}
           </div>

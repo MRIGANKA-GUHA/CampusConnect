@@ -50,13 +50,14 @@ export default function Header() {
 
             {/* Mobile Hamburger */}
             <button
-              className="flex md:hidden items-center justify-center w-9 h-9 rounded-full bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-white transition-colors"
+              className="flex md:hidden items-center justify-center w-9 h-9 rounded-full bg-transparent hover:bg-slate-100 dark:hover:bg-white/10 text-slate-700 dark:text-white transition-colors"
               onClick={() => setMenuOpen(!menuOpen)}
               aria-label="Toggle menu"
             >
               {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
           </div>
+
 
         </header>
       </div>
