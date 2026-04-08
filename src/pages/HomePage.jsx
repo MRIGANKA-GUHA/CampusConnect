@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 import { ArrowDown, Star, ChevronRight } from 'lucide-react';
 import ConvenorSection from './ConvenorSection';
 import EventsSection from './EventsSection';
@@ -90,9 +90,9 @@ export default function HomePage() {
 
           <div className={`flex flex-row w-full justify-center items-center gap-3 sm:gap-4 px-2 max-w-sm sm:max-w-none ${typingDone ? 'animate-fade-up-slow' : 'opacity-0'}`}
             style={{ animationDelay: '300ms' }}>
-            <button className="px-5 py-3 sm:px-8 sm:py-4 text-sm sm:text-base bg-indigo-600 text-white font-bold rounded-full hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-500/30 hover:-translate-y-0.5 flex items-center justify-center gap-2 flex-1 sm:flex-none">
+            <Link to="/register" className="px-5 py-3 sm:px-8 sm:py-4 text-sm sm:text-base bg-indigo-600 text-white font-bold rounded-full hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-500/30 hover:-translate-y-0.5 flex items-center justify-center gap-2 flex-1 sm:flex-none">
               Get Started
-            </button>
+            </Link>
             <button
               onClick={() => scrollTo('convenors')}
               className="px-5 py-3 sm:px-8 sm:py-4 text-sm sm:text-base bg-white dark:bg-white/5 text-slate-700 dark:text-slate-200 font-bold rounded-full border border-slate-200 dark:border-white/10 hover:border-indigo-300 dark:hover:border-indigo-600 transition-all flex-1 sm:flex-none text-center whitespace-nowrap"

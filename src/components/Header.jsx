@@ -37,15 +37,9 @@ export default function Header() {
             {/* Desktop Auth Buttons */}
             <Link
               to="/login"
-              className="text-sm font-semibold text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white hidden md:block px-4 py-2 rounded-full hover:bg-slate-100/50 dark:hover:bg-white/10 transition-colors"
+              className="hidden md:block text-sm font-bold bg-slate-900 dark:bg-white text-white font-semibold dark:text-black px-8 py-3 rounded-full hover:bg-slate-800 dark:hover:bg-slate-100 transition-all shadow-sm"
             >
               Log in
-            </Link>
-            <Link
-              to="/register"
-              className="text-sm font-semibold bg-slate-900 dark:bg-white text-white dark:text-black hidden md:block px-5 py-2 rounded-full hover:bg-indigo-600 dark:hover:bg-indigo-500 transition-all shadow-md"
-            >
-              Get Started
             </Link>
 
             {/* Mobile Hamburger */}
@@ -91,16 +85,9 @@ export default function Header() {
             <Link
               to="/login"
               onClick={() => setMenuOpen(false)}
-              className="w-full text-center text-sm font-semibold text-slate-700 dark:text-slate-200 py-3 rounded-2xl border border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
+              className="w-full text-center text-sm font-bold bg-slate-900 dark:bg-white text-white dark:text-black py-4 rounded-full hover:bg-slate-800 dark:hover:bg-slate-100 transition-all shadow-lg active:scale-[0.98]"
             >
               Log in
-            </Link>
-            <Link
-              to="/register"
-              onClick={() => setMenuOpen(false)}
-              className="w-full text-center text-sm font-semibold bg-slate-900 dark:bg-white text-white dark:text-black py-3 rounded-2xl hover:bg-indigo-600 dark:hover:bg-indigo-500 transition-colors shadow-md"
-            >
-              Get Started
             </Link>
           </div>
         </div>
