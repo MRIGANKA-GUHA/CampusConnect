@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Mail, Lock, User, Eye, EyeOff, Briefcase, Loader2, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export default function RegisterPage() {
   const [step, setStep] = useState(0); // 0: details, 1: otp
-  const [otp, setOtp] = useState("");
+  const [otp, setOtp] = useState(new Array(6).fill(""));
+  const inputRefs = useRef([]);
   const [accountType, setAccountType] = useState('student');
   const [name, setName] = useState('');
   const [rollNo, setRollNo] = useState('');
@@ -34,15 +35,54 @@ export default function RegisterPage() {
   const handleVerifyOtp = async (e) => {
     e.preventDefault();
     setError('');
+    const otpString = otp.join("");
+    if (otpString.length !== 6) {
+      setError("Please enter the full 6-digit code");
+      return;
+    }
     setLoading(true);
     try {
-      await verifyOtp(email, otp);
+      await verifyOtp(email, otpString);
       navigate('/dashboard');
     } catch (err) {
       setError(err.response?.data?.error || err.message || 'Invalid or expired OTP');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleOtpChange = (element, index) => {
+    if (isNaN(element.value)) return false;
+
+    setOtp([...otp.map((d, idx) => (idx === index ? element.value : d))]);
+
+    // Focus next input
+    if (element.value !== "" && index < 5) {
+      inputRefs.current[index + 1].focus();
+    }
+  };
+
+  const handleKeyDown = (e, index) => {
+    if (e.key === "Backspace") {
+      if (otp[index] === "" && index > 0) {
+        inputRefs.current[index - 1].focus();
+      }
+    }
+  };
+
+  const handlePaste = (e) => {
+    const data = e.clipboardData.getData("text").slice(0, 6);
+    if (!/^\d+$/.test(data)) return;
+    
+    const newOtp = [...otp];
+    data.split("").forEach((char, index) => {
+      newOtp[index] = char;
+    });
+    setOtp(newOtp);
+    
+    // Focus last filled or next empty
+    const nextIndex = data.length < 6 ? data.length : 5;
+    inputRefs.current[nextIndex].focus();
   };
 
   const handleSocialLogin = async (providerFn) => {
@@ -220,17 +260,23 @@ export default function RegisterPage() {
               </div>
             </form>
           ) : (
-            <form onSubmit={handleVerifyOtp} className="flex flex-col gap-6">
-              <div className="flex flex-col gap-2">
-                <input
-                  type="text"
-                  maxLength="6"
-                  required
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
-                  placeholder="000000"
-                  className="w-full px-5 py-6 bg-slate-100 dark:bg-[#13131a] border border-slate-200 dark:border-white/10 rounded-2xl text-center text-2xl sm:text-4xl font-black tracking-[0.5em] sm:tracking-[1em] text-indigo-600 dark:text-indigo-400 placeholder-slate-300 dark:placeholder-slate-700 focus:outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-mono"
-                />
+            <form onSubmit={handleVerifyOtp} className="flex flex-col gap-8">
+              <div className="flex flex-col gap-4">
+                <div className="flex justify-between gap-2 sm:gap-4">
+                  {otp.map((digit, index) => (
+                    <input
+                      key={index}
+                      type="text"
+                      maxLength="1"
+                      ref={(el) => (inputRefs.current[index] = el)}
+                      value={digit}
+                      onChange={(e) => handleOtpChange(e.target, index)}
+                      onKeyDown={(e) => handleKeyDown(e, index)}
+                      onPaste={handlePaste}
+                      className="w-10 h-12 sm:w-16 sm:h-20 bg-slate-100 dark:bg-[#13131a] border-2 border-slate-200 dark:border-white/10 rounded-xl sm:rounded-2xl text-center text-xl sm:text-3xl font-black text-indigo-600 dark:text-indigo-400 focus:outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-mono"
+                    />
+                  ))}
+                </div>
                 <p className="text-xs text-center text-slate-400 dark:text-slate-500 font-medium">
                   Enter the 6-digit verification code sent to your inbox.
                 </p>
@@ -238,7 +284,7 @@ export default function RegisterPage() {
 
               <button
                 type="submit"
-                disabled={loading || otp.length !== 6}
+                disabled={loading || otp.join("").length !== 6}
                 className="w-full py-4 rounded-full bg-indigo-600 dark:bg-indigo-500 hover:bg-indigo-700 dark:hover:bg-indigo-600 text-white font-black tracking-wide shadow-lg shadow-indigo-600/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:hover:scale-100"
               >
                 {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Verify & Complete'}
