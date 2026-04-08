@@ -50,12 +50,28 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Register with email/password (still uses backend)
-  const registerWithEmail = async (email, password, displayName) => {
+  const registerWithEmail = async (email, password, displayName, rollNo, role) => {
     const response = await api.post("/auth/register", {
       email,
       password,
       displayName,
+      rollNo,
+      role,
     });
+    return response.data;
+  };
+
+  // Verify OTP and complete registration
+  const verifyOtp = async (email, otp) => {
+    const response = await api.post("/auth/verify-otp", { email, otp });
+    const { token, user: userData } = response.data;
+
+    // Sign in with custom token
+    await signInWithCustomToken(auth, token);
+    const idToken = await auth.currentUser.getIdToken();
+    localStorage.setItem("token", idToken);
+
+    setUser(userData);
     return response.data;
   };
 
@@ -103,7 +119,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, loginWithEmail, registerWithEmail, loginWithGoogle, loginWithGithub, logout }}>
+    <AuthContext.Provider value={{ user, loading, loginWithEmail, registerWithEmail, verifyOtp, loginWithGoogle, loginWithGithub, logout }}>
       {!loading && children}
     </AuthContext.Provider>
   );
