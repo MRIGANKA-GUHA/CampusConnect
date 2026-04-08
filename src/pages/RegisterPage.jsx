@@ -229,7 +229,7 @@ export default function RegisterPage() {
                   value={otp}
                   onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
                   placeholder="000000"
-                  className="w-full px-5 py-6 bg-slate-100 dark:bg-[#13131a] border border-slate-200 dark:border-white/10 rounded-2xl text-center text-4xl font-black tracking-[1em] text-indigo-600 dark:text-indigo-400 placeholder-slate-300 dark:placeholder-slate-700 focus:outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                  className="w-full px-5 py-6 bg-slate-100 dark:bg-[#13131a] border border-slate-200 dark:border-white/10 rounded-2xl text-center text-2xl sm:text-4xl font-black tracking-[0.5em] sm:tracking-[1em] text-indigo-600 dark:text-indigo-400 placeholder-slate-300 dark:placeholder-slate-700 focus:outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-mono"
                 />
                 <p className="text-xs text-center text-slate-400 dark:text-slate-500 font-medium">
                   Enter the 6-digit verification code sent to your inbox.
