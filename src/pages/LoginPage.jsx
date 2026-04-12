@@ -17,8 +17,8 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
     try {
-      await loginWithEmail(email, password);
-      navigate('/dashboard');
+      const { user: userData } = await loginWithEmail(email, password);
+      navigate(userData?.role === 'admin' ? '/admin' : '/dashboard');
     } catch (err) {
       setError(err.message || 'Failed to sign in');
     } finally {
@@ -30,8 +30,8 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
     try {
-      await providerFn();
-      navigate('/dashboard');
+      const { user: userData } = await providerFn();
+      navigate(userData?.role === 'admin' ? '/admin' : '/dashboard');
     } catch (err) {
       setError(err.message || 'Failed to sign in');
     } finally {

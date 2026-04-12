@@ -1,11 +1,22 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Menu, X, LogOut, LayoutDashboard } from 'lucide-react';
 import logoUrl from '../assets/images/technoLogo.png';
 import ThemeSwitch from './ThemeSwitch';
+import { useAuth } from '../context/AuthContext';
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    setMenuOpen(false);
+    await logout();
+    navigate('/');
+  };
+
+  const dashboardPath = user?.role === 'admin' ? '/admin' : '/dashboard';
 
   return (
     <>
@@ -25,7 +36,11 @@ export default function Header() {
 
           {/* Desktop Nav Links */}
           <nav className="hidden md:flex items-center justify-center gap-8 font-medium text-sm text-slate-600 dark:text-slate-300">
-            <a href="#home" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Home</a>
+            {user ? (
+              <Link to={dashboardPath} className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors font-bold text-indigo-600 dark:text-indigo-400">Dashboard</Link>
+            ) : (
+              <a href="#home" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Home</a>
+            )}
             <a href="#convenors" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Convenors</a>
             <a href="#events" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Events</a>
           </nav>
@@ -34,13 +49,36 @@ export default function Header() {
           <div className="flex items-center gap-1 sm:gap-3">
             <ThemeSwitch />
 
-            {/* Desktop Auth Buttons */}
-            <Link
-              to="/login"
-              className="hidden md:block text-sm font-bold bg-slate-900 dark:bg-white text-white font-semibold dark:text-black px-8 py-3 rounded-full hover:bg-slate-800 dark:hover:bg-slate-100 transition-all shadow-sm"
-            >
-              Log in
-            </Link>
+            {user && (
+              <Link to="/profile" className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-[1.5px] sm:border-2 border-slate-200 dark:border-white/10 overflow-hidden shrink-0 shadow-sm cursor-pointer hover:border-indigo-500 dark:hover:border-indigo-500 hover:-translate-y-0.5 active:scale-95 transition-all bg-slate-100 dark:bg-white/5" title="My Profile">
+                <img 
+                  src={user.photoURL || `https://api.dicebear.com/7.x/initials/svg?seed=${user.displayName || user.email || 'Admin'}&backgroundColor=4f46e5&textColor=ffffff`} 
+                  alt="Profile" 
+                  className="w-full h-full object-cover" 
+                />
+              </Link>
+            )}
+
+            {user ? (
+              /* Logged-in: Logout (Desktop Only) */
+              <div className="hidden md:flex items-center gap-2">
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center justify-center w-10 h-10 rounded-full bg-slate-100 dark:bg-white/5 hover:bg-red-50 dark:hover:bg-red-500/10 text-slate-500 hover:text-red-600 dark:hover:text-red-400 transition-all border border-slate-200 dark:border-white/10"
+                  title="Sign Out"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              /* Guest: Log in */
+              <Link
+                to="/login"
+                className="hidden md:block text-sm font-bold bg-slate-900 dark:bg-white text-white dark:text-black px-8 py-3 rounded-full hover:bg-slate-800 dark:hover:bg-slate-100 transition-all shadow-sm"
+              >
+                Log in
+              </Link>
+            )}
 
             {/* Mobile Hamburger */}
             <button
@@ -59,36 +97,39 @@ export default function Header() {
       {/* Mobile Dropdown Menu */}
       {menuOpen && (
         <div className="fixed top-[4.5rem] left-3 right-3 z-40 bg-white dark:bg-zinc-950 border border-slate-200 dark:border-white/10 rounded-3xl shadow-xl p-5 flex flex-col gap-3 md:hidden">
-          <a
-            href="#home"
-            onClick={() => setMenuOpen(false)}
-            className="text-base font-semibold text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 px-2 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
-          >
-            Home
-          </a>
-          <a
-            href="#convenors"
-            onClick={() => setMenuOpen(false)}
-            className="text-base font-semibold text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 px-2 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
-          >
+          {user ? (
+            <Link to={dashboardPath} onClick={() => setMenuOpen(false)} className="text-base font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 px-2 py-2.5 rounded-xl hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-all">
+              Dashboard
+            </Link>
+          ) : (
+            <a href="#home" onClick={() => setMenuOpen(false)} className="text-base font-semibold text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 px-2 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+              Home
+            </a>
+          )}
+          <a href="#convenors" onClick={() => setMenuOpen(false)} className="text-base font-semibold text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 px-2 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
             Convenors
           </a>
-          <a
-            href="#events"
-            onClick={() => setMenuOpen(false)}
-            className="text-base font-semibold text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 px-2 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
-          >
+          <a href="#events" onClick={() => setMenuOpen(false)} className="text-base font-semibold text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 px-2 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
             Events
           </a>
 
           <div className="border-t border-slate-100 dark:border-white/10 pt-3 flex flex-col gap-2">
-            <Link
-              to="/login"
-              onClick={() => setMenuOpen(false)}
-              className="w-full text-center text-sm font-bold bg-slate-900 dark:bg-white text-white dark:text-black py-4 rounded-full hover:bg-slate-800 dark:hover:bg-slate-100 transition-all shadow-lg active:scale-[0.98]"
-            >
-              Log in
-            </Link>
+            {user ? (
+              <button
+                onClick={handleLogout}
+                className="w-full text-center text-sm font-bold text-red-600 dark:text-red-400 py-3 rounded-full hover:bg-red-50 dark:hover:bg-red-500/10 transition-all border border-slate-100 dark:border-white/10 flex items-center justify-center gap-2"
+              >
+                <LogOut className="w-4 h-4" /> Sign Out
+              </button>
+            ) : (
+              <Link
+                to="/login"
+                onClick={() => setMenuOpen(false)}
+                className="w-full text-center text-sm font-bold bg-slate-900 dark:bg-white text-white dark:text-black py-4 rounded-full hover:bg-slate-800 dark:hover:bg-slate-100 transition-all shadow-lg active:scale-[0.98]"
+              >
+                Log in
+              </Link>
+            )}
           </div>
         </div>
       )}

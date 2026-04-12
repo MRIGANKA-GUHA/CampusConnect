@@ -6,7 +6,7 @@ const api = axios.create({
     : 'https://campuscon-backend.vercel.app/api',
 });
 
-// Add a request interceptor to include the Firebase token
+// Attach token to every request
 api.interceptors.request.use(async (config) => {
   const token = localStorage.getItem('token');
   if (token) {
@@ -14,5 +14,21 @@ api.interceptors.request.use(async (config) => {
   }
   return config;
 });
+
+// Auto-logout on any 401 (session expired on backend)
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Clear local state and redirect to login
+      localStorage.removeItem('token');
+      // Avoid import cycle — just redirect directly
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
+    }
+    return Promise.reject(error);
+  }
+);
 
 export default api;

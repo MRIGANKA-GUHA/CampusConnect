@@ -13,17 +13,32 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Check for existing session on mount
+  // ── Core logout: inform backend, then clean up locally ─────────────────────
+  const performLogout = async () => {
+    try {
+      // Tell backend to delete the Firestore session record
+      await api.post("/auth/logout");
+    } catch (_) {
+      // Ignore — session may already be gone (expired on the server)
+    }
+    await firebaseSignOut(auth);
+    localStorage.removeItem("token");
+    setUser(null);
+  };
+
+  // ── Check for existing session on mount ────────────────────────────────────
+  // The backend's verifyToken middleware is the single source of truth.
+  // If the session is expired, /auth/profile returns 401 and we log out.
   useEffect(() => {
     const checkSession = async () => {
       const token = localStorage.getItem("token");
       if (token) {
         try {
-          // Verify token with backend
           const response = await api.get("/auth/profile");
           setUser(response.data);
         } catch (error) {
-          console.error("Session validation failed:", error);
+          // 401 = session expired or invalid → clean up
+          await firebaseSignOut(auth);
           localStorage.removeItem("token");
         }
       }
@@ -32,24 +47,20 @@ export const AuthProvider = ({ children }) => {
     checkSession();
   }, []);
 
-  // Login with email/password via backend
+  // ── Login with email/password via backend ──────────────────────────────────
   const loginWithEmail = async (email, password) => {
     const response = await api.post("/auth/login", { email, password });
     const { token, user: userData } = response.data;
-    
-    // Sign in to Firebase with custom token
+
     await signInWithCustomToken(auth, token);
-    
-    // Get ID token for API calls
-    const currentUser = auth.currentUser;
-    const idToken = await currentUser.getIdToken();
+    const idToken = await auth.currentUser.getIdToken();
     localStorage.setItem("token", idToken);
-    
+
     setUser(userData);
     return response.data;
   };
 
-  // Register with email/password (still uses backend)
+  // ── Register with email/password ──────────────────────────────────────────
   const registerWithEmail = async (email, password, displayName, rollNo, role) => {
     const response = await api.post("/auth/register", {
       email,
@@ -61,12 +72,11 @@ export const AuthProvider = ({ children }) => {
     return response.data;
   };
 
-  // Verify OTP and complete registration
+  // ── Verify OTP and complete registration ──────────────────────────────────
   const verifyOtp = async (email, otp) => {
     const response = await api.post("/auth/verify-otp", { email, otp });
     const { token, user: userData } = response.data;
 
-    // Sign in with custom token
     await signInWithCustomToken(auth, token);
     const idToken = await auth.currentUser.getIdToken();
     localStorage.setItem("token", idToken);
@@ -75,52 +85,51 @@ export const AuthProvider = ({ children }) => {
     return response.data;
   };
 
-  // Login with Google via Firebase popup, then send token to backend
+  // ── Login with Google ──────────────────────────────────────────────────────
   const loginWithGoogle = async () => {
     const result = await signInWithPopup(auth, googleProvider);
     const idToken = await result.user.getIdToken();
-    
-    // Send ID token to backend for verification
+
     const response = await api.post("/auth/oauth", { idToken });
     const { token, user: userData } = response.data;
-    
-    // Sign in with custom token from backend
+
     await signInWithCustomToken(auth, token);
     const newIdToken = await auth.currentUser.getIdToken();
     localStorage.setItem("token", newIdToken);
-    
+
     setUser(userData);
     return response.data;
   };
 
-  // Login with GitHub via Firebase popup, then send token to backend
+  // ── Login with GitHub ──────────────────────────────────────────────────────
   const loginWithGithub = async () => {
     const result = await signInWithPopup(auth, githubProvider);
     const idToken = await result.user.getIdToken();
-    
-    // Send ID token to backend for verification
+
     const response = await api.post("/auth/oauth", { idToken });
     const { token, user: userData } = response.data;
-    
-    // Sign in with custom token from backend
+
     await signInWithCustomToken(auth, token);
     const newIdToken = await auth.currentUser.getIdToken();
     localStorage.setItem("token", newIdToken);
-    
+
     setUser(userData);
     return response.data;
   };
 
-  // Logout
+  // ── Manual Logout ──────────────────────────────────────────────────────────
   const logout = async () => {
-    await firebaseSignOut(auth);
-    localStorage.removeItem("token");
-    setUser(null);
+    await performLogout();
+  };
+
+  // ── Update User State (for profile updates) ──────────────────────────
+  const updateUser = (userData) => {
+    setUser(prev => ({ ...prev, ...userData }));
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, loginWithEmail, registerWithEmail, verifyOtp, loginWithGoogle, loginWithGithub, logout }}>
-      {!loading && children}
+    <AuthContext.Provider value={{ user, loading, loginWithEmail, registerWithEmail, verifyOtp, loginWithGoogle, loginWithGithub, logout, updateUser }}>
+      {children}
     </AuthContext.Provider>
   );
 };
