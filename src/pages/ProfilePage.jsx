@@ -86,11 +86,11 @@ export default function ProfilePage() {
                 onChange={handleImageUpload}
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
               />
-              
+
               {/* Avatar image container */}
               <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full border-[3px] border-indigo-100 dark:border-indigo-500/30 overflow-hidden shadow-xl group-hover:border-indigo-400 dark:group-hover:border-indigo-500 transition-colors">
                 <img src={avatarSrc} alt="Profile" className="w-full h-full object-cover" />
-                
+
                 {/* Loading overlay inside the container */}
                 {uploading && (
                   <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-10 pointer-events-none">
@@ -123,62 +123,66 @@ export default function ProfilePage() {
           )}
 
           {/* ── Profile form ── */}
-          <form onSubmit={handleUpdateProfile} className="space-y-5">
+          <form onSubmit={handleUpdateProfile} className="flex flex-col gap-5">
 
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-700 dark:text-slate-300 ml-1">Display Name</label>
-              <input
-                type="text"
-                value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
-                required
-                className="w-full bg-slate-100 dark:bg-black border border-slate-200 dark:border-white/10 rounded-2xl px-5 py-3.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all font-medium text-slate-900 dark:text-white"
-              />
-            </div>
+            <div className="grid grid-cols-2 gap-3 sm:gap-5">
+              <div className="space-y-2">
+                <label className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 ml-1 truncate">Display Name</label>
+                <input
+                  type="text"
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  required
+                  className="w-full bg-slate-100 dark:bg-black border border-slate-200 dark:border-white/10 rounded-2xl px-4 py-3 sm:px-5 sm:py-3.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-sm sm:text-base font-medium text-slate-900 dark:text-white"
+                />
+              </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-700 dark:text-slate-300 ml-1">Phone Number</label>
-              <input
-                type="tel"
-                value={phoneNo}
-                onChange={(e) => setPhoneNo(e.target.value)}
-                placeholder="e.g. +91 98765 43210"
-                className="w-full bg-slate-100 dark:bg-black border border-slate-200 dark:border-white/10 rounded-2xl px-5 py-3.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all font-medium text-slate-900 dark:text-white"
-              />
+              <div className="space-y-2">
+                <label className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 ml-1 truncate">Phone Number</label>
+                <input
+                  type="tel"
+                  value={phoneNo}
+                  onChange={(e) => setPhoneNo(e.target.value)}
+                  placeholder="e.g. +91..."
+                  className="w-full bg-slate-100 dark:bg-black border border-slate-200 dark:border-white/10 rounded-2xl px-4 py-3 sm:px-5 sm:py-3.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-sm sm:text-base font-medium text-slate-900 dark:text-white"
+                />
+              </div>
             </div>
 
             {user?.role === 'student' && (
               <>
-                <div className="space-y-2">
-                  <label className="text-sm font-bold text-slate-700 dark:text-slate-300 ml-1">Department</label>
-                  <input
-                    type="text"
-                    value={department}
-                    onChange={(e) => setDepartment(e.target.value)}
-                    placeholder="e.g. Computer Science"
-                    className="w-full bg-slate-100 dark:bg-black border border-slate-200 dark:border-white/10 rounded-2xl px-5 py-3.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all font-medium text-slate-900 dark:text-white"
-                  />
+                <div className="grid grid-cols-2 gap-3 sm:gap-5">
+                  <div className="space-y-2">
+                    <label className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 ml-1 truncate">Department</label>
+                    <input
+                      type="text"
+                      value={department}
+                      onChange={(e) => setDepartment(e.target.value)}
+                      placeholder="e.g. CSE"
+                      className="w-full bg-slate-100 dark:bg-black border border-slate-200 dark:border-white/10 rounded-2xl px-4 py-3 sm:px-5 sm:py-3.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-sm sm:text-base font-medium text-slate-900 dark:text-white"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 ml-1 truncate">Roll Number</label>
+                    <input
+                      type="text"
+                      value={rollNo}
+                      onChange={(e) => setRollNo(e.target.value)}
+                      placeholder="e.g. 12345"
+                      className="w-full bg-slate-100 dark:bg-black border border-slate-200 dark:border-white/10 rounded-2xl px-4 py-3 sm:px-5 sm:py-3.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-sm sm:text-base font-medium text-slate-900 dark:text-white"
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-slate-700 dark:text-slate-300 ml-1">Roll Number</label>
-                  <input
-                    type="text"
-                    value={rollNo}
-                    onChange={(e) => setRollNo(e.target.value)}
-                    placeholder="e.g. 12345678"
-                    className="w-full bg-slate-100 dark:bg-black border border-slate-200 dark:border-white/10 rounded-2xl px-5 py-3.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all font-medium text-slate-900 dark:text-white"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-bold text-slate-700 dark:text-slate-300 ml-1">Bio</label>
+                  <label className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 ml-1">Bio</label>
                   <textarea
                     value={bio}
                     onChange={(e) => setBio(e.target.value)}
                     rows={3}
                     placeholder="Tell us a bit about yourself..."
-                    className="w-full bg-slate-100 dark:bg-black border border-slate-200 dark:border-white/10 rounded-2xl px-5 py-3.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all font-medium text-slate-900 dark:text-white resize-none"
+                    className="w-full bg-slate-100 dark:bg-black border border-slate-200 dark:border-white/10 rounded-2xl px-4 py-3 sm:px-5 sm:py-3.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-sm sm:text-base font-medium text-slate-900 dark:text-white resize-none"
                   />
                 </div>
               </>

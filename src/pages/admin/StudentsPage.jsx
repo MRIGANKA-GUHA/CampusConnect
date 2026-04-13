@@ -43,14 +43,14 @@ export default function StudentsPage() {
   const handleUpdateRole = async (newRole) => {
     if (!selectedStudent || loadingAction) return;
     if (newRole === selectedStudent.role) return;
-    
+
     // Ask for confidence confirmation
     if (!window.confirm(`Are you sure you want to change ${selectedStudent.displayName}'s role to ${newRole.toUpperCase()}?`)) return;
 
     setLoadingAction('role');
     try {
       await api.patch(`/admin/students/${selectedStudent.id}/role`, { role: newRole });
-      
+
       // Update local state 
       setSelectedStudent(prev => ({ ...prev, role: newRole }));
       setStudents(prev => prev.map(s => s.id === selectedStudent.id ? { ...s, role: newRole } : s));
@@ -64,7 +64,7 @@ export default function StudentsPage() {
 
   const handleDeleteUser = async () => {
     if (!selectedStudent || loadingAction) return;
-    
+
     // Very strict danger confirmation
     const confirmDelete = window.confirm(`DANGER: Are you absolutely sure you want to permanently delete ${selectedStudent.displayName}? This action CANNOT be undone and will erase all their data.`);
     if (!confirmDelete) return;
@@ -72,7 +72,7 @@ export default function StudentsPage() {
     setLoadingAction('delete');
     try {
       await api.delete(`/admin/students/${selectedStudent.id}`);
-      
+
       // Remove from lists and close modal instantly on success
       setStudents(prev => prev.filter(s => s.id !== selectedStudent.id));
       setSelectedStudent(null);
@@ -86,13 +86,12 @@ export default function StudentsPage() {
 
   const handleToggleStatus = async () => {
     if (!selectedStudent || loadingAction) return;
-    
+
     const newStatus = !selectedStudent.isDisabled;
     const actionText = newStatus ? 'DISABLE' : 'ENABLE';
-    
-    if (!window.confirm(`Are you sure you want to ${actionText} ${selectedStudent.displayName}'s account? ${
-      newStatus ? 'They will be immediately logged out and blocked from signing in.' : 'They will be able to sign in again.'
-    }`)) return;
+
+    if (!window.confirm(`Are you sure you want to ${actionText} ${selectedStudent.displayName}'s account? ${newStatus ? 'They will be immediately logged out and blocked from signing in.' : 'They will be able to sign in again.'
+      }`)) return;
 
     setLoadingAction('disable');
     try {
@@ -107,7 +106,7 @@ export default function StudentsPage() {
     }
   };
 
-  const filteredStudents = students.filter(student => 
+  const filteredStudents = students.filter(student =>
     student.displayName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     student.rollNo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     student.department?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -117,7 +116,7 @@ export default function StudentsPage() {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-black text-slate-900 dark:text-white font-sans transition-colors duration-300">
       <SmartHeader />
-      
+
       <main className="max-w-7xl mx-auto pt-28 sm:pt-36 px-4 sm:px-8 pb-12">
         {/* Top Action Bar (Search) */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-10 w-full">
@@ -133,7 +132,7 @@ export default function StudentsPage() {
               className="block w-full pl-14 pr-6 py-4 rounded-[2rem] bg-white dark:bg-[#0a0a0a] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10 shadow-sm hover:shadow-md transition-all font-medium text-sm sm:text-base"
             />
           </div>
-          
+
           <div className="bg-white dark:bg-white/5 text-slate-700 dark:text-slate-300 px-6 py-4 rounded-[2rem] font-bold flex items-center gap-3 border border-slate-200 dark:border-white/10 shadow-sm shrink-0 w-full md:w-auto justify-center md:justify-start">
             <Users className="w-5 h-5 text-indigo-500" />
             <span>{students.length} Total Students</span>
@@ -142,7 +141,7 @@ export default function StudentsPage() {
 
         {error && (
           <div className="mb-8 p-5 rounded-2xl text-sm font-bold bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400 border border-red-100 dark:border-red-500/20 flex items-center gap-3">
-             <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
+            <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
             {error}
           </div>
         )}
@@ -158,10 +157,10 @@ export default function StudentsPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 sm:gap-8">
                 {filteredStudents.map((student, idx) => {
                   const avatarSrc = student.photoURL || `https://api.dicebear.com/7.x/initials/svg?seed=${student.displayName || student.email || 'S'}&backgroundColor=4f46e5&textColor=ffffff`;
-                  
+
                   return (
-                    <div 
-                      key={student.id} 
+                    <div
+                      key={student.id}
                       className="group bg-white dark:bg-[#0a0a0a] border border-slate-200 dark:border-white/10 rounded-3xl p-6 sm:p-8 hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:hover:shadow-[0_8px_30px_rgb(79,70,229,0.05)] hover:-translate-y-1 hover:border-indigo-200 dark:hover:border-indigo-500/30 transition-all duration-300 relative overflow-hidden"
                       style={{ animationDelay: `${idx * 50}ms`, animationFillMode: 'both' }}
                     >
@@ -194,7 +193,7 @@ export default function StudentsPage() {
                             <span className="font-semibold text-slate-800 dark:text-slate-200 truncate">{student.department || 'Not Provided'}</span>
                           </div>
                         </div>
-                        
+
                         <div className="flex items-center gap-4 text-sm text-slate-600 dark:text-slate-400 group/item">
                           <div className="w-10 h-10 rounded-[1rem] bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 flex items-center justify-center shrink-0 group-hover/item:scale-110 group-hover/item:text-slate-700 group-hover/item:dark:text-white transition-all border border-slate-200 dark:border-white/5">
                             <Mail className="w-4.5 h-4.5" />
@@ -217,20 +216,20 @@ export default function StudentsPage() {
                           </div>
                         )}
                       </div>
-                      
+
                       {/* Footer */}
                       <div className="mt-8 pt-5 border-t border-slate-100 dark:border-white/5 flex items-center justify-between">
-                          <div className="flex items-center gap-2 text-xs font-bold text-slate-400 dark:text-slate-500 bg-slate-50 dark:bg-white/[0.02] px-3 py-1.5 rounded-lg border border-slate-100 dark:border-white/5">
-                            <Calendar className="w-3.5 h-3.5 opacity-70" />
-                            JOINED {new Date(student.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()}
-                          </div>
-                         <button 
-                           onClick={() => setSelectedStudent(student)}
-                           className="text-sm font-black text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors uppercase tracking-widest flex items-center gap-1 group/btn"
-                         >
-                            View
-                            <span className="group-hover/btn:translate-x-1 transition-transform">→</span>
-                         </button>
+                        <div className="flex items-center gap-2 text-xs font-bold text-slate-400 dark:text-slate-500 bg-slate-50 dark:bg-white/[0.02] px-3 py-1.5 rounded-lg border border-slate-100 dark:border-white/5">
+                          <Calendar className="w-3.5 h-3.5 opacity-70" />
+                          JOINED {new Date(student.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()}
+                        </div>
+                        <button
+                          onClick={() => setSelectedStudent(student)}
+                          className="text-sm font-black text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors uppercase tracking-widest flex items-center gap-1 group/btn"
+                        >
+                          View
+                          <span className="group-hover/btn:translate-x-1 transition-transform">→</span>
+                        </button>
                       </div>
 
                     </div>
@@ -244,12 +243,12 @@ export default function StudentsPage() {
                 </div>
                 <h3 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight mb-3">No students found</h3>
                 <p className="text-slate-500 dark:text-slate-400 text-base sm:text-lg max-w-md mx-auto leading-relaxed">
-                  {searchTerm 
-                    ? `We couldn't find any students matching "${searchTerm}". Try adjusting your search criteria.` 
+                  {searchTerm
+                    ? `We couldn't find any students matching "${searchTerm}". Try adjusting your search criteria.`
                     : 'There are currently no students registered on the platform.'}
                 </p>
                 {searchTerm && (
-                  <button 
+                  <button
                     onClick={() => setSearchTerm('')}
                     className="mt-8 px-8 py-4 bg-slate-900 dark:bg-white text-white dark:text-black font-black uppercase tracking-widest rounded-full hover:bg-slate-800 dark:hover:bg-slate-100 hover:-translate-y-1 transition-all shadow-[0_8px_30px_rgb(0,0,0,0.12)] active:scale-95 text-sm"
                   >
@@ -266,16 +265,16 @@ export default function StudentsPage() {
       {selectedStudent && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200">
           {/* Backdrop with Frosted Glass Effect */}
-          <div 
+          <div
             className="absolute inset-0 bg-black/40 backdrop-blur-md transition-opacity cursor-pointer"
             onClick={() => setSelectedStudent(null)}
           ></div>
-          
+
           {/* Detailed Modal Container */}
           <div className="bg-white dark:bg-[#0a0a0a] border border-slate-200 dark:border-white/10 rounded-[2.5rem] w-full max-w-2xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] relative z-10 overflow-hidden animate-in zoom-in-95 duration-200 max-h-[90vh] flex flex-col">
-            
+
             {/* Close Button */}
-            <button 
+            <button
               onClick={() => setSelectedStudent(null)}
               className="absolute top-5 right-5 w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 dark:bg-white/10 text-slate-500 hover:text-slate-800 dark:hover:text-white transition-colors z-20"
             >
@@ -285,9 +284,9 @@ export default function StudentsPage() {
             {/* Modal Header */}
             <div className="relative pt-12 pb-8 px-8 flex flex-col items-center bg-slate-50 dark:bg-white/[0.02] border-b border-slate-100 dark:border-white/5 shrink-0">
               <div className="w-32 h-32 rounded-full border-4 border-white dark:border-[#0a0a0a] shadow-xl overflow-hidden bg-slate-100 dark:bg-white/5 mb-5 relative z-10">
-                <img 
-                  src={selectedStudent.photoURL || `https://api.dicebear.com/7.x/initials/svg?seed=${selectedStudent.displayName || selectedStudent.email || 'S'}&backgroundColor=4f46e5&textColor=ffffff`} 
-                  alt={selectedStudent.displayName} 
+                <img
+                  src={selectedStudent.photoURL || `https://api.dicebear.com/7.x/initials/svg?seed=${selectedStudent.displayName || selectedStudent.email || 'S'}&backgroundColor=4f46e5&textColor=ffffff`}
+                  alt={selectedStudent.displayName}
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -302,11 +301,10 @@ export default function StudentsPage() {
                   <Hash className="w-4 h-4 opacity-80" />
                   {selectedStudent.rollNo || 'NO ROLL NUMBER'}
                 </span>
-                <span className={`px-5 py-2 font-bold text-xs sm:text-sm rounded-full uppercase tracking-widest border shadow-sm ${
-                  selectedStudent.role === 'admin' ? 'bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20' : 
-                  selectedStudent.role === 'convenor' ? 'bg-purple-50 text-purple-600 border-purple-200 dark:bg-purple-500/10 dark:text-purple-400 dark:border-purple-500/20' :
-                  'bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20'
-                }`}>
+                <span className={`px-5 py-2 font-bold text-xs sm:text-sm rounded-full uppercase tracking-widest border shadow-sm ${selectedStudent.role === 'admin' ? 'bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20' :
+                    selectedStudent.role === 'convenor' ? 'bg-purple-50 text-purple-600 border-purple-200 dark:bg-purple-500/10 dark:text-purple-400 dark:border-purple-500/20' :
+                      'bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20'
+                  }`}>
                   {selectedStudent.role || 'STUDENT'}
                 </span>
                 {selectedStudent.isDisabled && (
@@ -320,14 +318,14 @@ export default function StudentsPage() {
 
             {/* Modal Body (Scrollable) */}
             <div className="p-6 sm:p-8 space-y-6 overflow-y-auto custom-scrollbar">
-              
+
               {/* Bio Section */}
               {selectedStudent.bio && (
-                 <div className="bg-indigo-50/50 dark:bg-indigo-500/5 p-5 rounded-3xl border border-indigo-100/50 dark:border-indigo-500/10">
-                   <p className="text-sm sm:text-base text-indigo-900 dark:text-indigo-200 italic leading-relaxed text-center font-medium">
-                     "{selectedStudent.bio}"
-                   </p>
-                 </div>
+                <div className="bg-indigo-50/50 dark:bg-indigo-500/5 p-5 rounded-3xl border border-indigo-100/50 dark:border-indigo-500/10">
+                  <p className="text-sm sm:text-base text-indigo-900 dark:text-indigo-200 italic leading-relaxed text-center font-medium">
+                    "{selectedStudent.bio}"
+                  </p>
+                </div>
               )}
 
               {/* General Info Group */}
@@ -368,16 +366,16 @@ export default function StudentsPage() {
               </div>
 
               <div className="flex justify-between items-center px-2">
-                 <div className="flex items-center gap-2 text-[10px] sm:text-xs font-semibold text-slate-500 dark:text-slate-400">
-                    <Calendar className="w-4 h-4 opacity-70" /> 
-                    Joined {new Date(selectedStudent.createdAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}
-                 </div>
-                 {selectedStudent.updatedAt && (
-                   <div className="flex items-center gap-1.5 text-[10px] sm:text-xs font-semibold text-slate-400 dark:text-slate-500">
-                      <Clock className="w-3.5 h-3.5" /> 
-                      Updated: {new Date(selectedStudent.updatedAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', hour12: true })}
-                   </div>
-                 )}
+                <div className="flex items-center gap-2 text-[10px] sm:text-xs font-semibold text-slate-500 dark:text-slate-400">
+                  <Calendar className="w-4 h-4 opacity-70" />
+                  Joined {new Date(selectedStudent.createdAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}
+                </div>
+                {selectedStudent.updatedAt && (
+                  <div className="flex items-center gap-1.5 text-[10px] sm:text-xs font-semibold text-slate-400 dark:text-slate-500">
+                    <Clock className="w-3.5 h-3.5" />
+                    Updated: {new Date(selectedStudent.updatedAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', hour12: true })}
+                  </div>
+                )}
               </div>
 
               {/* Admin Actions Zone */}
@@ -386,7 +384,7 @@ export default function StudentsPage() {
                   <ShieldAlert className="w-4 h-4 text-red-500" />
                   <h3 className="font-black tracking-tight text-slate-900 dark:text-white uppercase text-xs">Admin Controls</h3>
                 </div>
-                
+
                 <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center bg-slate-50 dark:bg-[#111111] p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-white/10 mb-4">
                   <div className="flex-1">
                     <h4 className="font-bold text-slate-800 dark:text-slate-200 text-sm">System Role</h4>
@@ -404,7 +402,7 @@ export default function StudentsPage() {
                       <option value="admin">Admin</option>
                     </select>
                     <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
-                      <svg className="fill-current h-4 w-4" viewBox="0 0 20 20"><path d="M5.5 7.5L10 12l4.5-4.5H5.5z"/></svg>
+                      <svg className="fill-current h-4 w-4" viewBox="0 0 20 20"><path d="M5.5 7.5L10 12l4.5-4.5H5.5z" /></svg>
                     </div>
                   </div>
                 </div>
@@ -414,14 +412,13 @@ export default function StudentsPage() {
                     <h4 className="font-bold text-rose-700 dark:text-rose-400 text-sm">Account Access</h4>
                     <p className="text-xs text-rose-500/80 dark:text-rose-400/70 mt-0.5">Block or restore login for this user</p>
                   </div>
-                  <button 
+                  <button
                     onClick={handleToggleStatus}
                     disabled={loadingAction !== null}
-                    className={`w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 font-bold text-xs uppercase tracking-widest rounded-xl transition-colors disabled:opacity-50 shadow-sm active:scale-95 ${
-                      selectedStudent.isDisabled 
-                        ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-[0_4px_14px_rgba(5,150,105,0.3)]" 
+                    className={`w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 font-bold text-xs uppercase tracking-widest rounded-xl transition-colors disabled:opacity-50 shadow-sm active:scale-95 ${selectedStudent.isDisabled
+                        ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-[0_4px_14px_rgba(5,150,105,0.3)]"
                         : "bg-rose-500 hover:bg-rose-600 text-white shadow-[0_4px_14px_rgba(244,63,94,0.3)]"
-                    }`}
+                      }`}
                   >
                     {loadingAction === 'disable' ? <Loader2 className="w-4 h-4 animate-spin" /> : (selectedStudent.isDisabled ? <CheckCircle className="w-4 h-4" /> : <Ban className="w-4 h-4" />)}
                     {selectedStudent.isDisabled ? 'Re-enable Account' : 'Suspend Account'}
@@ -433,7 +430,7 @@ export default function StudentsPage() {
                     <h4 className="font-bold text-red-700 dark:text-red-400 text-sm">Account Deletion</h4>
                     <p className="text-xs text-red-500/80 dark:text-red-400/70 mt-0.5">Permanently erase this user</p>
                   </div>
-                  <button 
+                  <button
                     onClick={handleDeleteUser}
                     disabled={loadingAction !== null}
                     className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold text-xs uppercase tracking-widest rounded-xl transition-colors disabled:opacity-50 shadow-[0_4px_14px_rgba(220,38,38,0.3)] active:scale-95"
