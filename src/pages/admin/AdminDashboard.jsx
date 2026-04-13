@@ -1,11 +1,35 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Shield, Users, Calendar, BarChart3, Plus, Settings, FileText } from 'lucide-react';
-import Header from '../../components/Header';
+import SmartHeader from '../../components/SmartHeader';
+import api from '../../services/api';
 
 export default function AdminDashboard() {
+  const [studentCount, setStudentCount] = useState(null);
+  const [loadingStats, setLoadingStats] = useState(true);
+
+  useEffect(() => {
+    const fetchStudentCount = async () => {
+      try {
+        const res = await api.get('/admin/stats/students');
+        setStudentCount(res.data.count);
+      } catch (err) {
+        console.error('Failed to fetch student count:', err);
+        setStudentCount('—');
+      } finally {
+        setLoadingStats(false);
+      }
+    };
+    fetchStudentCount();
+  }, []);
 
   const stats = [
-    { label: 'Total Users', value: '1,284', icon: Users, color: 'text-blue-600', bg: 'bg-blue-100 dark:bg-blue-500/10' },
+    {
+      label: 'Total Students',
+      value: loadingStats ? '...' : studentCount?.toLocaleString() ?? '—',
+      icon: Users,
+      color: 'text-blue-600',
+      bg: 'bg-blue-100 dark:bg-blue-500/10'
+    },
     { label: 'Active Events', value: '42', icon: Calendar, color: 'text-emerald-600', bg: 'bg-emerald-100 dark:bg-emerald-500/10' },
     { label: 'Pending Approvals', value: '12', icon: Shield, color: 'text-amber-600', bg: 'bg-amber-100 dark:bg-amber-500/10' },
     { label: 'Revenue', value: '$4.2k', icon: BarChart3, color: 'text-purple-600', bg: 'bg-purple-100 dark:bg-purple-500/10' },
@@ -13,9 +37,8 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-black text-slate-900 dark:text-white font-sans">
-      <Header />
+      <SmartHeader />
       <div className="max-w-7xl mx-auto pt-24 sm:pt-32 px-4 sm:px-8 pb-8 sm:pb-12">
-        {/* Stats Grid */}
 
         {/* Stats Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-8 sm:mb-12">

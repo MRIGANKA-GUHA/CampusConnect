@@ -51,10 +51,10 @@ export default function Header() {
 
             {user && (
               <Link to="/profile" className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-[1.5px] sm:border-2 border-slate-200 dark:border-white/10 overflow-hidden shrink-0 shadow-sm cursor-pointer hover:border-indigo-500 dark:hover:border-indigo-500 hover:-translate-y-0.5 active:scale-95 transition-all bg-slate-100 dark:bg-white/5" title="My Profile">
-                <img 
-                  src={user.photoURL || `https://api.dicebear.com/7.x/initials/svg?seed=${user.displayName || user.email || 'Admin'}&backgroundColor=4f46e5&textColor=ffffff`} 
-                  alt="Profile" 
-                  className="w-full h-full object-cover" 
+                <img
+                  src={user.photoURL || `https://api.dicebear.com/7.x/initials/svg?seed=${user.displayName || user.email || 'Admin'}&backgroundColor=4f46e5&textColor=ffffff`}
+                  alt="Profile"
+                  className="w-full h-full object-cover"
                 />
               </Link>
             )}

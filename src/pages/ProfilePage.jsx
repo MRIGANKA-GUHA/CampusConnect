@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import Header from '../components/Header';
+import SmartHeader from '../components/SmartHeader';
 import { Loader2, Camera } from 'lucide-react';
 import api from '../services/api';
 
@@ -69,7 +69,7 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-black text-slate-900 dark:text-white font-sans transition-colors duration-300">
-      <Header />
+      <SmartHeader />
 
       <main className="max-w-2xl mx-auto pt-32 px-4 sm:px-8 pb-12">
         <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-[1.5rem] sm:rounded-3xl p-6 sm:p-10 shadow-sm">

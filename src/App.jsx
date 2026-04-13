@@ -5,6 +5,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import Dashboard from './pages/Dashboard';
 import AdminDashboard from './pages/admin/AdminDashboard';
+import StudentsPage from './pages/admin/StudentsPage';
 import ProfilePage from './pages/ProfilePage';
 import AdminRoute from './components/AdminRoute';
 import NotFound from './pages/NotFound';
@@ -89,6 +90,15 @@ function AppRoutes() {
         element={
           <AdminRoute>
             <AdminDashboard />
+          </AdminRoute>
+        } 
+      />
+
+      <Route 
+        path="/admin/students" 
+        element={
+          <AdminRoute>
+            <StudentsPage />
           </AdminRoute>
         } 
       />
