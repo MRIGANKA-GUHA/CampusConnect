@@ -5,6 +5,7 @@ import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import Dashboard from './pages/Dashboard';
+import StudentDashboard from './pages/student/StudentDashboard';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import StudentsPage from './pages/admin/StudentsPage';
 import ProfilePage from './pages/ProfilePage';
@@ -38,7 +39,7 @@ const PublicRoute = ({ children }) => {
   );
   
   if (user) {
-    const dashboardPath = user.role === 'admin' ? '/admin' : '/dashboard';
+    const dashboardPath = user.role === 'admin' ? '/admin' : '/student/dashboard';
     return <Navigate to={dashboardPath} replace />;
   }
   
@@ -73,6 +74,15 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Dashboard />
+          </ProtectedRoute>
+        } 
+      />
+
+      <Route 
+        path="/student/dashboard" 
+        element={
+          <ProtectedRoute>
+            <StudentDashboard />
           </ProtectedRoute>
         } 
       />

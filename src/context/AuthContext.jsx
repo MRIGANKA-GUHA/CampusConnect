@@ -4,7 +4,7 @@ import {
   signInWithCustomToken,
   signOut as firebaseSignOut,
 } from "firebase/auth";
-import { auth, googleProvider, githubProvider } from "../firebase";
+import { auth, googleProvider, githubProvider } from "../services/firebase";
 import api from "../services/api";
 
 const AuthContext = createContext();
