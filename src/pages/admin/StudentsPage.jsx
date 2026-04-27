@@ -117,7 +117,7 @@ export default function StudentsPage() {
     <div className="min-h-screen bg-slate-50 dark:bg-black text-slate-900 dark:text-white font-sans transition-colors duration-300">
       <SmartHeader />
 
-      <main className="max-w-7xl mx-auto pt-28 sm:pt-36 px-4 sm:px-8 pb-12">
+      <main className="max-w-7xl mx-auto pt-24 sm:pt-32 px-4 sm:px-8 pb-12">
         {/* Top Action Bar (Search) */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-10 w-full">
           <div className="flex-1 w-full max-w-xl relative group">
@@ -302,8 +302,8 @@ export default function StudentsPage() {
                   {selectedStudent.rollNo || 'NO ROLL NUMBER'}
                 </span>
                 <span className={`px-5 py-2 font-bold text-xs sm:text-sm rounded-full uppercase tracking-widest border shadow-sm ${selectedStudent.role === 'admin' ? 'bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20' :
-                    selectedStudent.role === 'convenor' ? 'bg-purple-50 text-purple-600 border-purple-200 dark:bg-purple-500/10 dark:text-purple-400 dark:border-purple-500/20' :
-                      'bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20'
+                  selectedStudent.role === 'convenor' ? 'bg-purple-50 text-purple-600 border-purple-200 dark:bg-purple-500/10 dark:text-purple-400 dark:border-purple-500/20' :
+                    'bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20'
                   }`}>
                   {selectedStudent.role || 'STUDENT'}
                 </span>
@@ -416,8 +416,8 @@ export default function StudentsPage() {
                     onClick={handleToggleStatus}
                     disabled={loadingAction !== null}
                     className={`w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 font-bold text-xs uppercase tracking-widest rounded-xl transition-colors disabled:opacity-50 shadow-sm active:scale-95 ${selectedStudent.isDisabled
-                        ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-[0_4px_14px_rgba(5,150,105,0.3)]"
-                        : "bg-rose-500 hover:bg-rose-600 text-white shadow-[0_4px_14px_rgba(244,63,94,0.3)]"
+                      ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-[0_4px_14px_rgba(5,150,105,0.3)]"
+                      : "bg-rose-500 hover:bg-rose-600 text-white shadow-[0_4px_14px_rgba(244,63,94,0.3)]"
                       }`}
                   >
                     {loadingAction === 'disable' ? <Loader2 className="w-4 h-4 animate-spin" /> : (selectedStudent.isDisabled ? <CheckCircle className="w-4 h-4" /> : <Ban className="w-4 h-4" />)}
