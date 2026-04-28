@@ -3,6 +3,10 @@
 @variant dark (&:where(.dark, .dark *));
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
   @media (min-width: 1536px) {
     html {
       font-size: 18px;

@@ -3,6 +3,7 @@ import { useLocation, Link } from 'react-router-dom';
 import { ArrowDown, Star, ChevronRight } from 'lucide-react';
 import ConvenorSection from './ConvenorSection';
 import EventsSection from './EventsSection';
+import api from '../services/api';
 
 const FULL_TEXT = 'One Platform for Every College Club';
 
@@ -11,6 +12,8 @@ export default function HomePage() {
   const [displayed, setDisplayed] = useState('');
   const [cursorVisible, setCursorVisible] = useState(true);
   const [typingDone, setTypingDone] = useState(false);
+  const [statsLoaded, setStatsLoaded] = useState(false);
+  const [stats, setStats] = useState({ clubs: 0, events: 0, members: 0 });
   const indexRef = useRef(0);
 
   // Typewriter effect
@@ -42,6 +45,22 @@ export default function HomePage() {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }, [location]);
+
+  // Fetch Stats
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await api.get('/admin/stats/public');
+        setStats(res.data);
+        // Small delay to ensure the smooth skeleton animation is visible if data loads too fast
+        setTimeout(() => setStatsLoaded(true), 800);
+      } catch (err) {
+        console.error('Failed to fetch stats:', err);
+        setStatsLoaded(true); // default to 0 on error
+      }
+    };
+    fetchStats();
+  }, []);
 
   const scrollTo = (id) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
@@ -104,27 +123,31 @@ export default function HomePage() {
           {/* Stats */}
           <div className={`mt-16 sm:mt-20 w-full max-w-3xl mx-auto flex flex-row items-center justify-between divide-x divide-slate-200 dark:divide-white/10 py-5 sm:py-0 rounded-3xl sm:rounded-none bg-white/40 dark:bg-white/5 sm:bg-transparent sm:dark:bg-transparent border border-slate-200/60 dark:border-white/10 sm:border-0 shadow-sm sm:shadow-none backdrop-blur-md sm:backdrop-blur-none ${typingDone ? 'animate-fade-up-slow' : 'opacity-0'}`}
             style={{ animationDelay: '500ms' }}>
-            {[
-              { value: '42+', label: 'Clubs' },
-              { value: '18', label: 'Events' },
-              { value: '3.5k+', label: 'Members' },
-            ].map((stat, i) => (
-              <div key={i} className="flex-1 flex flex-col items-center justify-center px-1 sm:px-8">
-                <p className="text-2xl sm:text-4xl font-black text-slate-900 dark:text-white">{stat.value}</p>
-                <p className="text-[11px] sm:text-sm text-slate-500 dark:text-slate-400 mt-1 sm:mt-2 font-bold uppercase tracking-wider">{stat.label}</p>
-              </div>
-            ))}
+
+            {!statsLoaded ? (
+              /* Inline Skeleton Loader for Stats */
+              [1, 2, 3].map((_, i) => (
+                <div key={`skeleton-${i}`} className="flex-1 flex flex-col items-center justify-center px-1 sm:px-8">
+                  <div className="h-8 sm:h-10 w-16 sm:w-20 bg-slate-200 dark:bg-white/10 rounded-lg animate-pulse mb-1 sm:mb-2"></div>
+                  <div className="h-3 sm:h-4 w-12 sm:w-16 bg-slate-200 dark:bg-white/10 rounded animate-pulse mt-1"></div>
+                </div>
+              ))
+            ) : (
+              /* Actual Real-Time Stats */
+              [
+                { value: stats.clubs > 0 ? `${stats.clubs}` : '0', label: 'Clubs' },
+                { value: stats.events > 0 ? `${stats.events}` : '0', label: 'Events' },
+                { value: stats.members >= 1000 ? `${(stats.members / 1000).toFixed(1)}k+` : stats.members, label: 'Members' },
+              ].map((stat, i) => (
+                <div key={i} className="flex-1 flex flex-col items-center justify-center px-1 sm:px-8 animate-fade-in">
+                  <p className="text-2xl sm:text-4xl font-black text-slate-900 dark:text-white drop-shadow-sm">{stat.value}</p>
+                  <p className="text-[11px] sm:text-sm text-slate-500 dark:text-slate-400 mt-1 sm:mt-2 font-bold uppercase tracking-wider">{stat.label}</p>
+                </div>
+              ))
+            )}
           </div>
 
-          {/* Scroll Cue */}
-          <button
-            onClick={() => scrollTo('convenors')}
-            className={`mt-16 flex flex-col items-center gap-2 text-slate-400 hover:text-indigo-500 transition-colors ${typingDone ? 'animate-fade-up-slow' : 'opacity-0'}`}
-            style={{ animationDelay: '700ms' }}
-          >
-            <span className="text-xs font-medium">Meet the Convenors</span>
-            <ArrowDown className="w-5 h-5 animate-bounce" />
-          </button>
+
 
         </div>
       </section>
