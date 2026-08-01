@@ -3,13 +3,15 @@ import {
   Search, Plus, Bell, Megaphone, AlertCircle,
   Calendar, Users, Info, X, Loader2,
   UserCircle, Tag, Clock, Paperclip, Building2, Hash,
-  ChevronDown, CheckCircle2, UploadCloud, FileText, Sparkles, FileCheck2
+  ChevronDown, CheckCircle2, UploadCloud, FileText, Sparkles, FileCheck2,
+  Download, Pencil, Trash2
 } from 'lucide-react';
 import SmartHeader from '../../components/SmartHeader';
 import api from '../../services/api';
 
 const CATEGORIES = ['Academic', 'Administrative', 'Infrastructure', 'Cultural', 'Technical', 'Sports', 'Social', 'Other'];
 const PRIORITIES = [
+  { value: 'low',    label: 'Low', color: 'text-slate-500 dark:text-slate-400', bg: 'bg-slate-100 dark:bg-white/5' },
   { value: 'normal', label: 'Normal', color: 'text-indigo-600 dark:text-indigo-400', bg: 'bg-indigo-50 dark:bg-indigo-500/10' },
   { value: 'high',   label: 'High Priority', color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-50 dark:bg-amber-500/10' },
   { value: 'urgent', label: 'Urgent', color: 'text-red-600 dark:text-red-400', bg: 'bg-red-50 dark:bg-red-500/10' },
@@ -43,6 +45,10 @@ export default function AdminNotices() {
   const [pdfLoading, setPdfLoading] = useState(false);
   const [pdfError, setPdfError] = useState('');
   const [pendingFile, setPendingFile] = useState(null);
+  // Edit & Delete state
+  const [editingNotice, setEditingNotice] = useState(null); // notice being edited
+  const [deleteTarget, setDeleteTarget] = useState(null);   // notice queued for delete
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => { fetchNotices(); }, []);
 
@@ -79,6 +85,8 @@ export default function AdminNotices() {
     }
   };
 
+
+
   const validate = () => {
     const e = {};
     if (!form.title.trim())   e.title   = 'Title is required.';
@@ -88,6 +96,7 @@ export default function AdminNotices() {
   };
 
   const handleSubmit = async (e) => {
+    if (editingNotice) return handleUpdate(e);
     e.preventDefault();
     const errs = validate();
     if (Object.keys(errs).length) { setErrors(errs); return; }
@@ -129,6 +138,92 @@ export default function AdminNotices() {
   const setField = (key, val) => {
     setForm(f => ({ ...f, [key]: val }));
     setErrors(e => ({ ...e, [key]: undefined, submit: undefined }));
+  };
+
+  // ─── Open edit modal pre-filled with existing notice data ───
+  const handleEdit = (notice, e) => {
+    e?.stopPropagation();
+    setEditingNotice(notice);
+    setForm({
+      title:          notice.title          || '',
+      content:        notice.content        || '',
+      category:       notice.category       || '',
+      priority:       notice.priority       || 'normal',
+      targetAudience: notice.targetAudience || 'everyone',
+      clubId:         notice.clubId         || '',
+      attachments:    notice.attachments?.length ? notice.attachmentName || 'existing' : '',
+    });
+    setPendingFile(null);
+    setPdfError('');
+    setErrors({});
+    setShowCreateModal(true);
+  };
+
+  // ─── Submit edit ───
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+    const errs = validate();
+    if (Object.keys(errs).length) { setErrors(errs); return; }
+
+    setSubmitting(true);
+    try {
+      const formData = new FormData();
+      Object.keys(form).forEach(key => {
+        if (key !== 'attachments' && form[key]) formData.append(key, form[key]);
+      });
+
+      if (pendingFile) {
+        formData.append('pdf', pendingFile);
+      } else if (!form.attachments) {
+        // User cleared the existing attachment
+        formData.append('removeAttachment', 'true');
+      }
+
+      const res = await api.put(`/admin/notices/${editingNotice.id}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+
+      setNotices(prev => prev.map(n => n.id === editingNotice.id ? res.data.notice : n));
+      if (selectedNotice?.id === editingNotice.id) setSelectedNotice(res.data.notice);
+
+      setSubmitSuccess(true);
+      setTimeout(() => {
+        setShowCreateModal(false);
+        setSubmitSuccess(false);
+        setEditingNotice(null);
+        setForm(EMPTY_FORM);
+        setPendingFile(null);
+        setErrors({});
+        setActiveDropdown(null);
+      }, 1500);
+    } catch (err) {
+      console.error('Failed to update notice:', err);
+      setErrors({ submit: err.response?.data?.error || 'Failed to update notice. Try again.' });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // ─── Trigger delete confirm ───
+  const handleDelete = (notice, e) => {
+    e?.stopPropagation();
+    setDeleteTarget(notice);
+  };
+
+  // ─── Confirm and execute delete ───
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      await api.delete(`/admin/notices/${deleteTarget.id}`);
+      setNotices(prev => prev.filter(n => n.id !== deleteTarget.id));
+      if (selectedNotice?.id === deleteTarget.id) setSelectedNotice(null);
+      setDeleteTarget(null);
+    } catch (err) {
+      console.error('Failed to delete notice:', err);
+    } finally {
+      setDeleting(false);
+    }
   };
 
   const handlePdfUpload = async (e) => {
@@ -181,6 +276,7 @@ export default function AdminNotices() {
 
   const getPriorityConfig = (priority) => {
     switch (priority) {
+      case 'low':    return { color: 'text-slate-500 dark:text-slate-400', bg: 'bg-slate-100 dark:bg-white/5', icon: Info, label: 'Low' };
       case 'urgent': return { color: 'text-red-600 dark:text-red-400', bg: 'bg-red-50 dark:bg-red-500/10', icon: AlertCircle, label: 'Urgent' };
       case 'high':   return { color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-50 dark:bg-amber-500/10', icon: Bell, label: 'High Priority' };
       default:       return { color: 'text-indigo-600 dark:text-indigo-400', bg: 'bg-indigo-50 dark:bg-indigo-500/10', icon: Info, label: 'Normal' };
@@ -191,6 +287,32 @@ export default function AdminNotices() {
     if (!isoString) return '—';
     return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' }).format(new Date(isoString));
   };
+
+  const getFileName = (url) => {
+    if (!url) return '';
+    const parts = url.split('/');
+    const lastPart = parts[parts.length - 1];
+    const fileName = lastPart.split('?')[0];
+    try {
+      return decodeURIComponent(fileName);
+    } catch {
+      return fileName;
+    }
+  };
+
+  const getDownloadUrl = (url, originalName) => {
+    if (!url) return '';
+    // Use Cloudinary's native fl_attachment flag to force download with original name
+    if (url.includes('res.cloudinary.com') && url.includes('/upload/')) {
+      const nameWithoutExt = originalName
+        ? originalName.replace(/\.[^/.]+$/, '').replace(/[^a-zA-Z0-9-_]/g, '_')
+        : 'attachment';
+      return url.replace('/upload/', `/upload/fl_attachment:${nameWithoutExt}/`);
+    }
+    return url;
+  };
+
+
 
   const inputClass = (field) =>
     `w-full px-5 py-3.5 rounded-2xl bg-slate-50 dark:bg-white/[0.04] border ${errors[field] ? 'border-red-400 dark:border-red-500/60 focus:ring-red-500/20' : 'border-slate-200 dark:border-white/10 focus:border-indigo-500/50'} text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all text-sm font-medium`;
@@ -250,12 +372,11 @@ export default function AdminNotices() {
               const pc = getPriorityConfig(notice.priority);
               const PriorityIcon = pc.icon;
               return (
-                <div
-                  key={notice.id}
-                  onClick={() => setSelectedNotice(notice)}
-                  className="group flex flex-col bg-white dark:bg-[#080808] border border-slate-200 dark:border-white/5 rounded-3xl p-6 sm:p-8 hover:border-indigo-200 dark:hover:border-white/10 hover:shadow-2xl hover:shadow-indigo-500/5 transition-all duration-300 cursor-pointer animate-fade-up-slow"
+                <div key={notice.id} className="group relative flex flex-col bg-white dark:bg-[#080808] border border-slate-200 dark:border-white/5 rounded-3xl p-6 sm:p-8 hover:border-indigo-200 dark:hover:border-white/10 hover:shadow-2xl hover:shadow-indigo-500/5 transition-all duration-300 animate-fade-up-slow"
                   style={{ animationDelay: `${idx * 80}ms` }}
                 >
+                  {/* Card click area */}
+                  <div className="cursor-pointer flex-1" onClick={() => setSelectedNotice(notice)}>
                   <div className="flex items-start justify-between gap-4 mb-6">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold tracking-wider uppercase ${pc.bg} ${pc.color}`}>
@@ -285,6 +406,22 @@ export default function AdminNotices() {
                       <span className="capitalize">{notice.targetAudience}</span>
                     </div>
                   </div>
+                  </div>
+                  {/* Card action buttons */}
+                  <div className="flex items-center gap-2 mt-4 pt-4 border-t border-slate-100 dark:border-white/5">
+                    <button
+                      onClick={(e) => handleEdit(notice, e)}
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-slate-50 dark:bg-white/5 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 text-xs font-bold transition-all"
+                    >
+                      <Pencil className="w-3.5 h-3.5" /> Edit
+                    </button>
+                    <button
+                      onClick={(e) => handleDelete(notice, e)}
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-slate-50 dark:bg-white/5 hover:bg-red-50 dark:hover:bg-red-500/10 text-slate-500 hover:text-red-600 dark:hover:text-red-400 text-xs font-bold transition-all"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" /> Delete
+                    </button>
+                  </div>
                 </div>
               );
             })}
@@ -295,16 +432,23 @@ export default function AdminNotices() {
       {/* ───── CREATE NOTICE MODAL ───── */}
       {showCreateModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300" onClick={() => setShowCreateModal(false)}></div>
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300" onClick={() => { setShowCreateModal(false); setEditingNotice(null); setForm(EMPTY_FORM); setPendingFile(null); setErrors({}); }}></div>
           <div className="relative pointer-events-auto w-full max-w-2xl bg-white dark:bg-[#0a0a0a] border border-white/20 dark:border-white/10 rounded-[3rem] p-8 sm:p-12 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] animate-in zoom-in-95 duration-200 overflow-hidden flex flex-col max-h-[90vh]">
             
             {/* Modal Header */}
             <div className="flex justify-between items-center mb-10 shrink-0">
               <div className="flex items-center gap-4">
-                <h2 className="text-3xl font-black tracking-tight leading-tight">Draft Notice</h2>
+                {editingNotice ? (
+                  <div className="w-10 h-10 rounded-2xl bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center">
+                    <Pencil className="w-5 h-5 text-amber-500" />
+                  </div>
+                ) : null}
+                <h2 className="text-3xl font-black tracking-tight leading-tight">
+                  {editingNotice ? 'Edit Notice' : 'Draft Notice'}
+                </h2>
               </div>
               <button
-                onClick={() => setShowCreateModal(false)}
+                onClick={() => { setShowCreateModal(false); setEditingNotice(null); setForm(EMPTY_FORM); setPendingFile(null); setErrors({}); }}
                 className="p-3 rounded-full hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
                 type="button"
               >
@@ -317,7 +461,9 @@ export default function AdminNotices() {
                 <div className="w-24 h-24 bg-emerald-100 dark:bg-emerald-500/20 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-xl">
                   <CheckCircle2 className="w-12 h-12 text-emerald-600 dark:text-emerald-400" />
                 </div>
-                <h3 className="text-3xl font-black mb-3 tracking-tight">Notice Published!</h3>
+                <h3 className="text-3xl font-black mb-3 tracking-tight">
+                  {editingNotice ? 'Notice Updated!' : 'Notice Published!'}
+                </h3>
                 <p className="text-slate-500 font-medium text-sm">Your notice has been saved to the database.</p>
               </div>
             ) : (
@@ -357,7 +503,7 @@ export default function AdminNotices() {
                           </div>
                           <div className="text-center">
                             <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">PDF Attached Successfully</p>
-                            <p className="text-xs text-slate-400 mt-0.5">Stored in Cloudinary · Summarized by AI</p>
+                            <p className="text-xs text-slate-400 mt-0.5">PDF attached · Summarized by AI</p>
                           </div>
                           <button
                             type="button"
@@ -524,14 +670,48 @@ export default function AdminNotices() {
                     className="w-full py-5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-black uppercase tracking-widest rounded-2xl flex items-center justify-center gap-2 transition-all shadow-xl shadow-indigo-500/20 active:scale-95 text-sm"
                   >
                     {submitting ? (
-                      <><Loader2 className="w-5 h-5 animate-spin" /> Publishing...</>
+                      <><Loader2 className="w-5 h-5 animate-spin" />{editingNotice ? 'Saving...' : 'Publishing...'}</>
                     ) : (
-                      <>Publish Notice</>
+                      <>{editingNotice ? 'Save Changes' : 'Publish Notice'}</>
                     )}
                   </button>
                 </div>
               </form>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* ───── DELETE CONFIRMATION DIALOG ───── */}
+      {deleteTarget && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900/70 backdrop-blur-md animate-in fade-in duration-200" onClick={() => setDeleteTarget(null)} />
+          <div className="relative pointer-events-auto w-full max-w-sm bg-white dark:bg-[#0a0a0a] border border-slate-200 dark:border-white/10 rounded-3xl p-8 shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="w-16 h-16 bg-red-50 dark:bg-red-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
+              <Trash2 className="w-8 h-8 text-red-500" />
+            </div>
+            <h3 className="text-xl font-black text-center text-slate-900 dark:text-white mb-2">Delete Notice?</h3>
+            <p className="text-sm text-slate-500 text-center leading-relaxed mb-2">
+              <span className="font-bold text-slate-700 dark:text-slate-300">&ldquo;{deleteTarget.title}&rdquo;</span>
+            </p>
+            <p className="text-xs text-slate-400 text-center mb-8">
+              This will permanently delete this notice and any attached files. This action cannot be undone.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeleteTarget(null)}
+                className="flex-1 py-3 rounded-xl bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-200 dark:hover:bg-white/10 transition-all text-sm"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                disabled={deleting}
+                className="flex-1 py-3 rounded-xl bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white font-bold flex items-center justify-center gap-2 transition-all text-sm shadow-lg shadow-red-500/20 active:scale-95"
+              >
+                {deleting ? <><Loader2 className="w-4 h-4 animate-spin" />Deleting...</> : <><Trash2 className="w-4 h-4" />Delete</>}
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -559,12 +739,28 @@ export default function AdminNotices() {
                     {selectedNotice.category}
                   </span>
                 </div>
-                <button
-                  onClick={() => setSelectedNotice(null)}
-                  className="w-9 h-9 rounded-full flex items-center justify-center bg-slate-100 dark:bg-white/5 hover:bg-red-50 dark:hover:bg-red-500/10 text-slate-500 hover:text-red-500 transition-all"
-                >
-                  <X className="w-4 h-4" />
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => handleEdit(selectedNotice)}
+                    title="Edit notice"
+                    className="w-9 h-9 rounded-full flex items-center justify-center bg-slate-100 dark:bg-white/5 hover:bg-amber-50 dark:hover:bg-amber-500/10 text-slate-500 hover:text-amber-600 dark:hover:text-amber-400 transition-all"
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(selectedNotice)}
+                    title="Delete notice"
+                    className="w-9 h-9 rounded-full flex items-center justify-center bg-slate-100 dark:bg-white/5 hover:bg-red-50 dark:hover:bg-red-500/10 text-slate-500 hover:text-red-500 transition-all"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => setSelectedNotice(null)}
+                    className="w-9 h-9 rounded-full flex items-center justify-center bg-slate-100 dark:bg-white/5 hover:bg-red-50 dark:hover:bg-red-500/10 text-slate-500 hover:text-red-500 transition-all"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
               <div className="flex-1 overflow-y-auto px-6 sm:px-8 py-8 space-y-8 custom-scrollbar">
                 <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white leading-snug">
@@ -584,7 +780,6 @@ export default function AdminNotices() {
                     <div className="min-w-0">
                       <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Author</p>
                       <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate">{selectedNotice.authorName || '—'}</p>
-                      {selectedNotice.authorId && <p className="text-[11px] text-slate-400 font-mono truncate mt-0.5">{selectedNotice.authorId}</p>}
                     </div>
                   </div>
                   <div className="flex items-start gap-3 bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/5 rounded-2xl p-4">
@@ -636,12 +831,34 @@ export default function AdminNotices() {
                     <Paperclip className="w-3.5 h-3.5" /> Attachments
                   </p>
                   {selectedNotice.attachments?.length > 0 ? (
-                    <div className="space-y-2">
-                      {selectedNotice.attachments.map((att, i) => (
-                        <div key={i} className="flex items-center gap-3 px-4 py-3 bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 rounded-xl text-sm font-semibold text-indigo-700 dark:text-indigo-400">
-                          <Paperclip className="w-4 h-4 shrink-0" />{att}
-                        </div>
-                      ))}
+                    <div className="space-y-3">
+                      {selectedNotice.attachments.map((att, i) => {
+                        const displayName = selectedNotice.attachmentName || getFileName(att) || `Attachment-${i + 1}.pdf`;
+                        return (
+                          <div key={i} className="flex items-center justify-between gap-4 p-4 bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/5 rounded-2xl">
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center shrink-0">
+                                <FileText className="w-5 h-5 text-indigo-500" />
+                              </div>
+                              <div className="min-w-0">
+                                <p className="text-sm font-bold text-slate-800 dark:text-slate-200 truncate">
+                                  {displayName}
+                                </p>
+                                <p className="text-[11px] text-slate-400 font-medium">PDF Document</p>
+                              </div>
+                            </div>
+                            <a
+                              href={getDownloadUrl(att, displayName)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-bold rounded-xl text-xs shadow-md shadow-indigo-500/10 transition-all shrink-0"
+                            >
+                              <Download className="w-3.5 h-3.5" />
+                              Download
+                            </a>
+                          </div>
+                        );
+                      })}
                     </div>
                   ) : (
                     <p className="text-sm text-slate-400 italic px-1">No attachments.</p>
