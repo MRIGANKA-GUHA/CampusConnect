@@ -22,6 +22,14 @@ export default function RegisterPage() {
     e.preventDefault();
     setError('');
     setLoading(true);
+
+    const rollRegex = /^[0-9]{11}$/;
+    if (accountType === 'student' && rollNo && !rollRegex.test(rollNo)) {
+      setError('Roll number must be exactly 11 digits');
+      setLoading(false);
+      return;
+    }
+
     try {
       await registerWithEmail(email, password, name, rollNo, accountType);
       setStep(1); // Move to OTP step
@@ -154,7 +162,7 @@ export default function RegisterPage() {
                   required
                   value={rollNo}
                   onChange={(e) => setRollNo(e.target.value)}
-                  placeholder="Roll No (e.g. 30942)"
+                  placeholder="Roll No (e.g. 23000000000)"
                   className="flex-1 w-full px-5 py-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 transition-all text-sm font-semibold"
                 />
               </div>

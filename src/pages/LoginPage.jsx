@@ -20,7 +20,7 @@ export default function LoginPage() {
       const { user: userData } = await loginWithEmail(email, password);
       navigate(userData?.role === 'admin' ? '/admin' : '/dashboard');
     } catch (err) {
-      setError(err.message || 'Failed to sign in');
+      setError(err.response?.data?.error || err.message || 'Failed to sign in');
     } finally {
       setLoading(false);
     }
@@ -33,7 +33,7 @@ export default function LoginPage() {
       const { user: userData } = await providerFn();
       navigate(userData?.role === 'admin' ? '/admin' : '/dashboard');
     } catch (err) {
-      setError(err.message || 'Failed to sign in');
+      setError(err.response?.data?.error || err.message || 'Failed to sign in');
     } finally {
       setLoading(false);
     }

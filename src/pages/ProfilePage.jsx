@@ -28,6 +28,24 @@ export default function ProfilePage() {
     e.preventDefault();
     setLoading(true);
     setMessage({ type: '', text: '' });
+
+    // Validation
+    const phoneRegex = /^[0-9]{10}$/;
+    if (phoneNo && !phoneRegex.test(phoneNo)) {
+      setMessage({ type: 'error', text: 'Phone number must be exactly 10 digits' });
+      setLoading(false);
+      return;
+    }
+
+    if (user?.role === 'student') {
+      const rollRegex = /^[0-9]{11}$/;
+      if (rollNo && !rollRegex.test(rollNo)) {
+        setMessage({ type: 'error', text: 'Roll number must be exactly 11 digits' });
+        setLoading(false);
+        return;
+      }
+    }
+
     try {
       const response = await api.put('/auth/profile', { displayName, phoneNo, rollNo, bio, department });
       updateUser(response.data.user);
