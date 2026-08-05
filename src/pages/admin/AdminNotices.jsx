@@ -17,9 +17,8 @@ const PRIORITIES = [
   { value: 'urgent', label: 'Urgent', color: 'text-red-600 dark:text-red-400', bg: 'bg-red-50 dark:bg-red-500/10' },
 ];
 const AUDIENCES = [
-  { value: 'everyone',  label: 'Everyone' },
+  { value: 'clubs',     label: 'Clubs Only' },
   { value: 'students',  label: 'Students Only' },
-  { value: 'convenors', label: 'Convenors Only' },
 ];
 
 const EMPTY_FORM = {
@@ -27,7 +26,7 @@ const EMPTY_FORM = {
   content: '',
   category: '',
   priority: 'normal',
-  targetAudience: 'everyone',
+  targetAudience: 'students',
   clubId: '',
 };
 
@@ -84,9 +83,7 @@ export default function AdminNotices() {
       setTimeout(() => setLoading(false), 400);
     }
   };
-
-
-
+  
   const validate = () => {
     const e = {};
     if (!form.title.trim())   e.title   = 'Title is required.';
@@ -149,7 +146,7 @@ export default function AdminNotices() {
       content:        notice.content        || '',
       category:       notice.category       || '',
       priority:       notice.priority       || 'normal',
-      targetAudience: notice.targetAudience || 'everyone',
+      targetAudience: notice.targetAudience || 'students',
       clubId:         notice.clubId         || '',
       attachments:    notice.attachments?.length ? notice.attachmentName || 'existing' : '',
     });
@@ -788,7 +785,7 @@ export default function AdminNotices() {
                     </div>
                     <div>
                       <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Target Audience</p>
-                      <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 capitalize">{selectedNotice.targetAudience || 'everyone'}</p>
+                      <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 capitalize">{selectedNotice.targetAudience || 'students'}</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3 bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/5 rounded-2xl p-4">

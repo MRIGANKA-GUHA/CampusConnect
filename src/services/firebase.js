@@ -2,8 +2,8 @@ import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, GithubAuthProvider } from "firebase/auth";
 
 
-// Note: Firebase is now used only for OAuth popups and custom token sign-in
-// Backend handles all authentication logic
+// Note: Firebase is now used only for OAuth popups and custom token sign-in.
+// Backend handles all authentication and Firestore operations via Admin SDK.
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,

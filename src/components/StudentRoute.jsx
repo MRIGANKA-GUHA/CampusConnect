@@ -29,9 +29,9 @@ const StudentRoute = ({ children }) => {
     return <Navigate to="/admin" replace />;
   }
 
-  // Only allow students and convenors
-  if (user.role !== 'student' && user.role !== 'convenor') {
-    console.warn("Access denied: User is not a student or convenor", user);
+  // Only allow students
+  if (user.role !== 'student') {
+    console.warn("Access denied: User is not a student", user);
     return <Navigate to="/" replace />;
   }
 

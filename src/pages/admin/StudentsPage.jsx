@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Search, Loader2, Mail, Phone, BookOpen, Hash, Calendar, X, ShieldCheck, Clock, ShieldAlert, Trash2, Ban, CheckCircle } from 'lucide-react';
+import { Users, Search, Loader2, Mail, Phone, BookOpen, Hash, Calendar, X, ShieldCheck, Clock, ShieldAlert, Trash2, Ban, CheckCircle, ChevronDown } from 'lucide-react';
 import SmartHeader from '../../components/SmartHeader';
 import api from '../../services/api';
 
@@ -10,6 +10,7 @@ export default function StudentsPage() {
   const [error, setError] = useState('');
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [loadingAction, setLoadingAction] = useState(null);
+  const [roleDropdownOpen, setRoleDropdownOpen] = useState(false);
 
   useEffect(() => {
     fetchStudents();
@@ -26,6 +27,22 @@ export default function StudentsPage() {
       document.body.style.overflow = 'unset';
     };
   }, [selectedStudent]);
+
+  // Reset dropdown state when student selection changes
+  useEffect(() => {
+    setRoleDropdownOpen(false);
+  }, [selectedStudent]);
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (roleDropdownOpen && !e.target.closest('.role-dropdown-container')) {
+        setRoleDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [roleDropdownOpen]);
 
   const fetchStudents = async () => {
     try {
@@ -302,7 +319,6 @@ export default function StudentsPage() {
                   {selectedStudent.rollNo || 'NO ROLL NUMBER'}
                 </span>
                 <span className={`px-5 py-2 font-bold text-xs sm:text-sm rounded-full uppercase tracking-widest border shadow-sm ${selectedStudent.role === 'admin' ? 'bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20' :
-                  selectedStudent.role === 'convenor' ? 'bg-purple-50 text-purple-600 border-purple-200 dark:bg-purple-500/10 dark:text-purple-400 dark:border-purple-500/20' :
                     'bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20'
                   }`}>
                   {selectedStudent.role || 'STUDENT'}
@@ -390,20 +406,34 @@ export default function StudentsPage() {
                     <h4 className="font-bold text-slate-800 dark:text-slate-200 text-sm">System Role</h4>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Modify access privileges</p>
                   </div>
-                  <div className="w-full sm:w-auto relative">
-                    <select
-                      value={selectedStudent.role || 'student'}
-                      onChange={(e) => handleUpdateRole(e.target.value)}
+                  <div className="w-full sm:w-40 relative role-dropdown-container">
+                    <button
+                      type="button"
+                      onClick={() => setRoleDropdownOpen(!roleDropdownOpen)}
                       disabled={loadingAction !== null}
-                      className="w-full sm:w-40 appearance-none bg-white dark:bg-[#1a1a1a] border border-slate-300 dark:border-white/10 text-slate-700 dark:text-slate-300 font-bold text-xs py-2.5 pl-4 pr-10 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 cursor-pointer shadow-sm"
+                      className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-[#1a1a1a] border border-slate-300 dark:border-white/10 flex items-center justify-between transition-all font-bold text-xs text-slate-700 dark:text-slate-300 disabled:opacity-50 hover:border-slate-400 dark:hover:border-white/20 shadow-sm"
                     >
-                      <option value="student">Student</option>
-                      <option value="convenor">Convenor</option>
-                      <option value="admin">Admin</option>
-                    </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
-                      <svg className="fill-current h-4 w-4" viewBox="0 0 20 20"><path d="M5.5 7.5L10 12l4.5-4.5H5.5z" /></svg>
-                    </div>
+                      <span className="capitalize">{selectedStudent.role || 'student'}</span>
+                      <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${roleDropdownOpen ? 'rotate-180' : ''}`} />
+                    </button>
+
+                    {roleDropdownOpen && (
+                      <div className="absolute z-[110] left-0 right-0 mt-2 p-1.5 bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 rounded-xl shadow-xl animate-in zoom-in-95 duration-150">
+                        {['student', 'admin'].map(r => (
+                          <button
+                            key={r}
+                            type="button"
+                            onClick={() => {
+                              handleUpdateRole(r);
+                              setRoleDropdownOpen(false);
+                            }}
+                            className="w-full text-left px-3.5 py-2.5 rounded-lg hover:bg-slate-50 dark:hover:bg-white/5 text-xs font-bold text-slate-700 dark:text-slate-300 transition-colors capitalize"
+                          >
+                            {r}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
 

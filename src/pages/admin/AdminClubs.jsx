@@ -381,7 +381,7 @@ export default function AdminClubs() {
                             </button>
                           )) : (
                             <div className="px-4 py-6 text-center">
-                              <p className="text-xs text-slate-500 font-medium italic">No registered convenors found.</p>
+                              <p className="text-xs text-slate-500 font-medium italic">No students found.</p>
                             </div>
                           )}
                         </div>

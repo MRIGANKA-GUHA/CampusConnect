@@ -1,13 +1,13 @@
 import { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Mail, Lock, User, Eye, EyeOff, Briefcase, Loader2, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Mail, Lock, User, Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export default function RegisterPage() {
   const [step, setStep] = useState(0); // 0: details, 1: otp
   const [otp, setOtp] = useState(new Array(6).fill(""));
   const inputRefs = useRef([]);
-  const [accountType, setAccountType] = useState('student');
+  const accountType = 'student';
   const [name, setName] = useState('');
   const [rollNo, setRollNo] = useState('');
   const [email, setEmail] = useState('');
@@ -138,27 +138,7 @@ export default function RegisterPage() {
 
           {step === 0 ? (
             <form onSubmit={handleRegister} className="flex flex-col gap-4">
-              {/* Segmented Control Toggle */}
-              <div className="relative flex bg-slate-100/70 dark:bg-white/5 p-1 rounded-xl sm:rounded-full shadow-inner border border-slate-200/50 dark:border-white/5 overflow-hidden">
-                <div
-                  className="absolute top-1 bottom-1 left-1 w-[calc(50%-0.25rem)] bg-white dark:bg-[#1a1a24] rounded-lg sm:rounded-full shadow-sm border border-slate-200/50 dark:border-white/10 transition-transform duration-300 ease-out"
-                  style={{ transform: accountType === 'student' ? 'translateX(0)' : 'translateX(100%)' }}
-                />
-                <button
-                  type="button"
-                  onClick={() => setAccountType('student')}
-                  className={`relative z-10 flex-1 flex flex-row items-center justify-center gap-2 py-2.5 sm:py-3 rounded-lg sm:rounded-full transition-colors duration-300 text-sm font-bold truncate px-2 ${accountType === 'student' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'}`}
-                >
-                  <User className="w-4 h-4 shrink-0" /> Student
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setAccountType('convenor')}
-                  className={`relative z-10 flex-1 flex flex-row items-center justify-center gap-2 py-2.5 sm:py-3 rounded-lg sm:rounded-full transition-colors duration-300 text-sm font-bold truncate px-2 ${accountType === 'convenor' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'}`}
-                >
-                  <Briefcase className="w-4 h-4 shrink-0" /> Convenor
-                </button>
-              </div>
+
 
               <div className="flex flex-col sm:flex-row gap-4 mt-2">
                 <input
