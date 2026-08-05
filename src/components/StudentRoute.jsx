@@ -35,6 +35,12 @@ const StudentRoute = ({ children }) => {
     return <Navigate to="/" replace />;
   }
 
+  // Force profile completion for students
+  const isProfileIncomplete = !user.phoneNo || !user.department || !user.rollNo;
+  if (isProfileIncomplete) {
+    return <Navigate to="/profile?incomplete=true" replace />;
+  }
+
   return children;
 };
 

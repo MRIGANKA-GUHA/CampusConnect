@@ -1,11 +1,18 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import SmartHeader from '../components/SmartHeader';
-import { Loader2, Camera } from 'lucide-react';
+import { Loader2, Camera, AlertCircle } from 'lucide-react';
 import api from '../services/api';
+import { useLocation, useNavigate } from 'react-router-dom';
+import imageCompression from 'browser-image-compression';
 
 export default function ProfilePage() {
   const { user, updateUser } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
+  
+  const searchParams = new URLSearchParams(location.search);
+  const isIncomplete = searchParams.get('incomplete') === 'true';
 
   const [displayName, setDisplayName] = useState(user?.displayName || '');
   const [phoneNo, setPhoneNo] = useState(user?.phoneNo || '');
@@ -24,7 +31,11 @@ export default function ProfilePage() {
     try {
       const response = await api.put('/auth/profile', { displayName, phoneNo, rollNo, bio, department });
       updateUser(response.data.user);
-      setMessage({ type: 'success', text: response.data.message });
+      setMessage({ type: 'success', text: 'Profile updated successfully!' });
+      if (isIncomplete) {
+        // Redirect to dashboard now that profile is complete
+        setTimeout(() => navigate('/dashboard'), 1500);
+      }
     } catch (error) {
       setMessage({ type: 'error', text: error.response?.data?.error || 'Failed to update profile' });
     } finally {
@@ -34,16 +45,29 @@ export default function ProfilePage() {
 
   // ── Upload profile picture ─────────────────────────────────────────────────
   const handleImageUpload = async (e) => {
-    const file = e.target.files[0];
+    let file = e.target.files[0];
     if (!file) return;
-
-    if (file.size > 2 * 1024 * 1024) {
-      setMessage({ type: 'error', text: 'Image size must be less than 2MB' });
-      return;
-    }
 
     setUploading(true);
     setMessage({ type: '', text: '' });
+
+    // Auto-resize if greater than 2MB
+    if (file.size > 2 * 1024 * 1024) {
+      try {
+        const options = {
+          maxSizeMB: 1.9, // slightly under 2MB to be safe
+          maxWidthOrHeight: 1024,
+          useWebWorker: true,
+        };
+        file = await imageCompression(file, options);
+      } catch (error) {
+        console.error("Image compression error:", error);
+        setMessage({ type: 'error', text: 'Failed to compress image' });
+        setUploading(false);
+        e.target.value = '';
+        return;
+      }
+    }
 
     const formData = new FormData();
     formData.append('image', file);
@@ -113,6 +137,17 @@ export default function ProfilePage() {
             </div>
           </div>
 
+          {/* ── Profile Incomplete Warning ── */}
+          {isIncomplete && (
+            <div className="mb-6 p-4 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 flex items-start gap-3 text-amber-700 dark:text-amber-400 text-sm font-semibold">
+              <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-base font-bold mb-1">Please complete your profile</p>
+                <p>You need to fill in all the required details below to access other features of CampusConnect.</p>
+              </div>
+            </div>
+          )}
+
           {/* ── Feedback message ── */}
           {message.text && (
             <div className={`mb-6 p-4 rounded-xl text-sm font-bold ${message.type === 'error'
@@ -143,6 +178,7 @@ export default function ProfilePage() {
                   type="tel"
                   value={phoneNo}
                   onChange={(e) => setPhoneNo(e.target.value)}
+                  required
                   placeholder="e.g. +91..."
                   className="w-full bg-slate-100 dark:bg-black border border-slate-200 dark:border-white/10 rounded-2xl px-4 py-3 sm:px-5 sm:py-3.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-sm sm:text-base font-medium text-slate-900 dark:text-white"
                 />
@@ -158,6 +194,7 @@ export default function ProfilePage() {
                       type="text"
                       value={department}
                       onChange={(e) => setDepartment(e.target.value)}
+                      required
                       placeholder="e.g. CSE"
                       className="w-full bg-slate-100 dark:bg-black border border-slate-200 dark:border-white/10 rounded-2xl px-4 py-3 sm:px-5 sm:py-3.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-sm sm:text-base font-medium text-slate-900 dark:text-white"
                     />
@@ -169,6 +206,7 @@ export default function ProfilePage() {
                       type="text"
                       value={rollNo}
                       onChange={(e) => setRollNo(e.target.value)}
+                      required
                       placeholder="e.g. 12345"
                       className="w-full bg-slate-100 dark:bg-black border border-slate-200 dark:border-white/10 rounded-2xl px-4 py-3 sm:px-5 sm:py-3.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-sm sm:text-base font-medium text-slate-900 dark:text-white"
                     />
