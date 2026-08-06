@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import SmartHeader from '../../components/SmartHeader';
 import api from '../../services/api';
 import {
   Calendar, Plus, Loader2, Trash2, Pencil, X,
   MapPin, Clock, Users, IndianRupee, Search, CalendarClock,
-  Sparkles, AlertCircle, ChevronDown, CheckCircle2, ChevronLeft, ChevronRight
+  Sparkles, AlertCircle, ChevronDown, CheckCircle2, ChevronLeft, ChevronRight,
+  Image, FileText, Upload, Tag, Download
 } from 'lucide-react';
 
 const STATUS_COLORS = {
@@ -16,7 +17,7 @@ const STATUS_COLORS = {
 
 const EMPTY_FORM = {
   title: '', description: '', date: '', time: '', venue: '',
-  category: 'Technical', capacity: '', price: '', registrationDeadline: '',
+  category: '', capacity: '', price: '', registrationDeadline: '',
   status: 'draft', options: {}
 };
 
@@ -38,10 +39,21 @@ export default function ClubEvents() {
   const [editingEvent, setEditingEvent] = useState(null);
   const [form, setForm] = useState(EMPTY_FORM);
   const [submitting, setSubmitting] = useState(false);
-  const [deletingId, setDeletingId] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting] = useState(false);
   const [errors, setErrors] = useState({});
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [calMonthDate, setCalMonthDate] = useState(new Date());
+
+  // ── Upload state ──
+  const [bannerFile, setBannerFile] = useState(null);
+  const [bannerPreview, setBannerPreview] = useState('');
+  const [pdfFile, setPdfFile] = useState(null);
+  const [pdfName, setPdfName] = useState('');
+  const [uploadingBanner, setUploadingBanner] = useState(false);
+  const [uploadingPdf, setUploadingPdf] = useState(false);
+  const bannerInputRef = useRef(null);
+  const pdfInputRef = useRef(null);
 
   useEffect(() => { fetchEvents(); }, []);
 
@@ -78,12 +90,20 @@ export default function ClubEvents() {
     }
   };
 
+  const resetUploadState = () => {
+    setBannerFile(null);
+    setBannerPreview('');
+    setPdfFile(null);
+    setPdfName('');
+  };
+
   const openCreate = () => {
     setEditingEvent(null);
     setForm(EMPTY_FORM);
     setErrors({});
     setActiveDropdown(null);
     setCalMonthDate(new Date());
+    resetUploadState();
     setShowModal(true);
   };
 
@@ -96,7 +116,7 @@ export default function ClubEvents() {
       date: event.date || '',
       time: event.time || '',
       venue: event.venue || '',
-      category: event.category || 'Technical',
+      category: event.category || 'Workshop',
       capacity: event.capacity || '',
       price: event.price || '',
       registrationDeadline: event.registrationDeadline || '',
@@ -105,6 +125,10 @@ export default function ClubEvents() {
     });
     setErrors({});
     setActiveDropdown(null);
+    resetUploadState();
+    // Show existing banner/pdf previews
+    if (event.bannerURL) setBannerPreview(event.bannerURL);
+    if (event.pdfURL) setPdfName(event.pdfURL.split('/').pop() || 'Existing PDF');
     if (event.date) {
       const d = new Date(event.date + 'T00:00:00');
       if (!isNaN(d.getTime())) setCalMonthDate(d);
@@ -129,32 +153,79 @@ export default function ClubEvents() {
 
     setSubmitting(true);
     try {
+      let savedEventId;
       if (editingEvent) {
         await api.put(`/club/events/${editingEvent.id}`, form);
+        savedEventId = editingEvent.id;
       } else {
-        await api.post('/club/events', form);
+        const res = await api.post('/club/events', form);
+        savedEventId = res.data.event?.id;
       }
+
+      // Upload banner if a new file was selected
+      if (bannerFile && savedEventId) {
+        setUploadingBanner(true);
+        const fd = new FormData();
+        fd.append('image', bannerFile);
+        await api.post(`/club/events/${savedEventId}/banner`, fd, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        setUploadingBanner(false);
+      }
+
+      // Upload PDF if a new file was selected
+      if (pdfFile && savedEventId) {
+        setUploadingPdf(true);
+        const fd = new FormData();
+        fd.append('pdf', pdfFile);
+        await api.post(`/club/events/${savedEventId}/pdf`, fd, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        setUploadingPdf(false);
+      }
+
       setShowModal(false);
       await fetchEvents();
     } catch (err) {
       alert(err.response?.data?.error || 'Failed to save event');
     } finally {
       setSubmitting(false);
+      setUploadingBanner(false);
+      setUploadingPdf(false);
     }
   };
 
-  const handleDelete = async (id, e) => {
+  const handleDelete = (event, e) => {
     e?.stopPropagation();
-    if (!window.confirm('Delete this event?')) return;
-    setDeletingId(id);
+    setDeleteTarget(event);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
     try {
-      await api.delete(`/club/events/${id}`);
-      setEvents(prev => prev.filter(ev => ev.id !== id));
+      await api.delete(`/club/events/${deleteTarget.id}`);
+      setEvents(prev => prev.filter(n => n.id !== deleteTarget.id));
+      setDeleteTarget(null);
     } catch (err) {
       alert(err.response?.data?.error || 'Failed to delete event');
     } finally {
-      setDeletingId(null);
+      setDeleting(false);
     }
+  };
+
+  const handleBannerChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setBannerFile(file);
+    setBannerPreview(URL.createObjectURL(file));
+  };
+
+  const handlePdfChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setPdfFile(file);
+    setPdfName(file.name);
   };
 
   const setField = (key, val) => {
@@ -168,6 +239,13 @@ export default function ClubEvents() {
   );
 
   // ── Custom Calendar Helpers ──
+  const getDownloadUrl = (url) => {
+    if (url && url.includes('cloudinary.com') && url.includes('/upload/')) {
+      return url.replace('/upload/', '/upload/fl_attachment/');
+    }
+    return url;
+  };
+
   const year = calMonthDate.getFullYear();
   const month = calMonthDate.getMonth();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -254,7 +332,7 @@ export default function ClubEvents() {
                     {event.status}
                   </span>
                   <span className="absolute bottom-3 left-4 px-3 py-1 text-xs font-bold rounded-full bg-black/40 backdrop-blur-md text-white border border-white/10 uppercase tracking-wider">
-                    {event.category || 'Technical'}
+                    {event.category || 'Event'}
                   </span>
                 </div>
 
@@ -282,9 +360,24 @@ export default function ClubEvents() {
                           <span>{(event.attendees || []).length} / {event.capacity} seats registered</span>
                         </div>
                       )}
-                      <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-white">
-                        <IndianRupee className="w-4 h-4 text-emerald-500 shrink-0" />
-                        <span>{event.price > 0 ? `₹${event.price}` : 'Free'}</span>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-white">
+                          <IndianRupee className="w-4 h-4 text-emerald-500 shrink-0" />
+                          <span>{event.price > 0 ? `₹${event.price}` : 'Free'}</span>
+                        </div>
+                        {event.pdfURL && (
+                          <a 
+                            href={getDownloadUrl(event.pdfURL)} 
+                            target="_blank" 
+                            rel="noreferrer"
+                            download="brochure.pdf"
+                            className="flex items-center gap-1.5 text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors bg-indigo-50 dark:bg-indigo-500/10 px-2 py-1 rounded-lg"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <Download className="w-3 h-3" />
+                            Brochure
+                          </a>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -298,11 +391,10 @@ export default function ClubEvents() {
                       <Pencil className="w-3.5 h-3.5" /> Edit
                     </button>
                     <button
-                      onClick={(e) => handleDelete(event.id, e)}
-                      disabled={deletingId === event.id}
-                      className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-slate-50 dark:bg-white/5 hover:bg-red-50 dark:hover:bg-red-500/10 text-slate-500 hover:text-red-600 dark:hover:text-red-400 text-xs font-bold transition-all"
+                      onClick={(e) => handleDelete(event, e)}
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-slate-50 dark:bg-white/5 hover:bg-red-50 dark:hover:bg-red-500/10 text-slate-600 dark:text-slate-300 hover:text-red-500 dark:hover:text-red-400 text-xs font-bold transition-all"
                     >
-                      {deletingId === event.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />} Delete
+                      <Trash2 className="w-3.5 h-3.5" /> Delete
                     </button>
                   </div>
                 </div>
@@ -670,6 +762,90 @@ export default function ClubEvents() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div>
+                  <label className="block text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-300 mb-2 ml-1">Event Type / Category</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Workshop, Hackathon, Seminar"
+                    value={form.category}
+                    onChange={(e) => setField('category', e.target.value)}
+                    className="w-full p-4.5 rounded-2xl bg-slate-50 dark:bg-zinc-900/90 border border-slate-200 dark:border-white/15 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-bold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-300 mb-2 ml-1">Reg. Deadline (Optional)</label>
+                  <input
+                    type="date"
+                    value={form.registrationDeadline}
+                    onChange={(e) => setField('registrationDeadline', e.target.value)}
+                    className="w-full p-4.5 rounded-2xl bg-slate-50 dark:bg-zinc-900/90 border border-slate-200 dark:border-white/15 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-bold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 [color-scheme:light] dark:[color-scheme:dark]"
+                  />
+                </div>
+              </div>
+
+              {/* File Uploads */}
+              <div className="space-y-5">
+                {/* Banner Upload */}
+                <div>
+                  <label className="block text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-300 mb-2 ml-1">Event Banner (Optional)</label>
+                  <div 
+                    onClick={() => bannerInputRef.current?.click()}
+                    className="relative w-full h-40 rounded-2xl border-2 border-dashed border-slate-300 dark:border-white/20 hover:border-indigo-500 dark:hover:border-indigo-500 bg-slate-50 dark:bg-zinc-900/50 flex flex-col items-center justify-center gap-3 cursor-pointer overflow-hidden transition-all group"
+                  >
+                    <input 
+                      type="file" 
+                      ref={bannerInputRef} 
+                      onChange={handleBannerChange} 
+                      accept="image/*" 
+                      className="hidden" 
+                    />
+                    {bannerPreview ? (
+                      <>
+                        <img src={bannerPreview} alt="Banner Preview" className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-40 transition-opacity" />
+                        <div className="relative z-10 flex items-center gap-2 px-4 py-2 bg-black/60 backdrop-blur-md rounded-xl text-white font-bold text-sm">
+                          <Image className="w-4 h-4" /> Change Banner
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="w-12 h-12 rounded-full bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                          <Image className="w-6 h-6" />
+                        </div>
+                        <p className="text-sm font-bold text-slate-600 dark:text-slate-400">Click to upload banner image</p>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {/* PDF Upload */}
+                <div>
+                  <label className="block text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-300 mb-2 ml-1">Event Brochure / PDF (Optional)</label>
+                  <div 
+                    onClick={() => pdfInputRef.current?.click()}
+                    className="w-full p-4.5 rounded-2xl border border-slate-200 dark:border-white/15 bg-slate-50 dark:bg-zinc-900/90 hover:border-indigo-500 dark:hover:border-indigo-500 flex items-center justify-between cursor-pointer transition-all group"
+                  >
+                    <input 
+                      type="file" 
+                      ref={pdfInputRef} 
+                      onChange={handlePdfChange} 
+                      accept="application/pdf" 
+                      className="hidden" 
+                    />
+                    <div className="flex items-center gap-3 overflow-hidden">
+                      <div className="w-10 h-10 shrink-0 rounded-xl bg-red-100 dark:bg-red-500/20 flex items-center justify-center text-red-600 dark:text-red-400">
+                        <FileText className="w-5 h-5" />
+                      </div>
+                      <span className="font-bold text-sm text-slate-900 dark:text-white truncate">
+                        {pdfName || 'Upload a PDF document'}
+                      </span>
+                    </div>
+                    <Upload className="w-5 h-5 text-slate-400 group-hover:text-indigo-500 transition-colors shrink-0 ml-3" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div>
                   <label className="block text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-300 mb-2 ml-1">Max Capacity</label>
                   <input
                     type="number"
@@ -705,6 +881,39 @@ export default function ClubEvents() {
                 )}
               </button>
             </form>
+          </div>
+        </div>
+      )}
+      {/* ───── DELETE CONFIRMATION DIALOG ───── */}
+      {deleteTarget && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900/70 backdrop-blur-md animate-in fade-in duration-200" onClick={() => setDeleteTarget(null)} />
+          <div className="relative pointer-events-auto w-full max-w-sm bg-white dark:bg-[#0a0a0a] border border-slate-200 dark:border-white/10 rounded-3xl p-8 shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="w-16 h-16 bg-red-50 dark:bg-red-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
+              <Trash2 className="w-8 h-8 text-red-500" />
+            </div>
+            <h3 className="text-xl font-black text-center text-slate-900 dark:text-white mb-2">Delete Event?</h3>
+            <p className="text-sm text-slate-500 text-center leading-relaxed mb-2">
+              <span className="font-bold text-slate-700 dark:text-slate-300">&ldquo;{deleteTarget.title}&rdquo;</span>
+            </p>
+            <p className="text-xs text-slate-400 text-center mb-8">
+              This will permanently delete this event and any attached files. This action cannot be undone.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeleteTarget(null)}
+                className="flex-1 py-3 rounded-xl bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-200 dark:hover:bg-white/10 transition-all text-sm"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                disabled={deleting}
+                className="flex-1 py-3 rounded-xl bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white font-bold flex items-center justify-center gap-2 transition-all text-sm shadow-lg shadow-red-500/20 active:scale-95"
+              >
+                {deleting ? <><Loader2 className="w-4 h-4 animate-spin" />Deleting...</> : <><Trash2 className="w-4 h-4" />Delete</>}
+              </button>
+            </div>
           </div>
         </div>
       )}

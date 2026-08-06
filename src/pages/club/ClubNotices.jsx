@@ -28,7 +28,8 @@ export default function ClubNotices() {
   const [pendingFile, setPendingFile] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
-  const [deletingId, setDeletingId] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting] = useState(false);
   const [errors, setErrors] = useState({});
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [pdfLoading, setPdfLoading] = useState(false);
@@ -152,18 +153,23 @@ export default function ClubNotices() {
     }
   };
 
-  const handleDelete = async (id, e) => {
+  const handleDelete = (notice, e) => {
     e?.stopPropagation();
-    if (!window.confirm('Delete this notice?')) return;
-    setDeletingId(id);
+    setDeleteTarget(notice);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
     try {
-      await api.delete(`/club/notices/${id}`);
-      setNotices(prev => prev.filter(n => n.id !== id));
-      if (selectedNotice?.id === id) setSelectedNotice(null);
+      await api.delete(`/club/notices/${deleteTarget.id}`);
+      setNotices(prev => prev.filter(n => n.id !== deleteTarget.id));
+      if (selectedNotice?.id === deleteTarget.id) setSelectedNotice(null);
+      setDeleteTarget(null);
     } catch (err) {
       alert(err.response?.data?.error || 'Failed to delete notice');
     } finally {
-      setDeletingId(null);
+      setDeleting(false);
     }
   };
 
@@ -270,11 +276,10 @@ export default function ClubNotices() {
                   {/* Card action buttons */}
                   <div className="flex items-center gap-2 mt-4 pt-4 border-t border-slate-100 dark:border-white/5">
                     <button
-                      onClick={(e) => handleDelete(notice.id, e)}
-                      disabled={deletingId === notice.id}
-                      className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-slate-50 dark:bg-white/5 hover:bg-red-50 dark:hover:bg-red-500/10 text-slate-500 hover:text-red-600 dark:hover:text-red-400 text-xs font-bold transition-all"
+                      onClick={(e) => handleDelete(notice, e)}
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-slate-50 dark:bg-white/5 hover:bg-red-50 dark:hover:bg-red-500/10 text-slate-600 dark:text-slate-300 hover:text-red-500 dark:hover:text-red-400 text-xs font-bold transition-all"
                     >
-                      {deletingId === notice.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />} Delete
+                      <Trash2 className="w-3.5 h-3.5" /> Delete
                     </button>
                   </div>
                 </div>
@@ -544,6 +549,39 @@ export default function ClubNotices() {
                 </div>
               </form>
             )}
+          </div>
+        </div>
+      )}
+      {/* ───── DELETE CONFIRMATION DIALOG ───── */}
+      {deleteTarget && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900/70 backdrop-blur-md animate-in fade-in duration-200" onClick={() => setDeleteTarget(null)} />
+          <div className="relative pointer-events-auto w-full max-w-sm bg-white dark:bg-[#0a0a0a] border border-slate-200 dark:border-white/10 rounded-3xl p-8 shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="w-16 h-16 bg-red-50 dark:bg-red-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
+              <Trash2 className="w-8 h-8 text-red-500" />
+            </div>
+            <h3 className="text-xl font-black text-center text-slate-900 dark:text-white mb-2">Delete Notice?</h3>
+            <p className="text-sm text-slate-500 text-center leading-relaxed mb-2">
+              <span className="font-bold text-slate-700 dark:text-slate-300">&ldquo;{deleteTarget.title}&rdquo;</span>
+            </p>
+            <p className="text-xs text-slate-400 text-center mb-8">
+              This will permanently delete this notice and any attached files. This action cannot be undone.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeleteTarget(null)}
+                className="flex-1 py-3 rounded-xl bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-200 dark:hover:bg-white/10 transition-all text-sm"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                disabled={deleting}
+                className="flex-1 py-3 rounded-xl bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white font-bold flex items-center justify-center gap-2 transition-all text-sm shadow-lg shadow-red-500/20 active:scale-95"
+              >
+                {deleting ? <><Loader2 className="w-4 h-4 animate-spin" />Deleting...</> : <><Trash2 className="w-4 h-4" />Delete</>}
+              </button>
+            </div>
           </div>
         </div>
       )}
