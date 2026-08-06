@@ -18,7 +18,9 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const { user: userData } = await loginWithEmail(email, password);
-      navigate(userData?.role === 'admin' ? '/admin' : '/dashboard');
+      const role = userData?.role;
+      const dest = role === 'admin' ? '/admin' : role === 'club' ? '/club/dashboard' : '/dashboard';
+      navigate(dest);
     } catch (err) {
       setError(err.response?.data?.error || err.message || 'Failed to sign in');
     } finally {
@@ -31,7 +33,9 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const { user: userData } = await providerFn();
-      navigate(userData?.role === 'admin' ? '/admin' : '/dashboard');
+      const role = userData?.role;
+      const dest = role === 'admin' ? '/admin' : role === 'club' ? '/club/dashboard' : '/dashboard';
+      navigate(dest);
     } catch (err) {
       setError(err.response?.data?.error || err.message || 'Failed to sign in');
     } finally {

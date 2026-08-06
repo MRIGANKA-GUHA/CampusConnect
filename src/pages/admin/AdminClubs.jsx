@@ -435,21 +435,30 @@ export default function AdminClubs() {
           <div className="absolute inset-0 bg-black/60 backdrop-blur-md animate-in fade-in duration-300" onClick={() => setSelectedClub(null)}></div>
           <div className="relative bg-white dark:bg-[#0a0a0a] border border-white/20 dark:border-white/10 rounded-[3.5rem] w-full max-w-3xl shadow-[0_32px_80px_-16px_rgba(0,0,0,0.6)] animate-in slide-in-from-bottom-10 duration-500 flex flex-col max-h-[90vh] overflow-hidden">
 
-            <button onClick={() => setSelectedClub(null)} className="absolute top-8 right-8 p-3 rounded-full bg-slate-100 dark:bg-white/10 text-slate-500 hover:text-slate-800 dark:hover:text-white transition-colors z-20">
-              <X className="w-6 h-6" />
+            <button onClick={() => setSelectedClub(null)} className="absolute top-6 right-6 p-3 rounded-full bg-black/50 backdrop-blur-md text-white hover:bg-black/70 transition-colors z-30">
+              <X className="w-5 h-5" />
             </button>
 
-            <div className="flex-1 overflow-y-auto custom-scrollbar p-10 sm:p-14">
-              <div className="flex flex-col items-center text-center mb-12">
-                <div className="w-32 h-32 rounded-[2.5rem] bg-slate-50 dark:bg-white/5 border-2 border-white dark:border-white/10 flex items-center justify-center mb-8 overflow-hidden shadow-2xl relative">
-                  <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-transparent"></div>
-                  {selectedClub.logoURL ? (
-                    <img src={selectedClub.logoURL} alt={selectedClub.name} className="w-full h-full object-cover relative z-10" />
-                  ) : (
-                    <LayoutGrid className="w-12 h-12 text-slate-300 relative z-10" />
-                  )}
-                </div>
-                <h2 className="text-5xl font-black tracking-tight mb-4 text-slate-900 dark:text-white leading-tight">{selectedClub.name}</h2>
+            {/* Cover Banner Header with overlapping Club Logo */}
+            <div className="relative h-44 sm:h-52 w-full bg-gradient-to-r from-slate-950 via-zinc-900 to-black shrink-0">
+              {selectedClub.coverURL ? (
+                <img src={selectedClub.coverURL} alt="Cover Banner" className="w-full h-full object-cover" />
+              ) : (
+                <div className="absolute inset-0 opacity-25 bg-[radial-gradient(#6366f1_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
+              )}
+              {/* Club Logo — sits at bottom-center of banner, half hanging below */}
+              <div className="absolute -bottom-14 left-1/2 -translate-x-1/2 w-28 h-28 rounded-3xl bg-slate-50 dark:bg-zinc-900 border-4 border-white dark:border-[#0a0a0a] flex items-center justify-center overflow-hidden shadow-2xl z-20">
+                {selectedClub.logoURL ? (
+                  <img src={selectedClub.logoURL} alt={selectedClub.name} className="w-full h-full object-cover" />
+                ) : (
+                  <LayoutGrid className="w-10 h-10 text-slate-400" />
+                )}
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto custom-scrollbar px-10 pb-10 sm:px-14 sm:pb-14 pt-16">
+              <div className="flex flex-col items-center text-center mb-10">
+                <h2 className="text-4xl sm:text-5xl font-black tracking-tight mb-4 text-slate-900 dark:text-white leading-tight">{selectedClub.name}</h2>
                 <div className="flex items-center gap-3">
                   <span className="px-6 py-2 bg-indigo-600 text-white font-black text-[10px] rounded-full uppercase tracking-[0.2em] shadow-lg shadow-indigo-500/20">
                     {selectedClub.category}
@@ -465,8 +474,12 @@ export default function AdminClubs() {
                 <div className="bg-slate-50 dark:bg-white/5 p-8 rounded-[2.5rem] border border-slate-200/50 dark:border-white/5 transition-all hover:border-indigo-500/30">
                   <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-4">Leadership</p>
                   <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 rounded-2xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/30">
-                      <Users className="w-7 h-7 text-white" />
+                    <div className="w-14 h-14 rounded-2xl overflow-hidden border border-slate-200 dark:border-white/10 shadow-lg shrink-0 bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
+                      <img
+                        src={selectedClub.convenorPhoto || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(selectedClub.convenorName || 'C')}&backgroundColor=4f46e5&textColor=ffffff`}
+                        alt={selectedClub.convenorName}
+                        className="w-full h-full object-cover"
+                      />
                     </div>
                     <div>
                       <p className="font-black text-lg text-slate-800 dark:text-white leading-tight">{selectedClub.convenorName}</p>

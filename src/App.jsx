@@ -17,6 +17,12 @@ import AdminEvents from './pages/admin/AdminEvents';
 import AdminNotices from './pages/admin/AdminNotices';
 import AdminRoute from './components/AdminRoute';
 import StudentRoute from './components/StudentRoute';
+import ClubRoute from './components/ClubRoute';
+import ClubDashboard from './pages/club/ClubDashboard';
+import ClubProfile from './pages/club/ClubProfile';
+import ClubEvents from './pages/club/ClubEvents';
+import ClubNotices from './pages/club/ClubNotices';
+import ClubMembers from './pages/club/ClubMembers';
 import NotFound from './pages/NotFound';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import './App.css';
@@ -46,17 +52,23 @@ const PublicRoute = ({ children }) => {
   );
 
   if (user) {
-    const dashboardPath = user.role === 'admin' ? '/admin' : '/student/dashboard';
+    const dashboardPath =
+      user.role === 'admin' ? '/admin'
+      : user.role === 'club'  ? '/club/dashboard'
+      : '/student/dashboard';
     return <Navigate to={dashboardPath} replace />;
   }
 
   return children;
 };
-// ─── Dashboard Redirect Component ──────────────────────────────────────────
+// ─── Dashboard Redirect Component ──────────────────────────────────────────────
 const DashboardRedirect = () => {
   const { user } = useAuth();
   if (!user) return <Navigate to="/login" replace />;
-  const dashboardPath = user.role === 'admin' ? '/admin' : '/student/dashboard';
+  const dashboardPath =
+    user.role === 'admin' ? '/admin'
+    : user.role === 'club'  ? '/club/dashboard'
+    : '/student/dashboard';
   return <Navigate to={dashboardPath} replace />;
 };
 
@@ -182,12 +194,49 @@ function AppRoutes() {
         }
       />
 
-      <Route
+      <Route 
         path="/admin/notices"
         element={
           <AdminRoute>
             <AdminNotices />
           </AdminRoute>
+        }
+      />
+
+      {/* ─── Club Routes ─────────────────────────────────────── */}
+      <Route path="/club/dashboard"
+        element={
+          <ClubRoute>
+            <ClubDashboard />
+          </ClubRoute>
+        }
+      />
+      <Route path="/club/profile"
+        element={
+          <ClubRoute>
+            <ClubProfile />
+          </ClubRoute>
+        }
+      />
+      <Route path="/club/events"
+        element={
+          <ClubRoute>
+            <ClubEvents />
+          </ClubRoute>
+        }
+      />
+      <Route path="/club/notices"
+        element={
+          <ClubRoute>
+            <ClubNotices />
+          </ClubRoute>
+        }
+      />
+      <Route path="/club/members"
+        element={
+          <ClubRoute>
+            <ClubMembers />
+          </ClubRoute>
         }
       />
 
