@@ -164,9 +164,38 @@ export default function StudentsPage() {
         )}
 
         {loading ? (
-          <div className="flex flex-col justify-center items-center py-32 gap-4">
-            <Loader2 className="w-10 h-10 animate-spin text-indigo-600 dark:text-indigo-400" />
-            <p className="text-slate-500 dark:text-slate-400 font-medium animate-pulse tracking-wide">Loading student directory...</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 sm:gap-8">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="bg-white dark:bg-[#0a0a0a] border border-slate-200 dark:border-white/10 rounded-3xl p-6 sm:p-8 animate-pulse">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-5 mb-8">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 shrink-0 rounded-full bg-slate-200 dark:bg-white/10"></div>
+                  <div className="flex-1 min-w-0">
+                    <div className="h-6 sm:h-8 bg-slate-200 dark:bg-white/10 rounded-lg w-3/4 mb-3"></div>
+                    <div className="h-5 w-24 bg-slate-200 dark:bg-white/5 rounded-full"></div>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-[1rem] bg-slate-200 dark:bg-white/5 shrink-0"></div>
+                    <div className="flex-1">
+                      <div className="h-3 w-16 bg-slate-200 dark:bg-white/5 rounded mb-2"></div>
+                      <div className="h-4 w-1/2 bg-slate-200 dark:bg-white/10 rounded"></div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-[1rem] bg-slate-200 dark:bg-white/5 shrink-0"></div>
+                    <div className="flex-1">
+                      <div className="h-3 w-16 bg-slate-200 dark:bg-white/5 rounded mb-2"></div>
+                      <div className="h-4 w-2/3 bg-slate-200 dark:bg-white/10 rounded"></div>
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-8 pt-5 border-t border-slate-100 dark:border-white/5 flex items-center justify-between">
+                  <div className="h-6 w-32 bg-slate-200 dark:bg-white/5 rounded-lg"></div>
+                  <div className="h-5 w-12 bg-slate-200 dark:bg-white/5 rounded"></div>
+                </div>
+              </div>
+            ))}
           </div>
         ) : (
           <>

@@ -4,35 +4,52 @@ import SmartHeader from '../../components/SmartHeader';
 import api from '../../services/api';
 
 export default function AdminDashboard() {
-  const [studentCount, setStudentCount] = useState(null);
+  const [dashboardStats, setDashboardStats] = useState(null);
   const [loadingStats, setLoadingStats] = useState(true);
 
   useEffect(() => {
-    const fetchStudentCount = async () => {
+    const fetchStats = async () => {
       try {
-        const res = await api.get('/admin/stats/students');
-        setStudentCount(res.data.count);
+        const res = await api.get('/admin/stats/dashboard');
+        setDashboardStats(res.data);
       } catch (err) {
-        console.error('Failed to fetch student count:', err);
-        setStudentCount('—');
+        console.error('Failed to fetch dashboard stats:', err);
       } finally {
         setLoadingStats(false);
       }
     };
-    fetchStudentCount();
+    fetchStats();
   }, []);
 
   const stats = [
     {
       label: 'Total Students',
-      value: loadingStats ? '...' : studentCount?.toLocaleString() ?? '—',
+      value: loadingStats ? '...' : dashboardStats?.totalStudents?.toLocaleString() ?? '0',
       icon: Users,
       color: 'text-blue-600',
       bg: 'bg-blue-100 dark:bg-blue-500/10'
     },
-    { label: 'Active Events', value: '42', icon: Calendar, color: 'text-emerald-600', bg: 'bg-emerald-100 dark:bg-emerald-500/10' },
-    { label: 'Pending Approvals', value: '12', icon: Shield, color: 'text-amber-600', bg: 'bg-amber-100 dark:bg-amber-500/10' },
-    { label: 'Revenue', value: '$4.2k', icon: BarChart3, color: 'text-purple-600', bg: 'bg-purple-100 dark:bg-purple-500/10' },
+    { 
+      label: 'Active Events', 
+      value: loadingStats ? '...' : dashboardStats?.activeEvents?.toLocaleString() ?? '0', 
+      icon: Calendar, 
+      color: 'text-emerald-600', 
+      bg: 'bg-emerald-100 dark:bg-emerald-500/10' 
+    },
+    { 
+      label: 'Pending Approvals', 
+      value: loadingStats ? '...' : dashboardStats?.pendingApprovals?.toLocaleString() ?? '0', 
+      icon: Shield, 
+      color: 'text-amber-600', 
+      bg: 'bg-amber-100 dark:bg-amber-500/10' 
+    },
+    { 
+      label: 'Total Clubs', 
+      value: loadingStats ? '...' : dashboardStats?.totalClubs?.toLocaleString() ?? '0', 
+      icon: BarChart3, 
+      color: 'text-purple-600', 
+      bg: 'bg-purple-100 dark:bg-purple-500/10' 
+    },
   ];
 
   return (

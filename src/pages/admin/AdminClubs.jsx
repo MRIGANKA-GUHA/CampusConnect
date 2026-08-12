@@ -162,9 +162,29 @@ export default function AdminClubs() {
 
         {/* Club Grid */}
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-32 gap-4">
-            <Loader2 className="w-10 h-10 animate-spin text-indigo-600" />
-            <p className="text-slate-500 font-medium animate-pulse">Synchronizing with central database...</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="group bg-white dark:bg-[#0a0a0a] border border-slate-200 dark:border-white/10 rounded-[2.5rem] p-10 relative overflow-hidden flex flex-col h-full animate-pulse">
+                <div className="flex items-start justify-between mb-10 relative z-10">
+                  <div className="w-16 h-16 rounded-[1.25rem] bg-slate-200 dark:bg-white/10 shrink-0"></div>
+                  <div className="w-20 h-6 rounded-full bg-slate-200 dark:bg-white/5"></div>
+                </div>
+                <div className="flex-grow relative z-10">
+                  <div className="w-3/4 h-8 rounded-lg bg-slate-200 dark:bg-white/10 mb-2"></div>
+                  <div className="w-1/2 h-4 rounded bg-slate-200 dark:bg-white/5 mb-10"></div>
+                </div>
+                <div className="pt-8 border-t border-slate-100 dark:border-white/10 relative z-10 mt-auto">
+                  <div className="w-24 h-3 rounded bg-slate-200 dark:bg-white/5 mb-5"></div>
+                  <div className="flex items-center gap-5">
+                    <div className="shrink-0 w-14 h-14 rounded-full bg-slate-200 dark:bg-white/10"></div>
+                    <div className="min-w-0 flex-1">
+                      <div className="w-2/3 h-5 rounded bg-slate-200 dark:bg-white/10 mb-1"></div>
+                      <div className="w-1/2 h-3 rounded bg-slate-200 dark:bg-white/5"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         ) : filteredClubs.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">

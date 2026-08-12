@@ -226,9 +226,28 @@ export default function ClubNotices() {
 
         {/* Notices Feed Grid */}
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-32 gap-4">
-            <Loader2 className="w-10 h-10 text-indigo-500 animate-spin" />
-            <p className="text-slate-500 font-medium tracking-widest uppercase text-sm">Retrieving Notices...</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="flex flex-col bg-white dark:bg-[#080808] border border-slate-200 dark:border-white/10 rounded-3xl p-6 sm:p-7 animate-pulse">
+                <div className="flex items-start justify-between gap-3 mb-4">
+                  <div className="flex items-center gap-2">
+                    <div className="h-6 w-20 bg-slate-200 dark:bg-white/5 rounded-full"></div>
+                    <div className="h-6 w-16 bg-slate-200 dark:bg-white/5 rounded-full"></div>
+                  </div>
+                  <div className="h-8 w-8 bg-slate-200 dark:bg-white/5 rounded-xl"></div>
+                </div>
+                <div className="h-6 w-3/4 bg-slate-200 dark:bg-white/10 rounded-lg mb-4"></div>
+                <div className="space-y-2 mb-6 flex-1">
+                  <div className="h-4 bg-slate-200 dark:bg-white/5 rounded w-full"></div>
+                  <div className="h-4 bg-slate-200 dark:bg-white/5 rounded w-full"></div>
+                  <div className="h-4 bg-slate-200 dark:bg-white/5 rounded w-2/3"></div>
+                </div>
+                <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-white/5">
+                  <div className="h-4 w-24 bg-slate-200 dark:bg-white/5 rounded"></div>
+                  <div className="h-8 w-24 bg-slate-200 dark:bg-white/5 rounded-xl"></div>
+                </div>
+              </div>
+            ))}
           </div>
         ) : filteredNotices.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-32 px-4 text-center bg-white dark:bg-[#0a0a0a] border border-slate-200 dark:border-white/10 rounded-3xl shadow-sm">

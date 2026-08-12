@@ -4,12 +4,13 @@ import api from '../../services/api';
 import {
   Calendar, Plus, Loader2, Trash2, Pencil, X,
   MapPin, Clock, Users, IndianRupee, Search, CalendarClock,
-  Sparkles, AlertCircle, ChevronDown, CheckCircle2, ChevronLeft, ChevronRight,
+  ChevronDown, ChevronLeft, ChevronRight,
   Image, FileText, Upload, Tag, Download
 } from 'lucide-react';
 
 const STATUS_COLORS = {
   draft:     'bg-slate-100 text-slate-600 dark:bg-slate-500/20 dark:text-slate-300',
+  pending:   'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300',
   published: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300',
   completed: 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300',
   cancelled: 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-300'
@@ -26,10 +27,6 @@ const MONTH_NAMES = [
   'July', 'August', 'September', 'October', 'November', 'December'
 ];
 
-const TIME_SLOTS = [
-  '09:00 AM', '10:00 AM', '11:00 AM', '12:00 PM',
-  '02:00 PM', '03:30 PM', '05:00 PM', '06:30 PM', '08:00 PM'
-];
 
 export default function ClubEvents() {
   const [events, setEvents] = useState([]);
@@ -307,9 +304,30 @@ export default function ClubEvents() {
 
         {/* Events Grid */}
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-32 gap-4">
-            <Loader2 className="w-10 h-10 text-indigo-500 animate-spin" />
-            <p className="text-slate-500 font-medium tracking-widest uppercase text-sm">Retrieving Events...</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 auto-rows-max">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="flex flex-col bg-white dark:bg-[#080808] border border-slate-200 dark:border-white/5 rounded-3xl overflow-hidden animate-pulse">
+                <div className="h-36 bg-slate-200 dark:bg-white/5"></div>
+                <div className="p-6 sm:p-8 flex-1 flex flex-col justify-between">
+                  <div>
+                    <div className="h-6 bg-slate-200 dark:bg-white/10 rounded-lg w-3/4 mb-4"></div>
+                    <div className="space-y-2 mb-6">
+                      <div className="h-4 bg-slate-200 dark:bg-white/5 rounded w-full"></div>
+                      <div className="h-4 bg-slate-200 dark:bg-white/5 rounded w-5/6"></div>
+                    </div>
+                    <div className="space-y-3 mb-6">
+                      <div className="h-4 bg-slate-200 dark:bg-white/5 rounded w-1/2"></div>
+                      <div className="h-4 bg-slate-200 dark:bg-white/5 rounded w-2/3"></div>
+                      <div className="h-4 bg-slate-200 dark:bg-white/5 rounded w-1/3"></div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 pt-4 border-t border-slate-100 dark:border-white/5">
+                    <div className="h-10 bg-slate-200 dark:bg-white/5 rounded-xl flex-1"></div>
+                    <div className="h-10 bg-slate-200 dark:bg-white/5 rounded-xl flex-1"></div>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         ) : filteredEvents.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-32 px-4 text-center bg-white dark:bg-[#0a0a0a] border border-slate-200 dark:border-white/10 rounded-3xl shadow-sm">
@@ -724,11 +742,13 @@ export default function ClubEvents() {
                 >
                   <div className="flex items-center gap-2.5">
                     <span className={`w-2.5 h-2.5 rounded-full ${
-                      form.status === 'published' ? 'bg-emerald-500' :
-                      form.status === 'completed' ? 'bg-blue-500' :
+                      form.status === 'pending'   ? 'bg-amber-500' :
                       form.status === 'cancelled' ? 'bg-red-500' : 'bg-slate-400'
                     }`} />
-                    <span className="text-slate-900 dark:text-white capitalize">{form.status || 'Draft'}</span>
+                    <span className="text-slate-900 dark:text-white">{
+                      form.status === 'pending' ? 'Submit for Review' :
+                      form.status === 'cancelled' ? 'Cancelled' : 'Draft'
+                    }</span>
                   </div>
                   <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${activeDropdown === 'status' ? 'rotate-180' : ''}`} />
                 </button>
@@ -736,10 +756,9 @@ export default function ClubEvents() {
                 {activeDropdown === 'status' && (
                   <div className="absolute z-[110] left-0 right-0 mt-2 p-2 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-white/15 rounded-2xl shadow-2xl animate-in zoom-in-95 duration-150">
                     {[
-                      { value: 'draft', label: 'Draft', desc: 'Hidden from public feed', dot: 'bg-slate-400' },
-                      { value: 'published', label: 'Published', desc: 'Live for all students', dot: 'bg-emerald-500' },
-                      { value: 'completed', label: 'Completed', desc: 'Event concluded', dot: 'bg-blue-500' },
-                      { value: 'cancelled', label: 'Cancelled', desc: 'Event called off', dot: 'bg-red-500' },
+                      { value: 'draft',    label: 'Draft',              desc: 'Save as work-in-progress',      dot: 'bg-slate-400' },
+                      { value: 'pending',  label: 'Submit for Review',  desc: 'Send to admin for approval',   dot: 'bg-amber-500' },
+                      { value: 'cancelled',label: 'Cancelled',          desc: 'Cancel this event',            dot: 'bg-red-500' },
                     ].map(st => (
                       <button
                         key={st.value}

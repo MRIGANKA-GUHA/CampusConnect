@@ -58,8 +58,17 @@ export default function ClubMembers() {
         </div>
 
         {loading ? (
-          <div className="flex justify-center py-24">
-            <Loader2 className="w-10 h-10 animate-spin text-indigo-600 dark:text-indigo-400" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-3xl p-5 sm:p-6 flex items-center gap-4 shadow-sm animate-pulse">
+                <div className="w-12 h-12 rounded-full bg-slate-200 dark:bg-white/10 shrink-0"></div>
+                <div className="flex-1 min-w-0">
+                  <div className="h-4 bg-slate-200 dark:bg-white/10 rounded w-1/2 mb-2"></div>
+                  <div className="h-3 bg-slate-200 dark:bg-white/5 rounded w-1/3 mb-2"></div>
+                  <div className="h-3 bg-slate-200 dark:bg-white/5 rounded w-2/3"></div>
+                </div>
+              </div>
+            ))}
           </div>
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center py-24 gap-4 text-slate-400">
