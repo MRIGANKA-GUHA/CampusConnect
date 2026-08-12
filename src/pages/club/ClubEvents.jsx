@@ -5,7 +5,8 @@ import {
   Calendar, Plus, Loader2, Trash2, Pencil, X,
   MapPin, Clock, Users, IndianRupee, Search, CalendarClock,
   ChevronDown, ChevronLeft, ChevronRight,
-  Image, FileText, Upload, Tag, Download
+  Image, FileText, Upload, Tag, Download,
+  CheckCircle, XCircle
 } from 'lucide-react';
 
 const STATUS_COLORS = {
@@ -41,6 +42,12 @@ export default function ClubEvents() {
   const [errors, setErrors] = useState({});
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [calMonthDate, setCalMonthDate] = useState(new Date());
+  const [toast, setToast] = useState(null);
+
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  };
 
   // ── Upload state ──
   const [bannerFile, setBannerFile] = useState(null);
@@ -138,7 +145,32 @@ export default function ClubEvents() {
   const validate = () => {
     const errs = {};
     if (!form.title.trim()) errs.title = 'Title is required.';
-    if (!form.date) errs.date = 'Date is required.';
+    if (!form.date) {
+      errs.date = 'Date is required.';
+    } else {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const eventDate = new Date(form.date + 'T00:00:00');
+      if (eventDate < today) {
+        errs.date = 'Event date cannot be in the past.';
+      } else if (form.date === new Date().toISOString().split('T')[0] && form.time) {
+        // Same day — check time
+        const match = form.time.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+        if (match) {
+          let [, h, m, ampm] = match;
+          h = parseInt(h, 10);
+          m = parseInt(m, 10);
+          if (ampm.toUpperCase() === 'PM' && h !== 12) h += 12;
+          if (ampm.toUpperCase() === 'AM' && h === 12) h = 0;
+          const eventMinutes = h * 60 + m;
+          const now = new Date();
+          const nowMinutes = now.getHours() * 60 + now.getMinutes();
+          if (eventMinutes <= nowMinutes) {
+            errs.time = 'Event time cannot be in the past for today.';
+          }
+        }
+      }
+    }
     if (!form.venue.trim()) errs.venue = 'Venue is required.';
     return errs;
   };
@@ -182,9 +214,10 @@ export default function ClubEvents() {
       }
 
       setShowModal(false);
+      showToast(`Event ${editingEvent ? 'updated' : 'created'} successfully!`);
       await fetchEvents();
     } catch (err) {
-      alert(err.response?.data?.error || 'Failed to save event');
+      showToast(err.response?.data?.error || 'Failed to save event', 'error');
     } finally {
       setSubmitting(false);
       setUploadingBanner(false);
@@ -204,8 +237,9 @@ export default function ClubEvents() {
       await api.delete(`/club/events/${deleteTarget.id}`);
       setEvents(prev => prev.filter(n => n.id !== deleteTarget.id));
       setDeleteTarget(null);
+      showToast('Event deleted successfully.');
     } catch (err) {
-      alert(err.response?.data?.error || 'Failed to delete event');
+      showToast(err.response?.data?.error || 'Failed to delete event', 'error');
     } finally {
       setDeleting(false);
     }
@@ -276,6 +310,18 @@ export default function ClubEvents() {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-black text-slate-900 dark:text-white font-sans selection:bg-indigo-500/30">
       <SmartHeader />
+
+      {/* Toast Notification */}
+      {toast && (
+        <div className={`fixed top-6 right-6 z-[200] flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-2xl text-sm font-semibold transition-all duration-300 animate-in slide-in-from-top-10 fade-in ${
+          toast.type === 'error'
+            ? 'bg-red-600 text-white'
+            : 'bg-emerald-600 text-white'
+        }`}>
+          {toast.type === 'error' ? <XCircle className="w-5 h-5" /> : <CheckCircle className="w-5 h-5" />}
+          {toast.message}
+        </div>
+      )}
 
       <main className="max-w-7xl mx-auto pt-24 sm:pt-32 px-4 sm:px-8 pb-12">
 
@@ -527,14 +573,22 @@ export default function ClubEvents() {
                           const fullDateStr = `${year}-${mStr}-${dStr}`;
                           const isSelected = form.date === fullDateStr;
 
+                          const today = new Date();
+                          today.setHours(0, 0, 0, 0);
+                          const currentDate = new Date(fullDateStr + 'T00:00:00');
+                          const isPast = currentDate < today;
+
                           return (
                             <button
                               key={dayNum}
                               type="button"
+                              disabled={isPast}
                               onClick={() => handleSelectDay(dayNum)}
                               className={`h-9 w-9 rounded-xl flex items-center justify-center transition-all ${
                                 isSelected
                                   ? 'bg-gradient-to-tr from-indigo-600 to-indigo-500 text-white shadow-lg shadow-indigo-500/40 font-black scale-105'
+                                  : isPast
+                                  ? 'text-slate-300 dark:text-slate-700 cursor-not-allowed opacity-50'
                                   : 'text-slate-700 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-white/10'
                               }`}
                             >
@@ -644,10 +698,23 @@ export default function ClubEvents() {
                           {['01','02','03','04','05','06','07','08','09','10','11','12'].map(h => {
                             const curH = form.time?.split(' ')?.[0]?.split(':')?.[0] || '10';
                             const isSel = curH === h;
+                            const curMin = form.time?.split(' ')?.[0]?.split(':')?.[1] || '00';
+                            const curAmpm = form.time?.split(' ')?.[1] || 'AM';
+                            const isToday = form.date === new Date().toISOString().split('T')[0];
+                            let isPastHour = false;
+                            if (isToday) {
+                              let hNum = parseInt(h, 10);
+                              if (curAmpm.toUpperCase() === 'PM' && hNum !== 12) hNum += 12;
+                              if (curAmpm.toUpperCase() === 'AM' && hNum === 12) hNum = 0;
+                              const mNum = parseInt(curMin, 10);
+                              const now = new Date();
+                              isPastHour = (hNum * 60 + mNum) <= (now.getHours() * 60 + now.getMinutes());
+                            }
                             return (
                               <button
                                 key={h}
                                 type="button"
+                                disabled={isPastHour}
                                 onClick={() => {
                                   const parts = form.time?.split(' ') || ['10:00', 'AM'];
                                   const timePart = parts[0] || '10:00';
@@ -658,6 +725,8 @@ export default function ClubEvents() {
                                 className={`py-2 text-xs font-extrabold rounded-xl transition-all ${
                                   isSel
                                     ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/30 font-black scale-105'
+                                    : isPastHour
+                                    ? 'opacity-30 cursor-not-allowed bg-slate-50 dark:bg-white/5 text-slate-400'
                                     : 'bg-slate-50 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300'
                                 }`}
                               >
@@ -703,20 +772,42 @@ export default function ClubEvents() {
                       <div className="pt-3 border-t border-slate-100 dark:border-white/10">
                         <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 ml-1">Quick Slots</p>
                         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 custom-scrollbar">
-                          {['10:00 AM', '02:00 PM', '05:00 PM', '07:30 PM'].map(slot => (
-                            <button
-                              key={slot}
-                              type="button"
-                              onClick={() => { setField('time', slot); setActiveDropdown(null); }}
-                              className="py-1.5 px-3 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-indigo-50 dark:hover:bg-indigo-500/20 text-slate-600 dark:text-slate-300 hover:text-indigo-600 text-[11px] font-bold transition-all whitespace-nowrap shrink-0"
-                            >
-                              {slot}
-                            </button>
-                          ))}
+                          {['10:00 AM', '02:00 PM', '05:00 PM', '07:30 PM'].map(slot => {
+                            const isToday = form.date === new Date().toISOString().split('T')[0];
+                            let isPastSlot = false;
+                            if (isToday) {
+                              const match = slot.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+                              if (match) {
+                                let [, sh, sm, sampm] = match;
+                                sh = parseInt(sh, 10);
+                                sm = parseInt(sm, 10);
+                                if (sampm.toUpperCase() === 'PM' && sh !== 12) sh += 12;
+                                if (sampm.toUpperCase() === 'AM' && sh === 12) sh = 0;
+                                const now = new Date();
+                                isPastSlot = (sh * 60 + sm) <= (now.getHours() * 60 + now.getMinutes());
+                              }
+                            }
+                            return (
+                              <button
+                                key={slot}
+                                type="button"
+                                disabled={isPastSlot}
+                                onClick={() => { setField('time', slot); setActiveDropdown(null); }}
+                                className={`py-1.5 px-3 rounded-xl text-[11px] font-bold transition-all whitespace-nowrap shrink-0 ${
+                                  isPastSlot
+                                    ? 'opacity-30 cursor-not-allowed bg-slate-100 dark:bg-white/5 text-slate-400'
+                                    : 'bg-slate-100 dark:bg-white/5 hover:bg-indigo-50 dark:hover:bg-indigo-500/20 text-slate-600 dark:text-slate-300 hover:text-indigo-600'
+                                }`}
+                              >
+                                {slot}
+                              </button>
+                            );
+                          })}
                         </div>
                       </div>
                     </div>
                   )}
+                  {errors.time && <p className="text-xs text-red-500 mt-2 ml-1 font-bold">{errors.time}</p>}
                 </div>
               </div>
 
