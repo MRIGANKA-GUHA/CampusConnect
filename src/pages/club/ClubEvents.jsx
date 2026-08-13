@@ -434,7 +434,7 @@ export default function ClubEvents() {
                             href={getDownloadUrl(event.pdfURL)} 
                             target="_blank" 
                             rel="noreferrer"
-                            download="brochure.pdf"
+                            download={event.pdfName || `${event.title?.replace(/[^a-z0-9]/gi, '_') || 'brochure'}.pdf`}
                             className="flex items-center gap-1.5 text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors bg-indigo-50 dark:bg-indigo-500/10 px-2 py-1 rounded-lg"
                             onClick={(e) => e.stopPropagation()}
                           >

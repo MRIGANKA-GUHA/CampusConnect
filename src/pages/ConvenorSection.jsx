@@ -3,13 +3,13 @@ import { Mail, Users } from 'lucide-react';
 import api from '../services/api';
 
 const CATEGORY_COLORS = {
-  Technical:  'from-blue-500 to-indigo-500',
-  Cultural:   'from-purple-500 to-pink-500',
+  Technical: 'from-blue-500 to-indigo-500',
+  Cultural: 'from-purple-500 to-pink-500',
   Literature: 'from-amber-400 to-orange-500',
-  Sports:     'from-emerald-400 to-teal-500',
-  Social:     'from-rose-400 to-red-500',
-  Academic:   'from-sky-400 to-cyan-500',
-  Other:      'from-slate-400 to-slate-600',
+  Sports: 'from-emerald-400 to-teal-500',
+  Social: 'from-rose-400 to-red-500',
+  Academic: 'from-sky-400 to-cyan-500',
+  Other: 'from-slate-400 to-slate-600',
 };
 
 export default function ConvenorSection() {
