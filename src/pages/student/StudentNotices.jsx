@@ -292,13 +292,6 @@ export default function StudentNotices() {
     <div className="min-h-screen bg-slate-50 dark:bg-black text-slate-900 dark:text-white font-sans selection:bg-indigo-500/30 pb-20">
       <SmartHeader />
 
-      {/* Floating Toast Feedback */}
-      {toastMessage && (
-        <div className="fixed bottom-8 right-8 z-[200] flex items-center gap-3 px-6 py-3.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold rounded-2xl shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-300 text-sm">
-          <Check className="w-4 h-4 text-emerald-400 dark:text-emerald-600" />
-          <span>{toastMessage}</span>
-        </div>
-      )}
 
       <main className="max-w-7xl mx-auto pt-24 sm:pt-32 px-4 sm:px-8">
         
@@ -560,9 +553,6 @@ export default function StudentNotices() {
                     <div className="flex items-center gap-1.5">
                       <Calendar className="w-3.5 h-3.5 opacity-70" />
                       <span>{formatDate(notice.createdAt)}</span>
-                      {formatRelativeTime(notice.createdAt) && (
-                        <span className="text-[10px] text-slate-400">({formatRelativeTime(notice.createdAt)})</span>
-                      )}
                     </div>
 
                     <div className="flex items-center gap-2">
@@ -679,16 +669,6 @@ export default function StudentNotices() {
                   </div>
 
                   <div className="flex items-start gap-3 bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/5 rounded-2xl p-4">
-                    <div className="w-8 h-8 rounded-xl bg-purple-50 dark:bg-purple-500/10 flex items-center justify-center shrink-0 mt-0.5">
-                      <Users className="w-4 h-4 text-purple-500" />
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Target Audience</p>
-                      <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 capitalize">{selectedNotice.targetAudience || 'students'}</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-3 bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/5 rounded-2xl p-4">
                     <div className="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center shrink-0 mt-0.5">
                       <Tag className="w-4 h-4 text-amber-500" />
                     </div>
@@ -714,16 +694,9 @@ export default function StudentNotices() {
                   <div className="flex items-center justify-between px-5 py-4 bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/5 rounded-2xl">
                     <div className="flex items-center gap-2.5 text-slate-500">
                       <Calendar className="w-4 h-4" />
-                      <span className="text-xs font-bold uppercase tracking-widest">Created</span>
+                      <span className="text-xs font-bold uppercase tracking-widest">Date Posted</span>
                     </div>
                     <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">{formatDate(selectedNotice.createdAt)}</span>
-                  </div>
-                  <div className="flex items-center justify-between px-5 py-4 bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/5 rounded-2xl">
-                    <div className="flex items-center gap-2.5 text-slate-500">
-                      <Clock className="w-4 h-4" />
-                      <span className="text-xs font-bold uppercase tracking-widest">Last Updated</span>
-                    </div>
-                    <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">{formatDate(selectedNotice.updatedAt || selectedNotice.createdAt)}</span>
                   </div>
                 </div>
 
@@ -771,11 +744,6 @@ export default function StudentNotices() {
                     <p className="text-sm text-slate-400 italic px-1">No attachments.</p>
                   )}
                 </div>
-
-                {/* Hash ID Footer */}
-                <div className="flex items-center gap-2 text-[11px] font-mono text-slate-300 dark:text-slate-700 pt-2">
-                  <Hash className="w-3 h-3" />{selectedNotice.id}
-                </div>
               </div>
             </>
           );
@@ -783,6 +751,16 @@ export default function StudentNotices() {
       </div>
 
       <div className="fixed top-0 inset-x-0 h-64 pointer-events-none -z-10 bg-gradient-to-b from-indigo-500/5 to-transparent" />
+
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed top-4 right-4 z-[100] animate-in slide-in-from-top-2 fade-in duration-300">
+          <div className="bg-emerald-600 text-white px-6 py-3 rounded-xl shadow-lg font-bold text-sm flex items-center gap-3">
+            <Check className="w-5 h-5" />
+            {toastMessage}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
