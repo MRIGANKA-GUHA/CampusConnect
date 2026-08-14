@@ -282,53 +282,80 @@ function EventCard({ event, loadingAction, onRequestStatusChange, onView, format
   const isPending = event.status === 'pending';
 
   return (
-    <div className={`group relative flex flex-col bg-white dark:bg-[#080808] border rounded-3xl overflow-hidden hover:border-indigo-200 dark:hover:border-white/10 hover:shadow-2xl hover:shadow-indigo-500/5 transition-all duration-300 ${
-      isPending ? 'border-amber-200 dark:border-amber-500/30' : 'border-slate-200 dark:border-white/5'
+    <div className={`group relative flex flex-col bg-white dark:bg-[#0a0a0a] border rounded-[2.5rem] overflow-hidden hover:shadow-2xl hover:shadow-indigo-500/10 hover:-translate-y-2 transition-all duration-400 h-full ${
+      isPending ? 'border-amber-300 dark:border-amber-500/40' : 'border-slate-200 dark:border-white/10 hover:border-indigo-200 dark:hover:border-white/10'
     }`}>
       {/* Banner */}
-      <div
-        className="h-36 bg-gradient-to-r from-slate-950 via-zinc-900 to-black relative overflow-hidden shrink-0 border-b border-slate-200/50 dark:border-white/10"
-        style={event.bannerURL ? { backgroundImage: `url(${event.bannerURL})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}
-      >
+      <div className="h-40 bg-slate-100 dark:bg-white/5 relative overflow-hidden shrink-0 border-b border-slate-200/50 dark:border-white/10">
+        {event.bannerURL ? (
+          <img
+            src={event.bannerURL}
+            alt={event.title}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-500/10 dark:to-purple-500/10">
+            <Calendar className="w-12 h-12 text-indigo-300 dark:text-indigo-700 opacity-50" />
+          </div>
+        )}
+        {/* Status Badge */}
         <div className="absolute top-4 right-4 z-10">
           <StatusBadge status={event.status} />
         </div>
-        <span className="absolute bottom-3 left-4 px-3 py-1 text-xs font-bold rounded-full bg-black/40 backdrop-blur-md text-white border border-white/10 uppercase tracking-wider">
-          {event.category || 'Event'}
-        </span>
+        {/* Date Badge */}
+        <div className="absolute bottom-4 left-4 bg-white/95 dark:bg-black/90 backdrop-blur-md border border-white/50 dark:border-white/10 shadow-xl px-3 py-1.5 rounded-[1rem] flex flex-col items-center justify-center min-w-[3.5rem] group-hover:-translate-y-1 transition-transform">
+          <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest leading-none mb-1">
+            {event.date ? new Date(event.date + 'T00:00:00').toLocaleDateString(undefined, { month: 'short' }) : '—'}
+          </span>
+          <span className="text-xl font-black text-slate-900 dark:text-white leading-none">
+            {event.date ? new Date(event.date + 'T00:00:00').getDate() : '—'}
+          </span>
+        </div>
       </div>
 
-      <div className="p-6 sm:p-8 flex-1 flex flex-col justify-between">
-        <div>
-          <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3 leading-snug group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors line-clamp-2">
+      <div className="p-6 sm:p-7 flex-1 flex flex-col">
+        <div className="flex-grow flex flex-col mb-6">
+          {/* Category Pill */}
+          <div className="mb-3">
+            <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-500/20">
+              {event.category || 'Event'}
+            </span>
+          </div>
+
+          <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2 leading-snug group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors line-clamp-2">
             {event.title}
           </h3>
-          <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-6 line-clamp-3">
+          <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-5 line-clamp-2">
             {event.description || 'No description provided.'}
           </p>
 
-          <div className="space-y-2.5 mb-6 text-xs font-medium text-slate-600 dark:text-slate-300">
-            <div className="flex items-center gap-2">
-              <Building2 className="w-4 h-4 text-indigo-500 shrink-0" />
-              <span className="truncate font-bold text-slate-800 dark:text-slate-200">{event.clubName || 'Unknown Club'}</span>
+          {/* Metadata rows */}
+          <div className="flex flex-col gap-0.5 mt-auto">
+            <div className="flex items-center gap-3 text-sm font-semibold text-slate-600 dark:text-slate-300">
+              <div className="w-8 h-8 rounded-full bg-slate-50 dark:bg-white/5 flex items-center justify-center shrink-0">
+                <Building2 className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+              </div>
+              <span className="truncate font-bold">{event.clubName || 'Unknown Club'}</span>
             </div>
-            <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-indigo-500 shrink-0" />
-              <span>{formatDisplayDate(event.date)}{event.time && ` · ${event.time}`}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-indigo-500 shrink-0" />
-              <span className="truncate">{event.venue}</span>
+            <div className="flex items-center gap-3 text-sm font-semibold text-slate-600 dark:text-slate-300">
+              <div className="w-8 h-8 rounded-full bg-slate-50 dark:bg-white/5 flex items-center justify-center shrink-0">
+                <MapPin className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+              </div>
+              <span className="truncate">{event.venue || 'TBA'}</span>
             </div>
             {event.capacity && (
-              <div className="flex items-center gap-2">
-                <Users className="w-4 h-4 text-indigo-500 shrink-0" />
-                <span>{(event.attendees || []).length} / {event.capacity} seats registered</span>
+              <div className="flex items-center gap-3 text-sm font-semibold text-slate-600 dark:text-slate-300">
+                <div className="w-8 h-8 rounded-full bg-slate-50 dark:bg-white/5 flex items-center justify-center shrink-0">
+                  <Users className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                </div>
+                <span className="truncate">{(event.attendees || []).length} / {event.capacity} seats</span>
               </div>
             )}
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-white">
-                <IndianRupee className="w-4 h-4 text-emerald-500 shrink-0" />
+              <div className="flex items-center gap-3 text-sm font-bold text-slate-900 dark:text-white">
+                <div className="w-8 h-8 rounded-full bg-slate-50 dark:bg-white/5 flex items-center justify-center shrink-0">
+                  <IndianRupee className="w-4 h-4 text-emerald-500" />
+                </div>
                 <span>{event.price > 0 ? `₹${event.price}` : 'Free'}</span>
               </div>
               {event.pdfURL && (
@@ -349,10 +376,10 @@ function EventCard({ event, loadingAction, onRequestStatusChange, onView, format
         </div>
 
         {/* Actions */}
-        <div className="flex items-center gap-2 pt-4 border-t border-slate-100 dark:border-white/5 flex-wrap">
+        <div className="flex items-center gap-2 pt-5 border-t border-slate-100 dark:border-white/10 flex-wrap">
           <button
             onClick={onView}
-            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-slate-50 dark:bg-white/5 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 text-xs font-bold transition-all whitespace-nowrap"
+            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-[1rem] bg-slate-100 dark:bg-white/5 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 text-xs font-bold transition-all whitespace-nowrap"
           >
             <Eye className="w-3.5 h-3.5" /> Details
           </button>
@@ -363,7 +390,7 @@ function EventCard({ event, loadingAction, onRequestStatusChange, onView, format
                 id={`approve-${event.id}`}
                 onClick={() => onRequestStatusChange(event, 'published')}
                 disabled={!!loadingAction}
-                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 transition-all disabled:opacity-60 whitespace-nowrap"
+                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-[1rem] bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 transition-all disabled:opacity-60 whitespace-nowrap"
               >
                 {loadingAction === event.id + 'published' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle className="w-3.5 h-3.5" />}
                 Approve
@@ -372,7 +399,7 @@ function EventCard({ event, loadingAction, onRequestStatusChange, onView, format
                 id={`reject-${event.id}`}
                 onClick={() => onRequestStatusChange(event, 'cancelled')}
                 disabled={!!loadingAction}
-                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-red-600 text-white text-xs font-bold hover:bg-red-700 transition-all disabled:opacity-60 whitespace-nowrap"
+                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-[1rem] bg-red-600 text-white text-xs font-bold hover:bg-red-700 transition-all disabled:opacity-60 whitespace-nowrap"
               >
                 {loadingAction === event.id + 'cancelled' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <XCircle className="w-3.5 h-3.5" />}
                 Reject
@@ -384,7 +411,7 @@ function EventCard({ event, loadingAction, onRequestStatusChange, onView, format
             <button
               onClick={() => onRequestStatusChange(event, 'cancelled')}
               disabled={!!loadingAction}
-              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-red-100 dark:bg-red-500/10 text-red-600 text-xs font-bold hover:bg-red-200 dark:hover:bg-red-500/20 transition-all border border-red-200 dark:border-red-500/20 disabled:opacity-60 whitespace-nowrap"
+              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-[1rem] bg-red-100 dark:bg-red-500/10 text-red-600 text-xs font-bold hover:bg-red-200 dark:hover:bg-red-500/20 transition-all border border-red-200 dark:border-red-500/20 disabled:opacity-60 whitespace-nowrap"
             >
               {loadingAction === event.id + 'cancelled' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Ban className="w-3.5 h-3.5" />}
               Cancel

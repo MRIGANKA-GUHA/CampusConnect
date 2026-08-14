@@ -386,53 +386,84 @@ export default function ClubEvents() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 auto-rows-max">
             {filteredEvents.map(event => (
-              <div key={event.id} className="group relative flex flex-col bg-white dark:bg-[#080808] border border-slate-200 dark:border-white/5 rounded-3xl overflow-hidden hover:border-indigo-200 dark:hover:border-white/10 hover:shadow-2xl hover:shadow-indigo-500/5 transition-all duration-300">
+              <div key={event.id} className="group relative flex flex-col bg-white dark:bg-[#0a0a0a] border border-slate-200 dark:border-white/10 rounded-[2.5rem] overflow-hidden hover:border-indigo-200 dark:hover:border-white/10 hover:shadow-2xl hover:shadow-indigo-500/10 hover:-translate-y-2 transition-all duration-400 h-full">
                 {/* Banner */}
-                <div
-                  className="h-36 bg-gradient-to-r from-slate-950 via-zinc-900 to-black relative overflow-hidden shrink-0 border-b border-slate-200/50 dark:border-white/10"
-                  style={event.bannerURL ? { backgroundImage: `url(${event.bannerURL})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}
-                >
+                <div className="h-40 bg-slate-100 dark:bg-white/5 relative overflow-hidden shrink-0 border-b border-slate-200/50 dark:border-white/10">
+                  {event.bannerURL ? (
+                    <img
+                      src={event.bannerURL}
+                      alt={event.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-500/10 dark:to-purple-500/10">
+                      <Calendar className="w-12 h-12 text-indigo-300 dark:text-indigo-700 opacity-50" />
+                    </div>
+                  )}
+                  {/* Status badge */}
                   <span className={`absolute top-4 right-4 px-3 py-1 text-xs font-bold rounded-full uppercase tracking-wider ${STATUS_COLORS[event.status]}`}>
                     {event.status}
                   </span>
-                  <span className="absolute bottom-3 left-4 px-3 py-1 text-xs font-bold rounded-full bg-black/40 backdrop-blur-md text-white border border-white/10 uppercase tracking-wider">
-                    {event.category || 'Event'}
-                  </span>
+                  {/* Date Badge */}
+                  <div className="absolute bottom-4 left-4 bg-white/95 dark:bg-black/90 backdrop-blur-md border border-white/50 dark:border-white/10 shadow-xl px-3 py-1.5 rounded-[1rem] flex flex-col items-center justify-center min-w-[3.5rem] group-hover:-translate-y-1 transition-transform">
+                    <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest leading-none mb-1">
+                      {event.date ? new Date(event.date + 'T00:00:00').toLocaleDateString(undefined, { month: 'short' }) : '—'}
+                    </span>
+                    <span className="text-xl font-black text-slate-900 dark:text-white leading-none">
+                      {event.date ? new Date(event.date + 'T00:00:00').getDate() : '—'}
+                    </span>
+                  </div>
                 </div>
 
-                <div className="p-6 sm:p-8 flex-1 flex flex-col justify-between">
-                  <div>
-                    <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3 leading-snug group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors line-clamp-2">
+                <div className="p-6 sm:p-7 flex-1 flex flex-col">
+                  <div className="flex-grow flex flex-col mb-6">
+                    {/* Category Pill */}
+                    <div className="mb-3">
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-500/20">
+                        {event.category || 'Event'}
+                      </span>
+                    </div>
+
+                    <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2 leading-snug group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors line-clamp-2">
                       {event.title}
                     </h3>
-                    <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-6 line-clamp-3">
+                    <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-5 line-clamp-2">
                       {event.description || 'No description provided.'}
                     </p>
 
-                    <div className="space-y-2.5 mb-6 text-xs font-medium text-slate-600 dark:text-slate-300">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="w-4 h-4 text-indigo-500 shrink-0" />
-                        <span>{formatDisplayDate(event.date)}{event.time && ` · ${event.time}`}</span>
+                    {/* Metadata rows */}
+                    <div className="flex flex-col gap-0.5 mt-auto">
+                      <div className="flex items-center gap-3 text-sm font-semibold text-slate-600 dark:text-slate-300">
+                        <div className="w-8 h-8 rounded-full bg-slate-50 dark:bg-white/5 flex items-center justify-center shrink-0">
+                          <Calendar className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                        </div>
+                        <span className="truncate">{formatDisplayDate(event.date)}{event.time && ` · ${event.time}`}</span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <MapPin className="w-4 h-4 text-indigo-500 shrink-0" />
+                      <div className="flex items-center gap-3 text-sm font-semibold text-slate-600 dark:text-slate-300">
+                        <div className="w-8 h-8 rounded-full bg-slate-50 dark:bg-white/5 flex items-center justify-center shrink-0">
+                          <MapPin className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                        </div>
                         <span className="truncate">{event.venue}</span>
                       </div>
                       {event.capacity && (
-                        <div className="flex items-center gap-2">
-                          <Users className="w-4 h-4 text-indigo-500 shrink-0" />
+                        <div className="flex items-center gap-3 text-sm font-semibold text-slate-600 dark:text-slate-300">
+                          <div className="w-8 h-8 rounded-full bg-slate-50 dark:bg-white/5 flex items-center justify-center shrink-0">
+                            <Users className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                          </div>
                           <span>{(event.attendees || []).length} / {event.capacity} seats registered</span>
                         </div>
                       )}
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-white">
-                          <IndianRupee className="w-4 h-4 text-emerald-500 shrink-0" />
+                        <div className="flex items-center gap-3 text-sm font-bold text-slate-900 dark:text-white">
+                          <div className="w-8 h-8 rounded-full bg-slate-50 dark:bg-white/5 flex items-center justify-center shrink-0">
+                            <IndianRupee className="w-4 h-4 text-emerald-500" />
+                          </div>
                           <span>{event.price > 0 ? `₹${event.price}` : 'Free'}</span>
                         </div>
                         {event.pdfURL && (
-                          <a 
-                            href={getDownloadUrl(event.pdfURL)} 
-                            target="_blank" 
+                          <a
+                            href={getDownloadUrl(event.pdfURL)}
+                            target="_blank"
                             rel="noreferrer"
                             download={event.pdfName || `${event.title?.replace(/[^a-z0-9]/gi, '_') || 'brochure'}.pdf`}
                             className="flex items-center gap-1.5 text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors bg-indigo-50 dark:bg-indigo-500/10 px-2 py-1 rounded-lg"
@@ -447,16 +478,16 @@ export default function ClubEvents() {
                   </div>
 
                   {/* Actions */}
-                  <div className="flex items-center gap-2 pt-4 border-t border-slate-100 dark:border-white/5">
+                  <div className="flex items-center gap-2 pt-5 border-t border-slate-100 dark:border-white/10">
                     <button
                       onClick={(e) => openEdit(event, e)}
-                      className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-slate-50 dark:bg-white/5 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 text-xs font-bold transition-all"
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-[1rem] bg-slate-100 dark:bg-white/5 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 text-xs font-bold transition-all"
                     >
                       <Pencil className="w-3.5 h-3.5" /> Edit
                     </button>
                     <button
                       onClick={(e) => handleDelete(event, e)}
-                      className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-slate-50 dark:bg-white/5 hover:bg-red-50 dark:hover:bg-red-500/10 text-slate-600 dark:text-slate-300 hover:text-red-500 dark:hover:text-red-400 text-xs font-bold transition-all"
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-[1rem] bg-slate-100 dark:bg-white/5 hover:bg-red-50 dark:hover:bg-red-500/10 text-slate-600 dark:text-slate-300 hover:text-red-500 dark:hover:text-red-400 text-xs font-bold transition-all"
                     >
                       <Trash2 className="w-3.5 h-3.5" /> Delete
                     </button>

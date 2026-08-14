@@ -152,10 +152,10 @@ export default function StudentEvents() {
             {filteredEvents.map(event => (
               <div 
                 key={event.id}
-                className="group bg-white dark:bg-[#0a0a0a] border border-slate-200 dark:border-white/10 rounded-[2.5rem] p-5 sm:p-6 hover:shadow-2xl hover:shadow-indigo-500/10 hover:-translate-y-2 transition-all duration-400 relative overflow-hidden flex flex-col h-full"
+                className="group relative flex flex-col bg-white dark:bg-[#0a0a0a] border border-slate-200 dark:border-white/10 rounded-[2.5rem] overflow-hidden hover:border-indigo-200 dark:hover:border-white/10 hover:shadow-2xl hover:shadow-indigo-500/10 hover:-translate-y-2 transition-all duration-400 h-full"
               >
-                {/* Banner Image */}
-                <div className="w-full h-48 sm:h-52 rounded-[1.5rem] bg-slate-100 dark:bg-white/5 mb-6 overflow-hidden relative shadow-inner border border-slate-200/50 dark:border-white/5">
+                {/* Banner */}
+                <div className="h-40 bg-slate-100 dark:bg-white/5 relative overflow-hidden shrink-0 border-b border-slate-200/50 dark:border-white/10">
                   {event.bannerURL ? (
                     <img 
                       src={event.bannerURL} 
@@ -163,14 +163,13 @@ export default function StudentEvents() {
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-500/10 dark:to-purple-500/10 group-hover:scale-105 transition-transform duration-500">
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-500/10 dark:to-purple-500/10">
                       <ImageIcon className="w-12 h-12 text-indigo-300 dark:text-indigo-700 opacity-50" />
                     </div>
                   )}
-                  
                   {/* Date Badge over image */}
-                  <div className="absolute top-4 left-4 bg-white/90 dark:bg-black/70 backdrop-blur-md border border-white/50 dark:border-white/20 shadow-lg px-3 py-1.5 rounded-xl flex flex-col items-center justify-center min-w-[3.5rem]">
-                    <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest leading-none mb-1">
+                  <div className="absolute bottom-4 left-4 bg-white/95 dark:bg-black/90 backdrop-blur-md border border-white/50 dark:border-white/10 shadow-xl px-3 py-1.5 rounded-[1rem] flex flex-col items-center justify-center min-w-[3.5rem] group-hover:-translate-y-1 transition-transform">
+                    <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest leading-none mb-1">
                       {new Date(event.date).toLocaleDateString(undefined, { month: 'short' })}
                     </span>
                     <span className="text-xl font-black text-slate-900 dark:text-white leading-none">
@@ -179,50 +178,49 @@ export default function StudentEvents() {
                   </div>
                 </div>
 
-                <div className="flex-grow flex flex-col">
-                  {/* Category Pill */}
-                  <div className="mb-4 flex items-center">
-                    <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-500/20">
-                      {event.category || 'Event'}
-                    </span>
-                  </div>
-
-                  <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight mb-3 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors line-clamp-2">
-                    {event.title}
-                  </h3>
-                  
-                  <p className="text-slate-500 dark:text-slate-400 text-sm font-medium leading-relaxed mb-6 line-clamp-2 flex-grow">
-                    {event.description || 'No description available.'}
-                  </p>
-
-                  {/* Metadata Icons */}
-                  <div className="flex flex-col gap-3 mb-6">
-                    <div className="flex items-center gap-3 text-sm font-semibold text-slate-600 dark:text-slate-300">
-                      <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center shrink-0">
-                        <MapPin className="w-4 h-4 text-slate-500 dark:text-slate-400" />
-                      </div>
-                      <span className="truncate">{event.venue || 'TBA'}</span>
-                    </div>
-                    <div className="flex items-center gap-3 text-sm font-semibold text-slate-600 dark:text-slate-300">
-                      <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center shrink-0">
-                        <Calendar className="w-4 h-4 text-slate-500 dark:text-slate-400" />
-                      </div>
-                      <span className="truncate">
-                        {formatTime(event.time)}
+                <div className="p-6 sm:p-7 flex-1 flex flex-col relative z-10">
+                  <div className="flex-grow flex flex-col relative z-10 mb-6">
+                    {/* Category Pill */}
+                    <div className="mb-3">
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-500/20">
+                        {event.category || 'Event'}
                       </span>
                     </div>
-                    {event.clubName && (
-                      <div className="flex items-center gap-3 text-sm font-semibold text-slate-600 dark:text-slate-300">
-                        <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center shrink-0">
-                          <Users className="w-4 h-4 text-slate-500 dark:text-slate-400" />
-                        </div>
-                        <span className="truncate">{event.clubName}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
 
-                <div className="pt-6 border-t border-slate-100 dark:border-white/10 mt-auto flex gap-3">
+                    <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight mb-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors drop-shadow-sm line-clamp-2 leading-snug">
+                      {event.title}
+                    </h3>
+                    
+                    <p className="text-slate-500 dark:text-slate-400 text-sm font-medium leading-relaxed mb-6 line-clamp-2">
+                      {event.description || 'No description available.'}
+                    </p>
+
+                    {/* Metadata Icons */}
+                    <div className="flex flex-col gap-0.5 mt-auto">
+                      <div className="flex items-center gap-3 text-sm font-semibold text-slate-600 dark:text-slate-300">
+                        <div className="w-8 h-8 rounded-full bg-slate-50 dark:bg-white/5 flex items-center justify-center shrink-0">
+                          <MapPin className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                        </div>
+                        <span className="truncate">{event.venue || 'TBA'}</span>
+                      </div>
+                      <div className="flex items-center gap-3 text-sm font-semibold text-slate-600 dark:text-slate-300">
+                        <div className="w-8 h-8 rounded-full bg-slate-50 dark:bg-white/5 flex items-center justify-center shrink-0">
+                          <Calendar className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                        </div>
+                        <span className="truncate">{formatTime(event.time)}</span>
+                      </div>
+                      {event.clubName && (
+                        <div className="flex items-center gap-3 text-sm font-semibold text-slate-600 dark:text-slate-300">
+                          <div className="w-8 h-8 rounded-full bg-slate-50 dark:bg-white/5 flex items-center justify-center shrink-0">
+                            <Users className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                          </div>
+                          <span className="truncate">{event.clubName}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="pt-6 border-t border-slate-100 dark:border-white/10 flex gap-3">
                   <button
                     onClick={() => setSelectedEvent(event)}
                     className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-[1.25rem] font-bold text-sm bg-slate-100 text-slate-900 dark:bg-white/5 dark:text-white hover:bg-slate-200 dark:hover:bg-white/10 transition-all active:scale-95"
@@ -252,6 +250,7 @@ export default function StudentEvents() {
                   )}
                 </div>
               </div>
+            </div>
             ))}
           </div>
         ) : (
@@ -292,7 +291,7 @@ export default function StudentEvents() {
 
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed top-20 right-4 sm:top-24 sm:right-8 z-[100] animate-in slide-in-from-top-2 fade-in duration-300">
+        <div className="fixed top-20 right-4 sm:top-24 sm:right-8 z-[999] animate-in slide-in-from-top-2 fade-in duration-300">
           <div className="bg-emerald-600 text-white px-6 py-3.5 rounded-2xl shadow-xl font-bold text-sm flex items-center gap-3">
             <Check className="w-5 h-5" />
             {toastMessage}
@@ -306,89 +305,93 @@ export default function StudentEvents() {
             className="absolute inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-sm" 
             onClick={() => setSelectedEvent(null)}
           ></div>
-          <div className="relative bg-white dark:bg-zinc-950 border border-slate-200 dark:border-white/10 rounded-[2.5rem] shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto hide-scrollbar flex flex-col">
+          <div className="relative bg-white dark:bg-zinc-950 border border-slate-200 dark:border-white/10 rounded-[2.5rem] shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
             
-            {/* Modal Header/Banner */}
-            <div className="relative h-48 sm:h-64 w-full bg-slate-100 dark:bg-white/5 shrink-0">
-              {selectedEvent.bannerURL ? (
-                <img src={selectedEvent.bannerURL} alt={selectedEvent.title} className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-500/10 dark:to-purple-500/10">
-                  <ImageIcon className="w-16 h-16 text-indigo-300 dark:text-indigo-700 opacity-50" />
-                </div>
-              )}
-              
-              <button 
-                onClick={() => setSelectedEvent(null)}
-                className="absolute top-4 right-4 w-10 h-10 bg-black/20 hover:bg-black/40 backdrop-blur-md text-white rounded-full flex items-center justify-center transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+            {/* Absolute Fixed Close Button */}
+            <button 
+              onClick={() => setSelectedEvent(null)}
+              className="absolute top-4 right-4 z-[60] w-10 h-10 bg-black/20 hover:bg-black/40 backdrop-blur-md text-white rounded-full flex items-center justify-center transition-colors shadow-lg"
+            >
+              <X className="w-5 h-5" />
+            </button>
 
-            {/* Modal Content */}
-            <div className="p-6 sm:p-8 sm:pt-10 flex-grow">
-              <div className="flex items-center gap-3 mb-4">
-                <span className="inline-flex items-center px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-500/20">
-                  {selectedEvent.category || 'Event'}
-                </span>
-                {selectedEvent.clubName && (
-                  <span className="text-sm font-bold text-slate-500 dark:text-slate-400">
-                    by {selectedEvent.clubName}
-                  </span>
+            {/* Scrollable Area */}
+            <div className="overflow-y-auto hide-scrollbar flex-grow">
+              {/* Modal Header/Banner */}
+              <div className="relative h-48 sm:h-64 w-full bg-slate-100 dark:bg-white/5 shrink-0">
+                {selectedEvent.bannerURL ? (
+                  <img src={selectedEvent.bannerURL} alt={selectedEvent.title} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-500/10 dark:to-purple-500/10">
+                    <ImageIcon className="w-16 h-16 text-indigo-300 dark:text-indigo-700 opacity-50" />
+                  </div>
                 )}
               </div>
-              
-              <h2 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight mb-8">
-                {selectedEvent.title}
-              </h2>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8 bg-slate-50 dark:bg-white/5 p-5 rounded-3xl border border-slate-100 dark:border-white/10">
-                <div className="flex items-center gap-4 text-slate-700 dark:text-slate-300">
-                  <div className="w-12 h-12 rounded-[1rem] bg-white dark:bg-white/10 flex items-center justify-center shadow-sm shrink-0">
-                    <Calendar className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+              {/* Modal Content */}
+              <div className="p-6 sm:p-8 sm:pt-10">
+                <div className="flex items-center gap-3 mb-4">
+                  <span className="inline-flex items-center px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-500/20">
+                    {selectedEvent.category || 'Event'}
+                  </span>
+                  {selectedEvent.clubName && (
+                    <span className="text-sm font-bold text-slate-500 dark:text-slate-400">
+                      by {selectedEvent.clubName}
+                    </span>
+                  )}
+                </div>
+                
+                <h2 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight mb-8">
+                  {selectedEvent.title}
+                </h2>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8 bg-slate-50 dark:bg-white/5 p-5 rounded-3xl border border-slate-100 dark:border-white/10">
+                  <div className="flex items-center gap-4 text-slate-700 dark:text-slate-300">
+                    <div className="w-12 h-12 rounded-[1rem] bg-white dark:bg-white/10 flex items-center justify-center shadow-sm shrink-0">
+                      <Calendar className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5">Date & Time</p>
+                      <p className="font-bold">{formatDate(selectedEvent.date)}</p>
+                      <p className="text-sm">{formatTime(selectedEvent.time)}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5">Date & Time</p>
-                    <p className="font-bold">{formatDate(selectedEvent.date)}</p>
-                    <p className="text-sm">{formatTime(selectedEvent.time)}</p>
+                  <div className="flex items-center gap-4 text-slate-700 dark:text-slate-300">
+                    <div className="w-12 h-12 rounded-[1rem] bg-white dark:bg-white/10 flex items-center justify-center shadow-sm shrink-0">
+                      <MapPin className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5">Location</p>
+                      <p className="font-bold">{selectedEvent.venue || 'TBA'}</p>
+                    </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-4 text-slate-700 dark:text-slate-300">
-                  <div className="w-12 h-12 rounded-[1rem] bg-white dark:bg-white/10 flex items-center justify-center shadow-sm shrink-0">
-                    <MapPin className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5">Location</p>
-                    <p className="font-bold">{selectedEvent.venue || 'TBA'}</p>
-                  </div>
+
+                <div className="prose prose-slate dark:prose-invert max-w-none">
+                  <h3 className="text-lg font-bold mb-3">About the Event</h3>
+                  <p className="text-slate-600 dark:text-slate-400 whitespace-pre-wrap leading-relaxed">
+                    {selectedEvent.description || 'No detailed description provided.'}
+                  </p>
                 </div>
+
+                {selectedEvent.pdfURL && (
+                  <div className="mt-8">
+                    <a 
+                      href={selectedEvent.pdfURL} 
+                      target="_blank" 
+                      rel="noreferrer"
+                      download={selectedEvent.pdfName || "event_document.pdf"}
+                      className="inline-flex items-center justify-center gap-2 py-3 px-6 rounded-xl font-bold text-sm bg-indigo-50 text-indigo-600 hover:bg-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-400 dark:hover:bg-indigo-500/20 transition-colors border border-indigo-200 dark:border-indigo-500/20"
+                    >
+                      Download Attached Document
+                    </a>
+                  </div>
+                )}
               </div>
-
-              <div className="prose prose-slate dark:prose-invert max-w-none">
-                <h3 className="text-lg font-bold mb-3">About the Event</h3>
-                <p className="text-slate-600 dark:text-slate-400 whitespace-pre-wrap leading-relaxed">
-                  {selectedEvent.description || 'No detailed description provided.'}
-                </p>
-              </div>
-
-              {selectedEvent.pdfURL && (
-                <div className="mt-8">
-                  <a 
-                    href={selectedEvent.pdfURL} 
-                    target="_blank" 
-                    rel="noreferrer"
-                    download={selectedEvent.pdfName || "event_document.pdf"}
-                    className="inline-flex items-center justify-center gap-2 py-3 px-6 rounded-xl font-bold text-sm bg-indigo-50 text-indigo-600 hover:bg-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-400 dark:hover:bg-indigo-500/20 transition-colors border border-indigo-200 dark:border-indigo-500/20"
-                  >
-                    Download Attached Document
-                  </a>
-                </div>
-              )}
             </div>
             
-            {/* Modal Footer */}
-            <div className="p-6 sm:px-8 border-t border-slate-100 dark:border-white/10 shrink-0 bg-slate-50/50 dark:bg-black/20">
+            {/* Modal Footer (Sticky at bottom) */}
+            <div className="p-6 sm:px-8 border-t border-slate-100 dark:border-white/10 shrink-0 bg-slate-50 dark:bg-black/40 z-10">
               {registeredEvents.includes(selectedEvent.id) ? (
                 <button
                   disabled
