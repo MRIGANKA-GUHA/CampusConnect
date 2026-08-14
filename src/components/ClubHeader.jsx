@@ -36,7 +36,7 @@ export default function ClubHeader() {
   return (
     <>
       {/* Floating Pill Header */}
-      <div className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-4 pb-2 px-3 pointer-events-none bg-slate-50 dark:bg-black transition-colors duration-300">
+      <div className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-4 pb-2 px-3 pointer-events-none bg-transparent transition-colors duration-300">
         <header className="pointer-events-auto w-full max-w-6xl bg-white dark:bg-zinc-950 border border-slate-200 dark:border-white/10 shadow-[0_4px_24px_rgba(0,0,0,0.06)] rounded-full h-14 sm:h-16 flex items-center justify-between px-3 sm:px-5 transition-all duration-300">
 
           {/* Logo and Name */}
