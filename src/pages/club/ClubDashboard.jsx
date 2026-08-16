@@ -74,7 +74,7 @@ export default function ClubDashboard() {
                 </div>
                 <div>
                   <p className="text-[10px] sm:text-sm font-bold text-slate-400 uppercase tracking-widest leading-tight mb-0.5 sm:mb-0">{stat.label}</p>
-                  <p className="text-xl sm:text-3xl font-black tracking-tight">{stat.value}</p>
+                    <p className="text-xl sm:text-3xl font-black tracking-tight">{stat.value}</p>
                 </div>
               </div>
             </div>

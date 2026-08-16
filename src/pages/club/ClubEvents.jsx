@@ -6,12 +6,13 @@ import {
   MapPin, Clock, Users, IndianRupee, Search, CalendarClock,
   ChevronDown, ChevronLeft, ChevronRight,
   Image, FileText, Upload, Tag, Download,
-  CheckCircle, XCircle
+  CheckCircle, XCircle, ClipboardList, AlertCircle,
+  GraduationCap, CreditCard, UserCircle
 } from 'lucide-react';
 
 const STATUS_COLORS = {
-  draft:     'bg-slate-100 text-slate-600 dark:bg-slate-500/20 dark:text-slate-300',
-  pending:   'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300',
+  draft: 'bg-slate-100 text-slate-600 dark:bg-slate-500/20 dark:text-slate-300',
+  pending: 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300',
   published: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300',
   completed: 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300',
   cancelled: 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-300'
@@ -43,6 +44,56 @@ export default function ClubEvents() {
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [calMonthDate, setCalMonthDate] = useState(new Date());
   const [toast, setToast] = useState(null);
+  const [regGlobalStats, setRegGlobalStats] = useState(null);
+
+  // ── Registrations Drawer state ──
+  const [registrationsEvent, setRegistrationsEvent] = useState(null); // event for which drawer is open
+  const [registrations, setRegistrations] = useState([]);
+  const [regStats, setRegStats] = useState(null);
+  const [regLoading, setRegLoading] = useState(false);
+  const [regSearch, setRegSearch] = useState('');
+  const [regFilter, setRegFilter] = useState('all'); // 'all' | 'pending' | 'verified' | 'rejected'
+  const [updatingReg, setUpdatingReg] = useState(null); // reg id being updated
+
+  const openRegistrationsDrawer = async (event) => {
+    setRegistrationsEvent(event);
+    setRegSearch('');
+    setRegFilter('all');
+    setRegistrations([]);
+    setRegStats(null);
+    setRegLoading(true);
+    try {
+      const res = await api.get(`/club/events/${event.id}/registrations`);
+      setRegistrations(res.data.registrations || []);
+      setRegStats(res.data.stats || null);
+    } catch (err) {
+      console.error('Failed to fetch registrations:', err);
+      showToast('Failed to load registrations.', 'error');
+    } finally {
+      setRegLoading(false);
+    }
+  };
+
+  const handleRegStatusUpdate = async (regId, newStatus) => {
+    setUpdatingReg(regId);
+    try {
+      await api.patch(`/club/registrations/${regId}/status`, { status: newStatus });
+      setRegistrations(prev =>
+        prev.map(r => r.id === regId ? { ...r, paymentStatus: newStatus } : r)
+      );
+      // Refresh stats
+      if (registrationsEvent) {
+        const res = await api.get(`/club/events/${registrationsEvent.id}/registrations`);
+        setRegStats(res.data.stats || null);
+      }
+      fetchGlobalStats();
+      showToast(`Registration ${newStatus === 'verified' ? 'verified' : 'rejected'} successfully.`);
+    } catch (err) {
+      showToast(err.response?.data?.error || 'Failed to update status.', 'error');
+    } finally {
+      setUpdatingReg(null);
+    }
+  };
 
   const showToast = (message, type = 'success') => {
     setToast({ message, type });
@@ -59,7 +110,16 @@ export default function ClubEvents() {
   const bannerInputRef = useRef(null);
   const pdfInputRef = useRef(null);
 
-  useEffect(() => { fetchEvents(); }, []);
+  const fetchGlobalStats = async () => {
+    try {
+      const res = await api.get('/club/registrations/stats');
+      setRegGlobalStats(res.data.stats || { total: 0, pending: 0, verified: 0, revenue: 0 });
+    } catch (_) {
+      setRegGlobalStats({ total: 0, pending: 0, verified: 0, revenue: 0 });
+    }
+  };
+
+  useEffect(() => { fetchEvents(); fetchGlobalStats(); }, []);
 
   useEffect(() => {
     const handleKey = (e) => {
@@ -313,17 +373,78 @@ export default function ClubEvents() {
 
       {/* Toast Notification */}
       {toast && (
-        <div className={`fixed top-6 right-6 z-[200] flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-2xl text-sm font-semibold transition-all duration-300 animate-in slide-in-from-top-10 fade-in ${
-          toast.type === 'error'
-            ? 'bg-red-600 text-white'
-            : 'bg-emerald-600 text-white'
-        }`}>
+        <div className={`fixed top-6 right-6 z-[200] flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-2xl text-sm font-semibold transition-all duration-300 animate-in slide-in-from-top-10 fade-in ${toast.type === 'error'
+          ? 'bg-red-600 text-white'
+          : 'bg-emerald-600 text-white'
+          }`}>
           {toast.type === 'error' ? <XCircle className="w-5 h-5" /> : <CheckCircle className="w-5 h-5" />}
           {toast.message}
         </div>
       )}
 
       <main className="max-w-7xl mx-auto pt-24 sm:pt-32 px-4 sm:px-8 pb-12">
+
+        {/* Global Registration Stats Bar */}
+        {!regGlobalStats ? (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-8 sm:mb-12">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-3xl p-4 sm:p-6 shadow-sm animate-pulse">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
+                  <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-slate-200 dark:bg-white/5"></div>
+                  <div className="space-y-2 flex-1">
+                    <div className="h-3 w-20 bg-slate-200 dark:bg-white/5 rounded"></div>
+                    <div className="h-6 w-12 bg-slate-200 dark:bg-white/10 rounded-md"></div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-8 sm:mb-12">
+            {[
+              {
+                label: 'Total Registrations',
+                value: regGlobalStats.total?.toLocaleString() ?? '0',
+                icon: Users,
+                color: 'text-blue-600 dark:text-blue-400',
+                bg: 'bg-blue-100 dark:bg-blue-500/10'
+              },
+              {
+                label: 'Pending Approval',
+                value: regGlobalStats.pending?.toLocaleString() ?? '0',
+                icon: Clock,
+                color: 'text-amber-600 dark:text-amber-400',
+                bg: 'bg-amber-100 dark:bg-amber-500/10'
+              },
+              {
+                label: 'Verified Registrations',
+                value: regGlobalStats.verified?.toLocaleString() ?? '0',
+                icon: CheckCircle,
+                color: 'text-emerald-600 dark:text-emerald-400',
+                bg: 'bg-emerald-100 dark:bg-emerald-500/10'
+              },
+              {
+                label: 'Revenue Collected',
+                value: `₹${(regGlobalStats.revenue || 0).toLocaleString()}`,
+                icon: IndianRupee,
+                color: 'text-indigo-600 dark:text-indigo-400',
+                bg: 'bg-indigo-100 dark:bg-indigo-500/10'
+              },
+            ].map((stat, i) => (
+              <div key={i} className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-3xl p-4 sm:p-6 shadow-sm hover:shadow-xl hover:scale-[1.02] transition-all duration-300">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
+                  <div className={`p-3 sm:p-4 rounded-2xl ${stat.bg}`}>
+                    <stat.icon className={`w-6 h-6 sm:w-8 sm:h-8 ${stat.color}`} />
+                  </div>
+                  <div>
+                    <p className="text-[10px] sm:text-sm font-bold text-slate-400 uppercase tracking-widest leading-tight mb-0.5 sm:mb-0">{stat.label}</p>
+                    <p className="text-xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white">{stat.value}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Action Bar */}
         <div className="flex flex-col lg:flex-row justify-between items-center gap-6 mb-12 w-full">
@@ -480,16 +601,22 @@ export default function ClubEvents() {
                   {/* Actions */}
                   <div className="flex items-center gap-2 pt-5 border-t border-slate-100 dark:border-white/10">
                     <button
-                      onClick={(e) => openEdit(event, e)}
-                      className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-[1rem] bg-slate-100 dark:bg-white/5 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 text-xs font-bold transition-all"
+                      onClick={() => openRegistrationsDrawer(event)}
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-[1rem] bg-indigo-50 dark:bg-indigo-500/10 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-xs font-bold transition-all"
                     >
-                      <Pencil className="w-3.5 h-3.5" /> Edit
+                      REGISTRATIONS
+                    </button>
+                    <button
+                      onClick={(e) => openEdit(event, e)}
+                      className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-[1rem] bg-slate-100 dark:bg-white/5 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 text-xs font-bold transition-all"
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={(e) => handleDelete(event, e)}
-                      className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-[1rem] bg-slate-100 dark:bg-white/5 hover:bg-red-50 dark:hover:bg-red-500/10 text-slate-600 dark:text-slate-300 hover:text-red-500 dark:hover:text-red-400 text-xs font-bold transition-all"
+                      className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-[1rem] bg-slate-100 dark:bg-white/5 hover:bg-red-50 dark:hover:bg-red-500/10 text-slate-600 dark:text-slate-300 hover:text-red-500 dark:hover:text-red-400 text-xs font-bold transition-all"
                     >
-                      <Trash2 className="w-3.5 h-3.5" /> Delete
+                      <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 </div>
@@ -504,7 +631,7 @@ export default function ClubEvents() {
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300" onClick={() => setShowModal(false)}></div>
           <div className="relative pointer-events-auto w-full max-w-2xl bg-white dark:bg-[#0a0a0a] border border-white/20 dark:border-white/10 rounded-[3rem] p-8 sm:p-12 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] animate-in zoom-in-95 duration-200 overflow-hidden flex flex-col max-h-[90vh]">
-            
+
             {/* Modal Header */}
             <div className="flex justify-between items-center mb-8 shrink-0">
               <h2 className="text-3xl font-black tracking-tight leading-tight">
@@ -545,7 +672,7 @@ export default function ClubEvents() {
 
               {/* MODERN DATE & TIME SELECTORS */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                
+
                 {/* ── CUSTOM DATE PICKER ── */}
                 <div className="relative relative-dropdown">
                   <label className="block text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-300 mb-2 ml-1">Event Date *</label>
@@ -565,7 +692,7 @@ export default function ClubEvents() {
 
                   {activeDropdown === 'date' && (
                     <div className="absolute z-[120] top-full left-0 mt-2 w-full sm:w-80 bg-white/95 dark:bg-[#121215]/95 backdrop-blur-2xl border border-slate-200/80 dark:border-white/10 rounded-[2.5rem] p-6 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.3)] animate-in zoom-in-95 duration-200">
-                      
+
                       {/* Month Header */}
                       <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100 dark:border-white/10">
                         <button
@@ -615,13 +742,12 @@ export default function ClubEvents() {
                               type="button"
                               disabled={isPast}
                               onClick={() => handleSelectDay(dayNum)}
-                              className={`h-9 w-9 rounded-xl flex items-center justify-center transition-all ${
-                                isSelected
-                                  ? 'bg-gradient-to-tr from-indigo-600 to-indigo-500 text-white shadow-lg shadow-indigo-500/40 font-black scale-105'
-                                  : isPast
+                              className={`h-9 w-9 rounded-xl flex items-center justify-center transition-all ${isSelected
+                                ? 'bg-gradient-to-tr from-indigo-600 to-indigo-500 text-white shadow-lg shadow-indigo-500/40 font-black scale-105'
+                                : isPast
                                   ? 'text-slate-300 dark:text-slate-700 cursor-not-allowed opacity-50'
                                   : 'text-slate-700 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-white/10'
-                              }`}
+                                }`}
                             >
                               {dayNum}
                             </button>
@@ -677,7 +803,7 @@ export default function ClubEvents() {
 
                   {activeDropdown === 'time' && (
                     <div className="absolute z-[120] top-full right-0 mt-2 w-full sm:w-80 bg-white/95 dark:bg-[#121215]/95 backdrop-blur-2xl border border-slate-200/80 dark:border-white/10 rounded-[2.5rem] p-5 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.3)] animate-in zoom-in-95 duration-200">
-                      
+
                       {/* Large Glowing Digital Clock Display Header */}
                       <div className="flex items-center justify-between bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-500/10 dark:to-blue-500/10 border border-indigo-100 dark:border-indigo-500/20 rounded-2xl p-3.5 mb-4">
                         <div className="flex items-center gap-2">
@@ -696,11 +822,10 @@ export default function ClubEvents() {
                               const timePart = parts[0] || '10:00';
                               setField('time', `${timePart} AM`);
                             }}
-                            className={`px-3 py-1 rounded-lg text-xs font-black transition-all ${
-                              form.time?.includes('AM') || !form.time?.includes('PM')
-                                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/30 scale-105'
-                                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                            }`}
+                            className={`px-3 py-1 rounded-lg text-xs font-black transition-all ${form.time?.includes('AM') || !form.time?.includes('PM')
+                              ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/30 scale-105'
+                              : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                              }`}
                           >
                             AM
                           </button>
@@ -711,11 +836,10 @@ export default function ClubEvents() {
                               const timePart = parts[0] || '10:00';
                               setField('time', `${timePart} PM`);
                             }}
-                            className={`px-3 py-1 rounded-lg text-xs font-black transition-all ${
-                              form.time?.includes('PM')
-                                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/30 scale-105'
-                                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                            }`}
+                            className={`px-3 py-1 rounded-lg text-xs font-black transition-all ${form.time?.includes('PM')
+                              ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/30 scale-105'
+                              : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                              }`}
                           >
                             PM
                           </button>
@@ -726,7 +850,7 @@ export default function ClubEvents() {
                       <div className="mb-4">
                         <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 ml-1">Hour</p>
                         <div className="grid grid-cols-6 gap-1.5">
-                          {['01','02','03','04','05','06','07','08','09','10','11','12'].map(h => {
+                          {['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'].map(h => {
                             const curH = form.time?.split(' ')?.[0]?.split(':')?.[0] || '10';
                             const isSel = curH === h;
                             const curMin = form.time?.split(' ')?.[0]?.split(':')?.[1] || '00';
@@ -753,13 +877,12 @@ export default function ClubEvents() {
                                   const currentAmpm = parts[1] || 'AM';
                                   setField('time', `${h}:${currentMin} ${currentAmpm}`);
                                 }}
-                                className={`py-2 text-xs font-extrabold rounded-xl transition-all ${
-                                  isSel
-                                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/30 font-black scale-105'
-                                    : isPastHour
+                                className={`py-2 text-xs font-extrabold rounded-xl transition-all ${isSel
+                                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/30 font-black scale-105'
+                                  : isPastHour
                                     ? 'opacity-30 cursor-not-allowed bg-slate-50 dark:bg-white/5 text-slate-400'
                                     : 'bg-slate-50 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300'
-                                }`}
+                                  }`}
                               >
                                 {h}
                               </button>
@@ -772,7 +895,7 @@ export default function ClubEvents() {
                       <div className="mb-4">
                         <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 ml-1">Minute</p>
                         <div className="grid grid-cols-4 gap-2">
-                          {['00','15','30','45'].map(m => {
+                          {['00', '15', '30', '45'].map(m => {
                             const curM = form.time?.split(' ')?.[0]?.split(':')?.[1] || '00';
                             const isSel = curM === m;
                             return (
@@ -786,11 +909,10 @@ export default function ClubEvents() {
                                   const currentAmpm = parts[1] || 'AM';
                                   setField('time', `${currentHour}:${m} ${currentAmpm}`);
                                 }}
-                                className={`py-2 text-xs font-extrabold rounded-xl transition-all ${
-                                  isSel
-                                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/30 font-black scale-105'
-                                    : 'bg-slate-50 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300'
-                                }`}
+                                className={`py-2 text-xs font-extrabold rounded-xl transition-all ${isSel
+                                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/30 font-black scale-105'
+                                  : 'bg-slate-50 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300'
+                                  }`}
                               >
                                 :{m}
                               </button>
@@ -824,11 +946,10 @@ export default function ClubEvents() {
                                 type="button"
                                 disabled={isPastSlot}
                                 onClick={() => { setField('time', slot); setActiveDropdown(null); }}
-                                className={`py-1.5 px-3 rounded-xl text-[11px] font-bold transition-all whitespace-nowrap shrink-0 ${
-                                  isPastSlot
-                                    ? 'opacity-30 cursor-not-allowed bg-slate-100 dark:bg-white/5 text-slate-400'
-                                    : 'bg-slate-100 dark:bg-white/5 hover:bg-indigo-50 dark:hover:bg-indigo-500/20 text-slate-600 dark:text-slate-300 hover:text-indigo-600'
-                                }`}
+                                className={`py-1.5 px-3 rounded-xl text-[11px] font-bold transition-all whitespace-nowrap shrink-0 ${isPastSlot
+                                  ? 'opacity-30 cursor-not-allowed bg-slate-100 dark:bg-white/5 text-slate-400'
+                                  : 'bg-slate-100 dark:bg-white/5 hover:bg-indigo-50 dark:hover:bg-indigo-500/20 text-slate-600 dark:text-slate-300 hover:text-indigo-600'
+                                  }`}
                               >
                                 {slot}
                               </button>
@@ -863,13 +984,12 @@ export default function ClubEvents() {
                   className={`w-full p-4.5 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-white/15 flex items-center justify-between transition-all font-bold ${activeDropdown === 'status' ? 'ring-4 ring-indigo-500/10 border-indigo-500' : ''}`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <span className={`w-2.5 h-2.5 rounded-full ${
-                      form.status === 'pending'   ? 'bg-amber-500' :
+                    <span className={`w-2.5 h-2.5 rounded-full ${form.status === 'pending' ? 'bg-amber-500' :
                       form.status === 'cancelled' ? 'bg-red-500' : 'bg-slate-400'
-                    }`} />
+                      }`} />
                     <span className="text-slate-900 dark:text-white">{
                       form.status === 'pending' ? 'Submit for Review' :
-                      form.status === 'cancelled' ? 'Cancelled' : 'Draft'
+                        form.status === 'cancelled' ? 'Cancelled' : 'Draft'
                     }</span>
                   </div>
                   <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${activeDropdown === 'status' ? 'rotate-180' : ''}`} />
@@ -878,9 +998,9 @@ export default function ClubEvents() {
                 {activeDropdown === 'status' && (
                   <div className="absolute z-[110] left-0 right-0 mt-2 p-2 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-white/15 rounded-2xl shadow-2xl animate-in zoom-in-95 duration-150">
                     {[
-                      { value: 'draft',    label: 'Draft',              desc: 'Save as work-in-progress',      dot: 'bg-slate-400' },
-                      { value: 'pending',  label: 'Submit for Review',  desc: 'Send to admin for approval',   dot: 'bg-amber-500' },
-                      { value: 'cancelled',label: 'Cancelled',          desc: 'Cancel this event',            dot: 'bg-red-500' },
+                      { value: 'draft', label: 'Draft', desc: 'Save as work-in-progress', dot: 'bg-slate-400' },
+                      { value: 'pending', label: 'Submit for Review', desc: 'Send to admin for approval', dot: 'bg-amber-500' },
+                      { value: 'cancelled', label: 'Cancelled', desc: 'Cancel this event', dot: 'bg-red-500' },
                     ].map(st => (
                       <button
                         key={st.value}
@@ -929,16 +1049,16 @@ export default function ClubEvents() {
                 {/* Banner Upload */}
                 <div>
                   <label className="block text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-300 mb-2 ml-1">Event Banner (Optional)</label>
-                  <div 
+                  <div
                     onClick={() => bannerInputRef.current?.click()}
                     className="relative w-full h-40 rounded-2xl border-2 border-dashed border-slate-300 dark:border-white/20 hover:border-indigo-500 dark:hover:border-indigo-500 bg-slate-50 dark:bg-zinc-900/50 flex flex-col items-center justify-center gap-3 cursor-pointer overflow-hidden transition-all group"
                   >
-                    <input 
-                      type="file" 
-                      ref={bannerInputRef} 
-                      onChange={handleBannerChange} 
-                      accept="image/*" 
-                      className="hidden" 
+                    <input
+                      type="file"
+                      ref={bannerInputRef}
+                      onChange={handleBannerChange}
+                      accept="image/*"
+                      className="hidden"
                     />
                     {bannerPreview ? (
                       <>
@@ -961,16 +1081,16 @@ export default function ClubEvents() {
                 {/* PDF Upload */}
                 <div>
                   <label className="block text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-300 mb-2 ml-1">Event Brochure / PDF (Optional)</label>
-                  <div 
+                  <div
                     onClick={() => pdfInputRef.current?.click()}
                     className="w-full p-4.5 rounded-2xl border border-slate-200 dark:border-white/15 bg-slate-50 dark:bg-zinc-900/90 hover:border-indigo-500 dark:hover:border-indigo-500 flex items-center justify-between cursor-pointer transition-all group"
                   >
-                    <input 
-                      type="file" 
-                      ref={pdfInputRef} 
-                      onChange={handlePdfChange} 
-                      accept="application/pdf" 
-                      className="hidden" 
+                    <input
+                      type="file"
+                      ref={pdfInputRef}
+                      onChange={handlePdfChange}
+                      accept="application/pdf"
+                      className="hidden"
                     />
                     <div className="flex items-center gap-3 overflow-hidden">
                       <div className="w-10 h-10 shrink-0 rounded-xl bg-red-100 dark:bg-red-500/20 flex items-center justify-center text-red-600 dark:text-red-400">
@@ -1058,6 +1178,303 @@ export default function ClubEvents() {
           </div>
         </div>
       )}
+
+      {/* ───── REGISTRATIONS DRAWER ───── */}
+      {registrationsEvent && (
+        <RegistrationsDrawer
+          event={registrationsEvent}
+          registrations={registrations}
+          stats={regStats}
+          loading={regLoading}
+          search={regSearch}
+          setSearch={setRegSearch}
+          filter={regFilter}
+          setFilter={setRegFilter}
+          updatingReg={updatingReg}
+          onUpdateStatus={handleRegStatusUpdate}
+          onClose={() => setRegistrationsEvent(null)}
+        />
+      )}
+    </div>
+  );
+}
+
+// ─── Registrations Slide-Over Drawer ──────────────────────────────────────────
+function RegistrationsDrawer({
+  event, registrations, stats, loading,
+  search, setSearch, filter, setFilter,
+  updatingReg, onUpdateStatus, onClose
+}) {
+  const FILTERS = ['all', 'pending', 'verified', 'rejected'];
+
+  const filtered = registrations.filter(r => {
+    const q = search.toLowerCase();
+    const matchSearch = !q ||
+      (r.studentName || '').toLowerCase().includes(q) ||
+      (r.studentRollNo || '').toLowerCase().includes(q) ||
+      (r.studentEmail || '').toLowerCase().includes(q);
+    const matchFilter = filter === 'all' || r.paymentStatus === filter;
+    return matchSearch && matchFilter;
+  });
+
+  return (
+    <div className="fixed inset-0 z-[300] flex justify-end">
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200" onClick={onClose} />
+
+      {/* Drawer Panel - Styled like Notice detail slide-over drawer */}
+      <div className="relative w-full max-w-lg lg:max-w-xl bg-white dark:bg-[#09090b] border-l border-slate-200 dark:border-white/10 h-full flex flex-col shadow-2xl animate-in slide-in-from-right duration-300">
+
+        {/* Drawer Top Header */}
+        <div className="flex items-start justify-between px-6 sm:px-7 pt-7 pb-5 border-b border-slate-100 dark:border-white/5 shrink-0">
+          <div className="min-w-0 pr-3">
+            <div className="flex flex-wrap items-center gap-2 mb-2">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-black tracking-wider uppercase bg-indigo-50 text-indigo-600 border border-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-400 dark:border-indigo-500/20">
+                <Users className="w-3.5 h-3.5" />
+                Registrations
+              </span>
+              <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-[11px] font-bold tracking-wider uppercase border ${
+                event.price > 0
+                  ? 'bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20'
+                  : 'bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20'
+              }`}>
+                {event.price > 0 ? `Paid (₹${event.price})` : 'Free Entry'}
+              </span>
+            </div>
+            <h2 className="text-2xl font-black text-slate-900 dark:text-white leading-tight truncate">
+              {event.title}
+            </h2>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-9 h-9 rounded-full flex items-center justify-center bg-slate-100 dark:bg-white/5 hover:bg-red-50 dark:hover:bg-red-500/10 text-slate-500 hover:text-red-500 transition-all shrink-0"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Notice-styled Stats Summary */}
+        <div className="px-6 py-4 border-b border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-white/[0.02] shrink-0">
+          {loading ? (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="h-16 bg-slate-200 dark:bg-white/5 rounded-2xl animate-pulse"></div>
+              ))}
+            </div>
+          ) : stats ? (
+            <div className={`grid gap-2.5 ${event.price > 0 ? 'grid-cols-2 sm:grid-cols-4' : 'grid-cols-3'}`}>
+              <div className="flex items-center gap-3 bg-white dark:bg-[#121214] border border-slate-200/80 dark:border-white/10 rounded-2xl p-3.5 shadow-xs">
+                <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-white/10 flex items-center justify-center shrink-0">
+                  <Users className="w-4 h-4 text-slate-600 dark:text-slate-300" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Total</p>
+                  <p className="text-base font-black text-slate-900 dark:text-white leading-tight">{stats.total}</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 bg-white dark:bg-[#121214] border border-slate-200/80 dark:border-white/10 rounded-2xl p-3.5 shadow-xs">
+                <div className="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center shrink-0">
+                  <Clock className="w-4 h-4 text-amber-500" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-amber-500">Pending</p>
+                  <p className="text-base font-black text-amber-600 dark:text-amber-400 leading-tight">{stats.pending}</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 bg-white dark:bg-[#121214] border border-slate-200/80 dark:border-white/10 rounded-2xl p-3.5 shadow-xs">
+                <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center shrink-0">
+                  <CheckCircle className="w-4 h-4 text-emerald-500" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-500">Verified</p>
+                  <p className="text-base font-black text-emerald-600 dark:text-emerald-400 leading-tight">{stats.verified}</p>
+                </div>
+              </div>
+
+              {event.price > 0 && (
+                <div className="flex items-center gap-3 bg-white dark:bg-[#121214] border border-slate-200/80 dark:border-white/10 rounded-2xl p-3.5 shadow-xs">
+                  <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center shrink-0">
+                    <IndianRupee className="w-4 h-4 text-indigo-500" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-indigo-500">Revenue</p>
+                    <p className="text-base font-black text-indigo-600 dark:text-indigo-400 leading-tight">₹{stats.revenue}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : null}
+        </div>
+
+        {/* Search & Filter */}
+        <div className="px-6 py-4 shrink-0 border-b border-slate-100 dark:border-white/5 space-y-3">
+          <div className="relative">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search member by name, roll no..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-slate-100 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 text-sm font-medium text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10 transition-all"
+            />
+          </div>
+          <div className="flex gap-2">
+            {FILTERS.map(f => (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                className={`flex-1 py-1.5 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all ${
+                  filter === f
+                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/25 scale-[1.02]'
+                    : 'bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-white/10'
+                }`}
+              >
+                {f}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Registrations Member List */}
+        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4 custom-scrollbar">
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-20 gap-3 text-slate-400">
+              <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+              <p className="text-xs font-bold uppercase tracking-wider">Loading registrations...</p>
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="text-center py-20">
+              <AlertCircle className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3 opacity-60" />
+              <p className="text-sm font-bold text-slate-500 dark:text-slate-400">
+                {registrations.length === 0 ? 'No registrations yet.' : 'No members match your search.'}
+              </p>
+            </div>
+          ) : (
+            filtered.map(reg => {
+              const regDate = reg.createdAt ? (
+                typeof reg.createdAt === 'object' && reg.createdAt._seconds
+                  ? new Date(reg.createdAt._seconds * 1000).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
+                  : new Date(reg.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
+              ) : null;
+
+              return (
+                <div
+                  key={reg.id}
+                  className="group relative flex flex-col bg-white dark:bg-[#0c0c0e] border border-slate-200/90 dark:border-white/10 rounded-3xl p-5 sm:p-6 hover:border-indigo-400 dark:hover:border-indigo-500/40 hover:shadow-xl hover:shadow-indigo-500/5 transition-all duration-300"
+                >
+                  {/* Card Top: Badges & Date */}
+                  <div className="flex items-center justify-between gap-2 mb-4">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-black tracking-wider uppercase border ${
+                        reg.paymentStatus === 'verified'
+                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20'
+                          : reg.paymentStatus === 'pending'
+                          ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20'
+                          : 'bg-red-50 text-red-700 border-red-200 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20'
+                      }`}>
+                        {reg.paymentStatus === 'verified' && <CheckCircle className="w-3.5 h-3.5" />}
+                        {reg.paymentStatus === 'pending' && <Clock className="w-3.5 h-3.5" />}
+                        {reg.paymentStatus === 'rejected' && <XCircle className="w-3.5 h-3.5" />}
+                        {reg.paymentStatus}
+                      </span>
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold tracking-wider uppercase bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400">
+                        {reg.isFree ? 'Free Pass' : `₹${reg.amount}`}
+                      </span>
+                    </div>
+
+                    {regDate && (
+                      <div className="flex items-center gap-1 text-[11px] font-medium text-slate-400">
+                        <Calendar className="w-3.5 h-3.5 opacity-70" />
+                        <span>{regDate}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Student Profile Info */}
+                  <div className="flex items-center gap-3.5 mb-4">
+                    <div className="relative shrink-0">
+                      {reg.studentPhotoURL ? (
+                        <img
+                          src={reg.studentPhotoURL}
+                          alt={reg.studentName}
+                          className="w-12 h-12 rounded-2xl object-cover border-2 border-slate-100 dark:border-white/10 shadow-xs"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-black text-lg shadow-xs">
+                          {(reg.studentName || 'S')[0].toUpperCase()}
+                        </div>
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h4 className="font-black text-slate-900 dark:text-white text-base leading-snug truncate">
+                        {reg.studentName || 'Anonymous Student'}
+                      </h4>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold truncate mt-0.5">
+                        {reg.studentRollNo || reg.studentEmail}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Notice-styled Mini Info Grid */}
+                  <div className="grid grid-cols-2 gap-2.5 mb-3.5">
+                    <div className="flex items-center gap-3 bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/5 rounded-2xl p-3">
+                      <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center shrink-0">
+                        <GraduationCap className="w-4 h-4 text-indigo-500" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Dept</p>
+                        <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">{reg.studentDepartment || 'General'}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3 bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/5 rounded-2xl p-3">
+                      <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center shrink-0">
+                        <CreditCard className="w-4 h-4 text-emerald-500" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Payment</p>
+                        <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">{reg.isFree ? 'Free Entry' : `₹${reg.amount}`}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* UPI Ref Box if applicable */}
+                  {!reg.isFree && reg.upiTransactionId && (
+                    <div className="flex items-center justify-between px-3.5 py-2.5 bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/5 rounded-2xl mb-3.5 text-xs">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">UPI Ref:</span>
+                      <span className="font-mono font-bold text-slate-700 dark:text-slate-300">{reg.upiTransactionId}</span>
+                    </div>
+                  )}
+
+                  {/* Verify / Reject Actions */}
+                  {!reg.isFree && reg.paymentStatus === 'pending' && (
+                    <div className="flex items-center gap-2.5 pt-3.5 border-t border-slate-100 dark:border-white/5 mt-auto">
+                      <button
+                        onClick={() => onUpdateStatus(reg.id, 'verified')}
+                        disabled={updatingReg === reg.id}
+                        className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-md shadow-emerald-500/20 disabled:opacity-60"
+                      >
+                        {updatingReg === reg.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle className="w-3.5 h-3.5" />}
+                        Verify Payment
+                      </button>
+                      <button
+                        onClick={() => onUpdateStatus(reg.id, 'rejected')}
+                        disabled={updatingReg === reg.id}
+                        className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-red-50 dark:hover:bg-red-500/10 text-slate-700 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 text-xs font-bold transition-all border border-slate-200 dark:border-white/10 disabled:opacity-60"
+                      >
+                        {updatingReg === reg.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <XCircle className="w-3.5 h-3.5" />}
+                        Reject
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
+        </div>
+      </div>
     </div>
   );
 }
