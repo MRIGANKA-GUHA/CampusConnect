@@ -4,7 +4,8 @@ import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 import {
   Search, X, Calendar, MapPin, Users, Check,
-  Loader2, Image as ImageIcon, IndianRupee, Clock, AlertCircle
+  Loader2, Image as ImageIcon, IndianRupee, Clock, AlertCircle,
+  Upload, FileText, Sparkles, Trash2
 } from 'lucide-react';
 
 const EVENT_CATEGORIES = ['All', 'Technical', 'Cultural', 'Academic', 'Sports', 'Other'];
@@ -27,10 +28,17 @@ export default function StudentEvents() {
   // Map of eventId → { paymentStatus, upiTransactionId } for registered events
   const [registrationMap, setRegistrationMap] = useState({});
 
-  // UPI form state (shown inside modal for paid events)
+  // Receipt Upload & UPI form state (shown inside modal for paid events)
+  const [receiptFile, setReceiptFile] = useState(null);
+  const [receiptPreview, setReceiptPreview] = useState(null);
   const [upiInput, setUpiInput] = useState('');
   const [upiSubmitting, setUpiSubmitting] = useState(false);
+  const [scanningReceipt, setScanningReceipt] = useState(false);
+  const [scanStatus, setScanStatus] = useState(null); // 'success' | 'manual' | null
+  const [detectedApp, setDetectedApp] = useState('');
   const [showUpiForm, setShowUpiForm] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const receiptInputRef = useRef(null);
 
   const showToast = (msg, type = 'success') => {
     if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
@@ -40,34 +48,33 @@ export default function StudentEvents() {
   };
 
   useEffect(() => {
-    fetchEvents();
-    if (user) fetchMyRegistrations();
+    fetchData();
     return () => { if (toastTimerRef.current) clearTimeout(toastTimerRef.current); };
   }, [user]);
 
-  const fetchEvents = async () => {
+  const fetchData = async () => {
     try {
       setLoading(true);
-      const res = await api.get('/admin/events/public');
-      setEvents(res.data.events || []);
+      const promises = [api.get('/admin/events/public')];
+      if (user) {
+        promises.push(api.get('/student/registrations'));
+      }
+      const [eventsRes, regRes] = await Promise.all(promises);
+      setEvents(eventsRes.data.events || []);
+      if (regRes) {
+        const map = {};
+        (regRes.data.registrations || []).forEach(reg => {
+          map[reg.eventId] = reg;
+        });
+        setRegistrationMap(map);
+      } else {
+        setRegistrationMap({});
+      }
     } catch (err) {
-      console.error('Failed to fetch events:', err);
+      console.error('Failed to load events:', err);
       showToast('Failed to load events.', 'error');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchMyRegistrations = async () => {
-    try {
-      const res = await api.get('/student/registrations');
-      const map = {};
-      (res.data.registrations || []).forEach(reg => {
-        map[reg.eventId] = reg;
-      });
-      setRegistrationMap(map);
-    } catch (err) {
-      console.error('Failed to fetch registrations:', err);
     }
   };
 
@@ -87,22 +94,88 @@ export default function StudentEvents() {
     }
   };
 
-  // For paid events — submit with UPI transaction ID
+  const handleReceiptSelect = async (file) => {
+    if (!file) return;
+    if (file.size > 8 * 1024 * 1024) {
+      showToast('File size too large. Maximum size is 8MB.', 'error');
+      return;
+    }
+    setReceiptFile(file);
+    if (file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = () => setReceiptPreview(reader.result);
+      reader.readAsDataURL(file);
+    } else {
+      setReceiptPreview(null);
+    }
+
+    // Trigger AI Scan to extract UPI Transaction ID in real time
+    setScanningReceipt(true);
+    setScanStatus(null);
+    setDetectedApp('');
+    try {
+      const formData = new FormData();
+      formData.append('receipt', file);
+      const res = await api.post('/student/events/scan-receipt', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      if (res.data.extractedUpiId) {
+        setUpiInput(res.data.extractedUpiId);
+        setScanStatus('success');
+        setDetectedApp(res.data.paymentApp || '');
+        showToast(`UPI ID detected (${res.data.paymentApp || 'Receipt'})!`);
+      } else {
+        setScanStatus('manual');
+        showToast('Receipt uploaded. Please verify or enter UPI ID manually.', 'info');
+      }
+    } catch (err) {
+      console.warn('AI Receipt scan error:', err);
+      setScanStatus('manual');
+    } finally {
+      setScanningReceipt(false);
+    }
+  };
+
+  const handleRemoveReceipt = () => {
+    setReceiptFile(null);
+    setReceiptPreview(null);
+    setUpiInput('');
+    setScanStatus(null);
+    setDetectedApp('');
+    setScanningReceipt(false);
+    if (receiptInputRef.current) receiptInputRef.current.value = '';
+  };
+
+  // For paid events — submit with payment receipt upload
   const handlePaidRegister = async (eventId) => {
-    if (!upiInput.trim()) {
-      showToast('Please enter your UPI Transaction ID.', 'error');
+    if (!receiptFile && !upiInput.trim()) {
+      showToast('Please upload your payment receipt screenshot.', 'error');
       return;
     }
     setUpiSubmitting(true);
     try {
-      const res = await api.post(`/student/events/${eventId}/register`, {
-        upiTransactionId: upiInput.trim()
+      const formData = new FormData();
+      if (receiptFile) {
+        formData.append('receipt', receiptFile);
+      }
+      if (upiInput.trim()) {
+        formData.append('upiTransactionId', upiInput.trim());
+      }
+
+      const res = await api.post(`/student/events/${eventId}/register`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
       });
+
       const reg = res.data.registration;
       setRegistrationMap(prev => ({ ...prev, [eventId]: reg }));
       setShowUpiForm(false);
+      setReceiptFile(null);
+      setReceiptPreview(null);
       setUpiInput('');
-      showToast('Registration submitted! Awaiting payment verification.');
+      setScanStatus(null);
+      setDetectedApp('');
+
+      showToast(`Registration submitted! Awaiting club approval.`);
     } catch (err) {
       const msg = err.response?.data?.error || 'Registration failed.';
       showToast(msg, 'error');
@@ -143,8 +216,13 @@ export default function StudentEvents() {
 
   const formatTime = (timeString) => {
     if (!timeString) return '';
-    const [hour, minute] = timeString.split(':');
-    if (!hour || !minute) return timeString;
+    // If it already contains AM or PM (e.g. "10:00 AM", "02:30 PM", "10:00 am")
+    if (/\b(AM|PM)\b/i.test(timeString)) {
+      return timeString.trim();
+    }
+    const match = timeString.match(/^(\d{1,2}):(\d{2})/);
+    if (!match) return timeString;
+    const [, hour, minute] = match;
     const h = parseInt(hour, 10);
     const ampm = h >= 12 ? 'PM' : 'AM';
     const formattedHour = h % 12 || 12;
@@ -155,27 +233,33 @@ export default function StudentEvents() {
   const RegisterButton = ({ event, fullWidth = false }) => {
     const reg = getRegistrationStatus(event.id);
     const isFree = !event.price || event.price === 0;
-    const baseClass = `flex items-center justify-center gap-2 py-3.5 rounded-[1.25rem] font-bold text-sm transition-all active:scale-95 ${fullWidth ? 'w-full' : 'flex-1'}`;
+    const baseClass = `flex items-center justify-center gap-2 px-3.5 py-3.5 rounded-[1.25rem] font-bold text-xs sm:text-sm whitespace-nowrap transition-all active:scale-95 ${fullWidth ? 'w-full' : 'flex-1 min-w-0'}`;
 
     if (reg) {
       if (reg.paymentStatus === 'verified') {
         return (
-          <button disabled className={`${baseClass} bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20`}>
-            <Check className="w-4 h-4" /> Registered
+          <button disabled className={`${baseClass} bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 border border-emerald-200/80 dark:border-emerald-500/20 cursor-default shadow-xs`}>
+            <Check className="w-4 h-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+            <span className="truncate">Registered</span>
           </button>
         );
       }
       if (reg.paymentStatus === 'pending') {
         return (
-          <button disabled className={`${baseClass} bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20`}>
-            <Clock className="w-4 h-4" /> Pending Verification
+          <button disabled className={`${baseClass} bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400 border border-amber-200/80 dark:border-amber-500/20 cursor-default shadow-xs`}>
+            <Clock className="w-4 h-4 shrink-0 text-amber-600 dark:text-amber-400" />
+            <span className="truncate">Pending</span>
           </button>
         );
       }
       if (reg.paymentStatus === 'rejected') {
         return (
-          <button disabled className={`${baseClass} bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400 border border-red-200 dark:border-red-500/20`}>
-            <X className="w-4 h-4" /> Payment Rejected
+          <button
+            onClick={() => handleRegisterClick(event)}
+            className={`${baseClass} bg-red-50 hover:bg-red-100 dark:bg-red-500/10 dark:hover:bg-red-500/20 text-red-600 dark:text-red-400 border border-red-200/80 dark:border-red-500/20 shadow-xs`}
+          >
+            <X className="w-4 h-4 shrink-0 text-red-500" />
+            <span className="truncate">Retry Payment</span>
           </button>
         );
       }
@@ -189,9 +273,9 @@ export default function StudentEvents() {
         className={`${baseClass} bg-slate-900 text-white dark:bg-white dark:text-black hover:bg-slate-800 dark:hover:bg-slate-200 shadow-lg hover:shadow-slate-500/20 dark:hover:shadow-white/20 disabled:opacity-50 disabled:active:scale-100`}
       >
         {registering === event.id ? (
-          <Loader2 className="w-4 h-4 animate-spin" />
+          <Loader2 className="w-4 h-4 animate-spin shrink-0" />
         ) : (
-          isFree ? 'Register Free' : `Register · ₹${event.price}`
+          <span className="truncate">{isFree ? 'Register Free' : `Register · ₹${event.price}`}</span>
         )}
       </button>
     );
@@ -283,10 +367,6 @@ export default function StudentEvents() {
                         <ImageIcon className="w-12 h-12 text-indigo-300 dark:text-indigo-700 opacity-50" />
                       </div>
                     )}
-                    {/* Price Badge */}
-                    <div className={`absolute top-4 left-4 px-2.5 py-1 rounded-lg text-xs font-bold ${isFree ? 'bg-emerald-500 text-white' : 'bg-amber-500 text-white'}`}>
-                      {isFree ? 'Free' : `₹${event.price}`}
-                    </div>
                     {/* Date Badge over image */}
                     <div className="absolute bottom-4 right-4 bg-white/95 dark:bg-black/90 backdrop-blur-md border border-white/50 dark:border-white/10 shadow-xl px-3 py-1.5 rounded-[1rem] flex flex-col items-center justify-center min-w-[3.5rem] group-hover:-translate-y-1 transition-transform">
                       <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest leading-none mb-1">
@@ -316,7 +396,7 @@ export default function StudentEvents() {
                       </p>
 
                       {/* Metadata Icons */}
-                      <div className="flex flex-col gap-0.5 mt-auto">
+                      <div className="flex flex-col gap-1 mt-auto">
                         <div className="flex items-center gap-3 text-sm font-semibold text-slate-600 dark:text-slate-300">
                           <div className="w-8 h-8 rounded-full bg-slate-50 dark:bg-white/5 flex items-center justify-center shrink-0">
                             <MapPin className="w-4 h-4 text-slate-500 dark:text-slate-400" />
@@ -325,9 +405,21 @@ export default function StudentEvents() {
                         </div>
                         <div className="flex items-center gap-3 text-sm font-semibold text-slate-600 dark:text-slate-300">
                           <div className="w-8 h-8 rounded-full bg-slate-50 dark:bg-white/5 flex items-center justify-center shrink-0">
-                            <Calendar className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                            <Clock className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                           </div>
-                          <span className="truncate">{formatTime(event.time)}</span>
+                          <span className="truncate">{formatTime(event.time) || 'TBA'}</span>
+                        </div>
+                        <div className="flex items-center gap-3 text-sm font-semibold text-slate-600 dark:text-slate-300">
+                          <div className="w-8 h-8 rounded-full bg-slate-50 dark:bg-white/5 flex items-center justify-center shrink-0">
+                            <IndianRupee className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                          </div>
+                          <span className="truncate font-bold text-slate-900 dark:text-white">
+                            {isFree ? (
+                              <span className="text-emerald-600 dark:text-emerald-400">Free Entry</span>
+                            ) : (
+                              <span>₹{event.price} <span className="text-xs font-semibold text-slate-400">· Entry Fee</span></span>
+                            )}
+                          </span>
                         </div>
                         {event.clubName && (
                           <div className="flex items-center gap-3 text-sm font-semibold text-slate-600 dark:text-slate-300">
@@ -340,12 +432,12 @@ export default function StudentEvents() {
                       </div>
                     </div>
 
-                    <div className="pt-6 border-t border-slate-100 dark:border-white/10 flex gap-3">
+                    <div className="pt-5 border-t border-slate-100 dark:border-white/10 flex items-center gap-2.5">
                       <button
                         onClick={() => { setSelectedEvent(event); setShowUpiForm(false); setUpiInput(''); }}
-                        className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-[1.25rem] font-bold text-sm bg-slate-100 text-slate-900 dark:bg-white/5 dark:text-white hover:bg-slate-200 dark:hover:bg-white/10 transition-all active:scale-95"
+                        className="flex-1 min-w-0 flex items-center justify-center gap-1.5 px-3.5 py-3.5 rounded-[1.25rem] font-bold text-xs sm:text-sm bg-slate-100 text-slate-900 dark:bg-white/5 dark:text-white hover:bg-slate-200 dark:hover:bg-white/10 transition-all active:scale-95 whitespace-nowrap shadow-xs"
                       >
-                        View Details
+                        <span className="truncate">View Details</span>
                       </button>
                       <RegisterButton event={event} />
                     </div>
@@ -420,16 +512,6 @@ export default function StudentEvents() {
                     <ImageIcon className="w-16 h-16 text-indigo-300 dark:text-indigo-700 opacity-50" />
                   </div>
                 )}
-                {/* Price badge in modal banner */}
-                {selectedEvent.price > 0 ? (
-                  <div className="absolute top-4 left-4 bg-amber-500 text-white px-3 py-1 rounded-lg text-sm font-bold flex items-center gap-1.5">
-                    <IndianRupee className="w-4 h-4" /> {selectedEvent.price} Entry Fee
-                  </div>
-                ) : (
-                  <div className="absolute top-4 left-4 bg-emerald-500 text-white px-3 py-1 rounded-lg text-sm font-bold">
-                    Free Event
-                  </div>
-                )}
               </div>
 
               {/* Modal Content */}
@@ -449,15 +531,15 @@ export default function StudentEvents() {
                   {selectedEvent.title}
                 </h2>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8 bg-slate-50 dark:bg-white/5 p-5 rounded-3xl border border-slate-100 dark:border-white/10">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8 bg-slate-50 dark:bg-white/5 p-5 rounded-3xl border border-slate-100 dark:border-white/10">
                   <div className="flex items-center gap-4 text-slate-700 dark:text-slate-300">
                     <div className="w-12 h-12 rounded-[1rem] bg-white dark:bg-white/10 flex items-center justify-center shadow-sm shrink-0">
                       <Calendar className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                     </div>
                     <div>
                       <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5">Date & Time</p>
-                      <p className="font-bold">{formatDate(selectedEvent.date)}</p>
-                      <p className="text-sm">{formatTime(selectedEvent.time)}</p>
+                      <p className="font-bold text-sm">{formatDate(selectedEvent.date)}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">{formatTime(selectedEvent.time) || 'TBA'}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-4 text-slate-700 dark:text-slate-300">
@@ -466,7 +548,22 @@ export default function StudentEvents() {
                     </div>
                     <div>
                       <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5">Location</p>
-                      <p className="font-bold">{selectedEvent.venue || 'TBA'}</p>
+                      <p className="font-bold text-sm truncate">{selectedEvent.venue || 'TBA'}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4 text-slate-700 dark:text-slate-300">
+                    <div className="w-12 h-12 rounded-[1rem] bg-white dark:bg-white/10 flex items-center justify-center shadow-sm shrink-0">
+                      <IndianRupee className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5">Entry Fee</p>
+                      <p className="font-bold text-sm">
+                        {selectedEvent.price > 0 ? (
+                          <span className="text-slate-900 dark:text-white font-black">₹{selectedEvent.price}</span>
+                        ) : (
+                          <span className="text-emerald-600 dark:text-emerald-400 font-black">Free Entry</span>
+                        )}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -492,41 +589,175 @@ export default function StudentEvents() {
                   </div>
                 )}
 
-                {/* UPI Payment Form (for paid events) */}
-                {showUpiForm && selectedEvent.price > 0 && !getRegistrationStatus(selectedEvent.id) && (
-                  <div className="mt-6 p-5 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-2xl">
-                    <div className="flex items-start gap-3 mb-4">
-                      <div className="w-9 h-9 rounded-xl bg-amber-500/20 flex items-center justify-center shrink-0">
-                        <IndianRupee className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-                      </div>
-                      <div>
-                        <p className="font-black text-slate-900 dark:text-white text-sm">Payment Required — ₹{selectedEvent.price}</p>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">
-                          Pay ₹{selectedEvent.price} via UPI to the club's UPI ID, then enter your UPI Transaction ID below to confirm your registration.
+                {/* Payment Receipt Upload Form (for paid events) */}
+                {showUpiForm && selectedEvent.price > 0 && (!getRegistrationStatus(selectedEvent.id) || getRegistrationStatus(selectedEvent.id)?.paymentStatus === 'rejected') && (
+                  <div className="mt-6 p-6 bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 rounded-3xl space-y-5">
+                    {/* Header */}
+                    <div className="flex items-start gap-3.5">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <p className="font-black text-slate-900 dark:text-white text-base">Payment Required — ₹{selectedEvent.price}</p>
+                          
+                        </div>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                          Pay ₹{selectedEvent.price} via your UPI app (Google Pay, PhonePe, Paytm, etc.), then upload the payment receipt or screenshot below.
                         </p>
                       </div>
                     </div>
-                    <input
-                      type="text"
-                      placeholder="Enter UPI Transaction ID (e.g. UPI123456789)"
-                      value={upiInput}
-                      onChange={e => setUpiInput(e.target.value)}
-                      className="w-full px-4 py-3 rounded-xl bg-white dark:bg-black/40 border border-amber-300 dark:border-amber-500/30 text-slate-900 dark:text-white font-bold text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/30 placeholder-slate-400 mb-3"
-                    />
-                    <div className="flex gap-2">
+
+                    {/* Receipt Dropzone / Preview */}
+                    {!receiptFile ? (
+                      <div
+                        onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                        onDragLeave={() => setIsDragging(false)}
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          setIsDragging(false);
+                          const file = e.dataTransfer.files?.[0];
+                          if (file) handleReceiptSelect(file);
+                        }}
+                        onClick={() => receiptInputRef.current?.click()}
+                        className={`relative group flex flex-col items-center justify-center p-6 sm:p-8 rounded-2xl border-2 border-dashed transition-all cursor-pointer text-center ${isDragging
+                            ? 'border-indigo-500 bg-indigo-500/10 scale-[1.01]'
+                            : 'border-slate-300 dark:border-white/15 bg-white dark:bg-[#0c0c0e] hover:border-indigo-400 hover:bg-slate-50 dark:hover:bg-white/[0.02]'
+                          }`}
+                      >
+                        <input
+                          ref={receiptInputRef}
+                          type="file"
+                          accept="image/*,application/pdf"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleReceiptSelect(file);
+                          }}
+                          className="hidden"
+                        />
+                        <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                          <Upload className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+                        </div>
+                        <p className="font-bold text-sm text-slate-800 dark:text-slate-200">
+                          Click to upload or drag & drop payment receipt
+                        </p>
+                        <p className="text-xs text-slate-400 mt-1">
+                          PNG, JPG, WEBP or PDF (Max 8MB)
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-2xl bg-white dark:bg-[#0c0c0e] border border-indigo-200 dark:border-indigo-500/30 shadow-xs">
+                        <div className="flex items-center gap-3.5 min-w-0">
+                          {receiptPreview ? (
+                            <img
+                              src={receiptPreview}
+                              alt="Receipt Preview"
+                              className="w-14 h-14 rounded-xl object-cover border border-slate-200 dark:border-white/10 shrink-0 shadow-xs"
+                            />
+                          ) : (
+                            <div className="w-14 h-14 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center shrink-0 border border-indigo-100 dark:border-indigo-500/20">
+                              <FileText className="w-7 h-7 text-indigo-600 dark:text-indigo-400" />
+                            </div>
+                          )}
+                          <div className="min-w-0">
+                            <p className="text-xs font-bold text-slate-900 dark:text-white truncate max-w-[200px] sm:max-w-[280px]">
+                              {receiptFile.name}
+                            </p>
+                            <p className="text-[11px] font-semibold text-slate-400 mt-0.5">
+                              {(receiptFile.size / (1024 * 1024)).toFixed(2)} MB • Ready for AI verification
+                            </p>
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={handleRemoveReceipt}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/20 text-xs font-bold transition-colors shrink-0"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" /> Remove
+                        </button>
+                      </div>
+                    )}
+
+                    {/* UPI Ref / Transaction ID Input with Real-time AI Scan State */}
+                    <div>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                          UPI Transaction ID / UTR
+                        </label>
+                        {scanningReceipt}
+                        {!scanningReceipt && scanStatus === 'success' && (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
+                            <Check className="w-3 h-3" /> Auto-Detected {detectedApp ? `(${detectedApp})` : ''}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="relative">
+                        <input
+                          type="text"
+                          disabled={scanningReceipt}
+                          placeholder={scanningReceipt ? "Scanning your receipt for UPI ID..." : "e.g. 423019284712 (will be auto-scanned from receipt)"}
+                          value={upiInput}
+                          onChange={e => setUpiInput(e.target.value)}
+                          className={`w-full px-4 py-2.5 rounded-xl border text-slate-900 dark:text-white font-mono font-medium text-xs sm:text-sm focus:outline-none transition-all ${
+                            scanningReceipt
+                              ? 'bg-indigo-50/50 dark:bg-indigo-500/10 border-indigo-300 dark:border-indigo-500/40 text-indigo-700 dark:text-indigo-300 placeholder-indigo-400 cursor-wait'
+                              : scanStatus === 'success'
+                                ? 'bg-emerald-50/30 dark:bg-emerald-500/5 border-emerald-300 dark:border-emerald-500/30 focus:ring-2 focus:ring-emerald-500/20'
+                                : 'bg-white dark:bg-black/40 border-slate-200 dark:border-white/10 focus:ring-2 focus:ring-indigo-500/20 placeholder-slate-400'
+                          }`}
+                        />
+                        {scanningReceipt && (
+                          <div className="absolute right-3.5 top-1/2 -translate-y-1/2">
+                            <Sparkles className="w-4 h-4 text-indigo-500 animate-spin" />
+                          </div>
+                        )}
+                      </div>
+
+                      {scanStatus === 'manual' && !scanningReceipt && (
+                        <p className="text-[11px] font-medium text-amber-600 dark:text-amber-400 mt-1 flex items-center gap-1">
+                          <AlertCircle className="w-3 h-3 shrink-0" /> Could not auto-detect UPI ID. Please enter manually from your receipt.
+                        </p>
+                      )}
+                      {scanStatus === 'success' && !scanningReceipt && (
+                        <p className="text-[11px] font-medium text-slate-400 mt-1">
+                          Please verify the auto-detected UPI ID above. You can edit it if needed before submitting.
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex items-center gap-3 pt-2">
                       <button
-                        onClick={() => { setShowUpiForm(false); setUpiInput(''); }}
-                        className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 text-sm font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-all"
+                        type="button"
+                        onClick={() => {
+                          setShowUpiForm(false);
+                          handleRemoveReceipt();
+                        }}
+                        className="flex-1 py-3 rounded-2xl border border-slate-200 dark:border-white/10 text-xs sm:text-sm font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-all"
                       >
                         Cancel
                       </button>
                       <button
+                        type="button"
                         onClick={() => handlePaidRegister(selectedEvent.id)}
-                        disabled={upiSubmitting || !upiInput.trim()}
-                        className="flex-2 flex-1 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm transition-all flex items-center justify-center gap-2 disabled:opacity-60 shadow-lg shadow-amber-500/20"
+                        disabled={scanningReceipt || upiSubmitting || (!receiptFile && !upiInput.trim())}
+                        className="flex-2 flex-1 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-indigo-500/20 active:scale-95"
                       >
-                        {upiSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
-                        Confirm Registration
+                        {scanningReceipt ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin text-white" />
+                            <span>Scanning Receipt...</span>
+                          </>
+                        ) : upiSubmitting ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin text-white" />
+                            <span>Submitting Registration...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Check className="w-4 h-4" />
+                            <span>Submit Registration</span>
+                          </>
+                        )}
                       </button>
                     </div>
                   </div>

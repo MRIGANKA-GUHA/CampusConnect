@@ -3,7 +3,8 @@ import {
   Calendar, Search, Loader2, CheckCircle, XCircle, Clock,
   Ban, Eye, ChevronDown, Filter, AlertCircle,
   Tag, MapPin, Users, Building2, AlertTriangle, IndianRupee, Download,
-  ClipboardList, X, GraduationCap, CreditCard
+  ClipboardList, X, GraduationCap, CreditCard,
+  ExternalLink, Copy, Check, Sparkles
 } from 'lucide-react';
 import SmartHeader from '../../components/SmartHeader';
 import api from '../../services/api';
@@ -87,6 +88,30 @@ export default function AdminEvents() {
       setRegistrations(prev =>
         prev.map(r => r.id === regId ? { ...r, paymentStatus: newStatus } : r)
       );
+
+      // Synchronize attendees count on event card and detail panel
+      const targetReg = registrations.find(r => r.id === regId);
+      if (targetReg) {
+        const studentUid = targetReg.studentUid;
+        const targetEventId = targetReg.eventId || registrationsEvent?.id;
+
+        const updateAttendeesForEvent = (ev) => {
+          if (ev.id !== targetEventId) return ev;
+          const curAttendees = ev.attendees || [];
+          const nextAttendees = newStatus === 'rejected'
+            ? curAttendees.filter(uid => uid !== studentUid)
+            : curAttendees.includes(studentUid) ? curAttendees : [...curAttendees, studentUid];
+          return { ...ev, attendees: nextAttendees };
+        };
+
+        setEvents(prev => prev.map(updateAttendeesForEvent));
+        setSelectedEvent(prev => prev ? updateAttendeesForEvent(prev) : null);
+
+        if (registrationsEvent && registrationsEvent.id === targetEventId) {
+          setRegistrationsEvent(prev => prev ? updateAttendeesForEvent(prev) : null);
+        }
+      }
+
       if (registrationsEvent) {
         const res = await api.get('/admin/registrations', { params: { eventId: registrationsEvent.id } });
         setRegStats(res.data.stats || null);
@@ -187,8 +212,8 @@ export default function AdminEvents() {
       {/* Toast */}
       {toast && (
         <div className={`fixed top-6 right-6 z-50 flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-2xl text-sm font-semibold transition-all duration-300 ${toast.type === 'error'
-            ? 'bg-red-600 text-white'
-            : 'bg-emerald-600 text-white'
+          ? 'bg-red-600 text-white'
+          : 'bg-emerald-600 text-white'
           }`}>
           {toast.type === 'error' ? <XCircle className="w-4 h-4" /> : <CheckCircle className="w-4 h-4" />}
           {toast.message}
@@ -312,8 +337,8 @@ export default function AdminEvents() {
                           setShowStatusDropdown(false);
                         }}
                         className={`w-full text-left px-4 py-2.5 rounded-xl text-sm font-bold transition-colors ${isSelected
-                            ? 'bg-slate-100 dark:bg-white/10 text-slate-900 dark:text-white'
-                            : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white'
+                          ? 'bg-slate-100 dark:bg-white/10 text-slate-900 dark:text-white'
+                          : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white'
                           }`}
                       >
                         {s === 'all' ? 'All Statuses' : STATUS_CONFIG[s]?.label}
@@ -717,276 +742,425 @@ function AdminRegistrationsDrawer({
   updatingReg, onUpdateStatus, onClose
 }) {
   const FILTERS = ['all', 'pending', 'verified', 'rejected'];
+  const [previewReceipt, setPreviewReceipt] = useState(null);
+  const [copiedId, setCopiedId] = useState(null);
+
+  const copyToClipboard = (text, id) => {
+    if (!text) return;
+    navigator.clipboard.writeText(text);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
 
   const filtered = registrations.filter(r => {
     const q = search.toLowerCase();
     const matchSearch = !q ||
       (r.studentName || '').toLowerCase().includes(q) ||
       (r.studentRollNo || '').toLowerCase().includes(q) ||
-      (r.studentEmail || '').toLowerCase().includes(q);
+      (r.studentEmail || '').toLowerCase().includes(q) ||
+      (r.upiTransactionId || '').toLowerCase().includes(q);
     const matchFilter = filter === 'all' || r.paymentStatus === filter;
     return matchSearch && matchFilter;
   });
 
   return (
-    <div className="fixed inset-0 z-[300] flex justify-end">
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200" onClick={onClose} />
+    <>
+      <div className="fixed inset-0 z-[300] flex justify-end">
+        {/* Backdrop */}
+        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200" onClick={onClose} />
 
-      {/* Drawer Panel - Styled like Notice detail slide-over drawer */}
-      <div className="relative w-full max-w-lg lg:max-w-xl bg-white dark:bg-[#09090b] border-l border-slate-200 dark:border-white/10 h-full flex flex-col shadow-2xl animate-in slide-in-from-right duration-300">
+        {/* Drawer Panel - Styled like Notice detail slide-over drawer */}
+        <div className="relative w-full max-w-lg lg:max-w-xl bg-white dark:bg-[#09090b] border-l border-slate-200 dark:border-white/10 h-full flex flex-col shadow-2xl animate-in slide-in-from-right duration-300">
 
-        {/* Drawer Top Header */}
-        <div className="flex items-start justify-between px-6 sm:px-7 pt-7 pb-5 border-b border-slate-100 dark:border-white/5 shrink-0">
-          <div className="min-w-0 pr-3">
-            <div className="flex flex-wrap items-center gap-2 mb-2">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-black tracking-wider uppercase bg-indigo-50 text-indigo-600 border border-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-400 dark:border-indigo-500/20">
-                <Users className="w-3.5 h-3.5" />
-                Registrations
-              </span>
-              <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-[11px] font-bold tracking-wider uppercase border ${
-                event.price > 0
-                  ? 'bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20'
-                  : 'bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20'
-              }`}>
-                {event.price > 0 ? `Paid (₹${event.price})` : 'Free Entry'}
-              </span>
+          {/* Drawer Top Header */}
+          <div className="flex items-start justify-between px-6 sm:px-7 pt-7 pb-5 border-b border-slate-100 dark:border-white/5 shrink-0">
+            <div className="min-w-0 pr-3">
+              <div className="flex flex-wrap items-center gap-2 mb-2">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-black tracking-wider uppercase bg-indigo-50 text-indigo-600 border border-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-400 dark:border-indigo-500/20">
+                  <Users className="w-3.5 h-3.5" />
+                  Registrations
+                </span>
+                <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-[11px] font-bold tracking-wider uppercase border ${event.price > 0
+                    ? 'bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20'
+                    : 'bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20'
+                  }`}>
+                  {event.price > 0 ? `Paid (₹${event.price})` : 'Free Entry'}
+                </span>
+              </div>
+              <h2 className="text-2xl font-black text-slate-900 dark:text-white leading-tight truncate">
+                {event.title}
+              </h2>
             </div>
-            <h2 className="text-2xl font-black text-slate-900 dark:text-white leading-tight truncate">
-              {event.title}
-            </h2>
+            <button
+              onClick={onClose}
+              className="w-9 h-9 rounded-full flex items-center justify-center bg-slate-100 dark:bg-white/5 hover:bg-red-50 dark:hover:bg-red-500/10 text-slate-500 hover:text-red-500 transition-all shrink-0"
+            >
+              <X className="w-4 h-4" />
+            </button>
           </div>
-          <button
-            onClick={onClose}
-            className="w-9 h-9 rounded-full flex items-center justify-center bg-slate-100 dark:bg-white/5 hover:bg-red-50 dark:hover:bg-red-500/10 text-slate-500 hover:text-red-500 transition-all shrink-0"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
 
-        {/* Notice-styled Stats Summary */}
-        <div className="px-6 py-4 border-b border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-white/[0.02] shrink-0">
-          {loading ? (
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-              {[...Array(4)].map((_, i) => (
-                <div key={i} className="h-16 bg-slate-200 dark:bg-white/5 rounded-2xl animate-pulse"></div>
-              ))}
+          {/* Notice-styled Stats Summary */}
+          <div className="px-6 py-4 border-b border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-white/[0.02] shrink-0">
+            {loading ? (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="h-16 bg-slate-200 dark:bg-white/5 rounded-2xl animate-pulse"></div>
+                ))}
             </div>
-          ) : stats ? (
-            <div className={`grid gap-2.5 ${event.price > 0 ? 'grid-cols-2 sm:grid-cols-4' : 'grid-cols-3'}`}>
-              <div className="flex items-center gap-3 bg-white dark:bg-[#121214] border border-slate-200/80 dark:border-white/10 rounded-2xl p-3.5 shadow-xs">
-                <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-white/10 flex items-center justify-center shrink-0">
-                  <Users className="w-4 h-4 text-slate-600 dark:text-slate-300" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Total</p>
-                  <p className="text-base font-black text-slate-900 dark:text-white leading-tight">{stats.total}</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 bg-white dark:bg-[#121214] border border-slate-200/80 dark:border-white/10 rounded-2xl p-3.5 shadow-xs">
-                <div className="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center shrink-0">
-                  <Clock className="w-4 h-4 text-amber-500" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-amber-500">Pending</p>
-                  <p className="text-base font-black text-amber-600 dark:text-amber-400 leading-tight">{stats.pending}</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 bg-white dark:bg-[#121214] border border-slate-200/80 dark:border-white/10 rounded-2xl p-3.5 shadow-xs">
-                <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center shrink-0">
-                  <CheckCircle className="w-4 h-4 text-emerald-500" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-500">Verified</p>
-                  <p className="text-base font-black text-emerald-600 dark:text-emerald-400 leading-tight">{stats.verified}</p>
-                </div>
-              </div>
-
-              {event.price > 0 && (
+            ) : stats ? (
+              <div className={`grid gap-2.5 ${event.price > 0 ? 'grid-cols-2 sm:grid-cols-4' : 'grid-cols-3'}`}>
                 <div className="flex items-center gap-3 bg-white dark:bg-[#121214] border border-slate-200/80 dark:border-white/10 rounded-2xl p-3.5 shadow-xs">
-                  <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center shrink-0">
-                    <IndianRupee className="w-4 h-4 text-indigo-500" />
+                  <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-white/10 flex items-center justify-center shrink-0">
+                    <Users className="w-4 h-4 text-slate-600 dark:text-slate-300" />
+            </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Total</p>
+                    <p className="text-base font-black text-slate-900 dark:text-white leading-tight">{stats.total}</p>
+            </div>
+          </div>
+
+                <div className="flex items-center gap-3 bg-white dark:bg-[#121214] border border-slate-200/80 dark:border-white/10 rounded-2xl p-3.5 shadow-xs">
+                  <div className="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center shrink-0">
+                    <Clock className="w-4 h-4 text-amber-500" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-indigo-500">Revenue</p>
-                    <p className="text-base font-black text-indigo-600 dark:text-indigo-400 leading-tight">₹{stats.revenue}</p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-amber-500">Pending</p>
+                    <p className="text-base font-black text-amber-600 dark:text-amber-400 leading-tight">{stats.pending}</p>
                   </div>
                 </div>
-              )}
-            </div>
-          ) : null}
-        </div>
 
-        {/* Search & Filter */}
-        <div className="px-6 py-4 shrink-0 border-b border-slate-100 dark:border-white/5 space-y-3">
-          <div className="relative">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Search member by name, roll no..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-slate-100 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 text-sm font-medium text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10 transition-all"
-            />
-          </div>
-          <div className="flex gap-2">
-            {FILTERS.map(f => (
-              <button
-                key={f}
-                onClick={() => setFilter(f)}
-                className={`flex-1 py-1.5 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all ${
-                  filter === f
-                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/25 scale-[1.02]'
-                    : 'bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-white/10'
-                }`}
-              >
-                {f}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Registrations Member List */}
-        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4 custom-scrollbar">
-          {loading ? (
-            <div className="flex flex-col items-center justify-center py-20 gap-3 text-slate-400">
-              <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
-              <p className="text-xs font-bold uppercase tracking-wider">Loading registrations...</p>
-            </div>
-          ) : filtered.length === 0 ? (
-            <div className="text-center py-20">
-              <AlertCircle className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3 opacity-60" />
-              <p className="text-sm font-bold text-slate-500 dark:text-slate-400">
-                {registrations.length === 0 ? 'No registrations yet.' : 'No members match your search.'}
-              </p>
-            </div>
-          ) : (
-            filtered.map(reg => {
-              const regDate = reg.createdAt ? (
-                typeof reg.createdAt === 'object' && reg.createdAt._seconds
-                  ? new Date(reg.createdAt._seconds * 1000).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
-                  : new Date(reg.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
-              ) : null;
-
-              return (
-                <div
-                  key={reg.id}
-                  className="group relative flex flex-col bg-white dark:bg-[#0c0c0e] border border-slate-200/90 dark:border-white/10 rounded-3xl p-5 sm:p-6 hover:border-indigo-400 dark:hover:border-indigo-500/40 hover:shadow-xl hover:shadow-indigo-500/5 transition-all duration-300"
-                >
-                  {/* Card Top: Badges & Date */}
-                  <div className="flex items-center justify-between gap-2 mb-4">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-black tracking-wider uppercase border ${
-                        reg.paymentStatus === 'verified'
-                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20'
-                          : reg.paymentStatus === 'pending'
-                          ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20'
-                          : 'bg-red-50 text-red-700 border-red-200 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20'
-                      }`}>
-                        {reg.paymentStatus === 'verified' && <CheckCircle className="w-3.5 h-3.5" />}
-                        {reg.paymentStatus === 'pending' && <Clock className="w-3.5 h-3.5" />}
-                        {reg.paymentStatus === 'rejected' && <XCircle className="w-3.5 h-3.5" />}
-                        {reg.paymentStatus}
-                      </span>
-                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold tracking-wider uppercase bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400">
-                        {reg.isFree ? 'Free Pass' : `₹${reg.amount}`}
-                      </span>
-                    </div>
-
-                    {regDate && (
-                      <div className="flex items-center gap-1 text-[11px] font-medium text-slate-400">
-                        <Calendar className="w-3.5 h-3.5 opacity-70" />
-                        <span>{regDate}</span>
-                      </div>
-                    )}
+                <div className="flex items-center gap-3 bg-white dark:bg-[#121214] border border-slate-200/80 dark:border-white/10 rounded-2xl p-3.5 shadow-xs">
+                  <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center shrink-0">
+                    <CheckCircle className="w-4 h-4 text-emerald-500" />
                   </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-500">Verified</p>
+                    <p className="text-base font-black text-emerald-600 dark:text-emerald-400 leading-tight">{stats.verified}</p>
+                  </div>
+                </div>
 
-                  {/* Student Profile Info */}
-                  <div className="flex items-center gap-3.5 mb-4">
-                    <div className="relative shrink-0">
-                      {reg.studentPhotoURL ? (
-                        <img
-                          src={reg.studentPhotoURL}
-                          alt={reg.studentName}
-                          className="w-12 h-12 rounded-2xl object-cover border-2 border-slate-100 dark:border-white/10 shadow-xs"
-                        />
-                      ) : (
-                        <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-black text-lg shadow-xs">
-                          {(reg.studentName || 'S')[0].toUpperCase()}
+                {event.price > 0 && (
+                  <div className="flex items-center gap-3 bg-white dark:bg-[#121214] border border-slate-200/80 dark:border-white/10 rounded-2xl p-3.5 shadow-xs">
+                    <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center shrink-0">
+                      <IndianRupee className="w-4 h-4 text-indigo-500" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-indigo-500">Revenue</p>
+                      <p className="text-base font-black text-indigo-600 dark:text-indigo-400 leading-tight">₹{stats.revenue}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : null}
+          </div>
+
+          {/* Search & Filter */}
+          <div className="px-6 py-4 shrink-0 border-b border-slate-100 dark:border-white/5 space-y-3">
+            <div className="relative">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search member by name, roll no, or UPI ref..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-slate-100 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 text-sm font-medium text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10 transition-all"
+              />
+            </div>
+            <div className="flex gap-2">
+              {FILTERS.map(f => (
+                <button
+                  key={f}
+                  onClick={() => setFilter(f)}
+                  className={`flex-1 py-1.5 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all ${filter === f
+                      ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/25 scale-[1.02]'
+                      : 'bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-white/10'
+                    }`}
+                >
+                  {f}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Registrations Member List */}
+          <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4 custom-scrollbar">
+            {loading ? (
+              <div className="flex flex-col items-center justify-center py-20 gap-3 text-slate-400">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+                <p className="text-xs font-bold uppercase tracking-wider">Loading registrations...</p>
+              </div>
+            ) : filtered.length === 0 ? (
+              <div className="text-center py-20">
+                <AlertCircle className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3 opacity-60" />
+                <p className="text-sm font-bold text-slate-500 dark:text-slate-400">
+                  {registrations.length === 0 ? 'No registrations yet.' : 'No members match your search.'}
+                </p>
+              </div>
+            ) : (
+              filtered.map(reg => {
+                const regDate = reg.createdAt ? (
+                  typeof reg.createdAt === 'object' && reg.createdAt._seconds
+                    ? new Date(reg.createdAt._seconds * 1000).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
+                    : new Date(reg.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
+                ) : null;
+
+                const isCopied = copiedId === reg.id;
+
+                return (
+                  <div
+                    key={reg.id}
+                    className="group relative flex flex-col bg-white dark:bg-[#0c0c0e] border border-slate-200/90 dark:border-white/10 rounded-3xl p-5 sm:p-6 hover:border-indigo-400 dark:hover:border-indigo-500/40 hover:shadow-xl hover:shadow-indigo-500/5 transition-all duration-300"
+                  >
+                    {/* Card Top: Badges & Date */}
+                    <div className="flex items-center justify-between gap-2 mb-4">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-black tracking-wider uppercase border ${reg.paymentStatus === 'verified'
+                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20'
+                            : reg.paymentStatus === 'pending'
+                              ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20'
+                              : 'bg-red-50 text-red-700 border-red-200 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20'
+                          }`}>
+                          {reg.paymentStatus === 'verified' && <CheckCircle className="w-3.5 h-3.5" />}
+                          {reg.paymentStatus === 'pending' && <Clock className="w-3.5 h-3.5" />}
+                          {reg.paymentStatus === 'rejected' && <XCircle className="w-3.5 h-3.5" />}
+                          {reg.paymentStatus}
+                        </span>
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold tracking-wider uppercase bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400">
+                          {reg.isFree ? 'Free Pass' : `₹${reg.amount}`}
+                        </span>
+                      </div>
+
+                      {regDate && (
+                        <div className="flex items-center gap-1 text-[11px] font-medium text-slate-400">
+                          <Calendar className="w-3.5 h-3.5 opacity-70" />
+                          <span>{regDate}</span>
                         </div>
                       )}
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <h4 className="font-black text-slate-900 dark:text-white text-base leading-snug truncate">
-                        {reg.studentName || 'Anonymous Student'}
-                      </h4>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold truncate mt-0.5">
-                        {reg.studentRollNo || reg.studentEmail}
-                      </p>
+
+                    {/* Student Profile Info */}
+                    <div className="flex items-center gap-3.5 mb-4">
+                      <div className="relative shrink-0">
+                        {reg.studentPhotoURL ? (
+                          <img
+                            src={reg.studentPhotoURL}
+                            alt={reg.studentName}
+                            className="w-12 h-12 rounded-2xl object-cover border-2 border-slate-100 dark:border-white/10 shadow-xs"
+                          />
+                        ) : (
+                          <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-black text-lg shadow-xs">
+                            {(reg.studentName || 'S')[0].toUpperCase()}
+                          </div>
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h4 className="font-black text-slate-900 dark:text-white text-base leading-snug truncate">
+                          {reg.studentName || 'Anonymous Student'}
+                        </h4>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold truncate mt-0.5">
+                          {reg.studentRollNo || reg.studentEmail}
+                        </p>
+                      </div>
                     </div>
+
+                    {/* Notice-styled Mini Info Grid */}
+                    <div className="grid grid-cols-2 gap-2.5 mb-3.5">
+                      <div className="flex items-center gap-3 bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/5 rounded-2xl p-3">
+                        <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center shrink-0">
+                          <GraduationCap className="w-4 h-4 text-indigo-500" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Dept</p>
+                          <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">{reg.studentDepartment || 'General'}</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3 bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/5 rounded-2xl p-3">
+                        <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center shrink-0">
+                          <CreditCard className="w-4 h-4 text-emerald-500" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Payment</p>
+                          <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">{reg.isFree ? 'Free Entry' : `₹${reg.amount}`}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Receipt & UPI Details */}
+                    {!reg.isFree && (
+                      <div className="space-y-2 mb-3.5">
+                        {/* Extracted UPI Ref */}
+                        {reg.upiTransactionId && (
+                          <div className="flex items-center justify-between px-3.5 py-2.5 bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/5 rounded-2xl text-xs">
+                            <div className="flex items-center gap-1.5">
+                              <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">UPI Ref:</span>
+                              <span className="font-mono font-bold text-slate-700 dark:text-slate-300 select-all">{reg.upiTransactionId}</span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => copyToClipboard(reg.upiTransactionId, reg.id)}
+                              className="p-1 rounded-lg text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                              title="Copy UPI Transaction ID"
+                            >
+                              {isCopied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+                            </button>
+                          </div>
+                        )}
+
+                        {/* View Receipt Button */}
+                        {reg.paymentImageURL && (
+                          <button
+                            type="button"
+                            onClick={() => setPreviewReceipt(reg)}
+                            className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-2xl bg-indigo-50 dark:bg-indigo-500/10 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-200/80 dark:border-indigo-500/20 text-xs font-bold transition-all shadow-xs group"
+                          >
+                            <Eye className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
+                            <span>View Uploaded Receipt</span>
+                            <ExternalLink className="w-3 h-3 opacity-60 ml-auto" />
+                          </button>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Verify / Reject Actions */}
+                    {!reg.isFree && reg.paymentStatus === 'pending' && (
+                      <div className="flex items-center gap-2.5 pt-3.5 border-t border-slate-100 dark:border-white/5 mt-auto">
+                        <button
+                          onClick={() => onUpdateStatus(reg.id, 'verified')}
+                          disabled={updatingReg === reg.id}
+                          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-md shadow-emerald-500/20 disabled:opacity-60"
+                        >
+                          {updatingReg === reg.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle className="w-3.5 h-3.5" />}
+                          Verify Payment
+                        </button>
+                        <button
+                          onClick={() => onUpdateStatus(reg.id, 'rejected')}
+                          disabled={updatingReg === reg.id}
+                          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-red-50 dark:hover:bg-red-500/10 text-slate-700 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 text-xs font-bold transition-all border border-slate-200 dark:border-white/10 disabled:opacity-60"
+                        >
+                          {updatingReg === reg.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <XCircle className="w-3.5 h-3.5" />}
+                          Reject
+                        </button>
+                      </div>
+                    )}
                   </div>
-
-                  {/* Notice-styled Mini Info Grid */}
-                  <div className="grid grid-cols-2 gap-2.5 mb-3.5">
-                    <div className="flex items-center gap-3 bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/5 rounded-2xl p-3">
-                      <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center shrink-0">
-                        <GraduationCap className="w-4 h-4 text-indigo-500" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Dept</p>
-                        <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">{reg.studentDepartment || 'General'}</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-3 bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/5 rounded-2xl p-3">
-                      <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center shrink-0">
-                        <CreditCard className="w-4 h-4 text-emerald-500" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Payment</p>
-                        <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">{reg.isFree ? 'Free Entry' : `₹${reg.amount}`}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* UPI Ref Box if applicable */}
-                  {!reg.isFree && reg.upiTransactionId && (
-                    <div className="flex items-center justify-between px-3.5 py-2.5 bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/5 rounded-2xl mb-3.5 text-xs">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">UPI Ref:</span>
-                      <span className="font-mono font-bold text-slate-700 dark:text-slate-300">{reg.upiTransactionId}</span>
-                    </div>
-                  )}
-
-                  {/* Verify / Reject Actions */}
-                  {!reg.isFree && reg.paymentStatus === 'pending' && (
-                    <div className="flex items-center gap-2.5 pt-3.5 border-t border-slate-100 dark:border-white/5 mt-auto">
-                      <button
-                        onClick={() => onUpdateStatus(reg.id, 'verified')}
-                        disabled={updatingReg === reg.id}
-                        className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-md shadow-emerald-500/20 disabled:opacity-60"
-                      >
-                        {updatingReg === reg.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle className="w-3.5 h-3.5" />}
-                        Verify Payment
-                      </button>
-                      <button
-                        onClick={() => onUpdateStatus(reg.id, 'rejected')}
-                        disabled={updatingReg === reg.id}
-                        className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-red-50 dark:hover:bg-red-500/10 text-slate-700 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 text-xs font-bold transition-all border border-slate-200 dark:border-white/10 disabled:opacity-60"
-                      >
-                        {updatingReg === reg.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <XCircle className="w-3.5 h-3.5" />}
-                        Reject
-                      </button>
-                    </div>
-                  )}
-                </div>
-              );
-            })
-          )}
+                );
+              })
+            )}
+          </div>
         </div>
       </div>
-    </div>
+
+      {/* Payment Receipt Preview Modal */}
+      {previewReceipt && (
+        <div className="fixed inset-0 z-[400] flex items-center justify-center p-4 sm:p-6">
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-md animate-in fade-in duration-200" onClick={() => setPreviewReceipt(null)} />
+          <div className="relative w-full max-w-2xl bg-white dark:bg-[#0c0c0e] border border-slate-200 dark:border-white/10 rounded-3xl overflow-hidden shadow-2xl z-10 flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200">
+            {/* Modal Top */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-white/10 shrink-0">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
+                  <CreditCard className="w-5 h-5" />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="font-black text-slate-900 dark:text-white text-base leading-tight truncate">
+                    Payment Receipt Verification
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                    {previewReceipt.studentName} ({previewReceipt.studentRollNo || previewReceipt.studentEmail})
+                  </p>
+                </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setPreviewReceipt(null)}
+                className="w-8 h-8 rounded-full flex items-center justify-center bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-500 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+            </div>
+
+            {/* Modal Image/Document Preview */}
+            <div className="flex-1 overflow-y-auto p-6 bg-slate-900/5 dark:bg-black/40 flex items-center justify-center min-h-[300px]">
+              {previewReceipt.paymentImageURL?.endsWith('.pdf') ? (
+                <div className="text-center p-8">
+                  <FileText className="w-16 h-16 text-indigo-500 mx-auto mb-3" />
+                  <p className="font-bold text-sm text-slate-800 dark:text-slate-200 mb-4">PDF Payment Receipt</p>
+                  <a
+                    href={previewReceipt.paymentImageURL}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition-all shadow-md"
+                  >
+                    <Download className="w-4 h-4" /> Open / Download PDF
+                  </a>
+                </div>
+              ) : (
+                <img
+                  src={previewReceipt.paymentImageURL}
+                  alt="Payment Receipt"
+                  className="max-h-[55vh] max-w-full rounded-2xl object-contain shadow-lg border border-slate-200 dark:border-white/10"
+                />
+              )}
+            </div>
+
+            {/* Modal Info Strip & Actions */}
+            <div className="p-6 border-t border-slate-100 dark:border-white/10 bg-slate-50/50 dark:bg-[#0c0c0e] shrink-0 space-y-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-3">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Amount</p>
+                  <p className="text-base font-black text-slate-900 dark:text-white mt-0.5">₹{previewReceipt.amount}</p>
+                </div>
+
+                <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-3 sm:col-span-2">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Extracted UPI Reference</p>
+                    <p className="text-xs sm:text-sm font-mono font-bold text-indigo-600 dark:text-indigo-400 mt-0.5 truncate select-all">
+                      {previewReceipt.upiTransactionId || 'Not automatically detected'}
+                    </p>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between gap-3 pt-1">
+                <a
+                  href={previewReceipt.paymentImageURL}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" /> Open Full Image
+                </a>
+
+                {previewReceipt.paymentStatus === 'pending' && (
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                      onClick={() => {
+                        onUpdateStatus(previewReceipt.id, 'rejected');
+                        setPreviewReceipt(null);
+                      }}
+                      className="px-4 py-2 rounded-xl bg-slate-200 dark:bg-white/10 hover:bg-red-500 hover:text-white text-slate-700 dark:text-slate-300 text-xs font-bold transition-all"
+                  >
+                      Reject
+                  </button>
+                  <button
+                    type="button"
+                      onClick={() => {
+                        onUpdateStatus(previewReceipt.id, 'verified');
+                        setPreviewReceipt(null);
+                      }}
+                      className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-md shadow-emerald-500/20"
+                  >
+                      Verify Payment
+                  </button>
+                </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 

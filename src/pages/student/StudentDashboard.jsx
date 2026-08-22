@@ -7,6 +7,8 @@ import {
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import SmartHeader from '../../components/SmartHeader';
+import api from '../../services/api';
+
 
 export default function StudentDashboard() {
   const { user, logout } = useAuth();
