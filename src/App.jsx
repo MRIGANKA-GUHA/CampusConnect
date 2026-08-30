@@ -3,6 +3,7 @@ import { Analytics } from '@vercel/analytics/react';
 import MainLayout from './layouts/MainLayout';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import RegisterPage from './pages/RegisterPage';
 import StudentDashboard from './pages/student/StudentDashboard';
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -87,6 +88,12 @@ function AppRoutes() {
       <Route path="/login" element={
         <PublicRoute>
           <LoginPage />
+        </PublicRoute>
+      } />
+
+      <Route path="/forgot-password" element={
+        <PublicRoute>
+          <ForgotPasswordPage />
         </PublicRoute>
       } />
 

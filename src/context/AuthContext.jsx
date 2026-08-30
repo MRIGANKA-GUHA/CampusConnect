@@ -3,6 +3,7 @@ import {
   signInWithPopup,
   signInWithCustomToken,
   signOut as firebaseSignOut,
+  sendPasswordResetEmail,
 } from "firebase/auth";
 import { auth, googleProvider, githubProvider } from "../services/firebase";
 import api from "../services/api";
@@ -122,13 +123,18 @@ export const AuthProvider = ({ children }) => {
     await performLogout();
   };
 
+  // ── Reset Password ─────────────────────────────────────────────────────────
+  const resetPassword = async (email) => {
+    return sendPasswordResetEmail(auth, email);
+  };
+
   // ── Update User State (for profile updates) ──────────────────────────
   const updateUser = (userData) => {
     setUser(prev => ({ ...prev, ...userData }));
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, loginWithEmail, registerWithEmail, verifyOtp, loginWithGoogle, loginWithGithub, logout, updateUser }}>
+    <AuthContext.Provider value={{ user, loading, loginWithEmail, registerWithEmail, verifyOtp, loginWithGoogle, loginWithGithub, logout, updateUser, resetPassword }}>
       {children}
     </AuthContext.Provider>
   );

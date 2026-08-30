@@ -119,9 +119,9 @@ export default function LoginPage() {
                 </div>
                 <span className="text-sm font-medium text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-300 transition-colors">Remember me</span>
               </label>
-              <a href="#" className="text-sm font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 transition-colors">
+              <Link to="/forgot-password" className="text-sm font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 transition-colors">
                 Forgot password?
-              </a>
+              </Link>
             </div>
 
             {/* Submit Button */}
