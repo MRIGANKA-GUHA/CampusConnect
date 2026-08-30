@@ -113,6 +113,17 @@ function AppRoutes() {
         }
       />
 
+      {/* ─── QR Code Deep-link: /events/:eventId ────────────────────── */}
+      {/* Requires login. After login, StudentEvents auto-opens the event modal. */}
+      <Route
+        path="/events/:eventId"
+        element={
+          <StudentRoute>
+            <StudentEvents />
+          </StudentRoute>
+        }
+      />
+
       <Route
         path="/student/clubs"
         element={

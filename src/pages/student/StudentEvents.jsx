@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useParams } from 'react-router-dom';
 import SmartHeader from '../../components/SmartHeader';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
@@ -12,6 +13,7 @@ const EVENT_CATEGORIES = ['All', 'Technical', 'Cultural', 'Academic', 'Sports', 
 
 export default function StudentEvents() {
   const { user } = useAuth();
+  const { eventId: qrEventId } = useParams(); // set when coming from a QR code link
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -51,6 +53,17 @@ export default function StudentEvents() {
     fetchData();
     return () => { if (toastTimerRef.current) clearTimeout(toastTimerRef.current); };
   }, [user]);
+
+  // Auto-open event modal when landing via QR code (/events/:eventId)
+  useEffect(() => {
+    if (qrEventId && events.length > 0 && !selectedEvent) {
+      const target = events.find(e => e.id === qrEventId);
+      if (target) {
+        setSelectedEvent(target);
+        setShowUpiForm(false);
+      }
+    }
+  }, [qrEventId, events]);
 
   const fetchData = async () => {
     try {

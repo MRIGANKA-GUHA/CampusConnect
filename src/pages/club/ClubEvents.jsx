@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import SmartHeader from '../../components/SmartHeader';
 import api from '../../services/api';
+import { QRCodeCanvas } from 'qrcode.react';
 import {
   Calendar, Plus, Loader2, Trash2, Pencil, X,
   MapPin, Clock, Users, IndianRupee, Search, CalendarClock,
@@ -8,7 +9,7 @@ import {
   Image, FileText, Upload, Tag, Download,
   CheckCircle, XCircle, ClipboardList, AlertCircle,
   GraduationCap, CreditCard, UserCircle,
-  Eye, ExternalLink, Copy, Check, Sparkles
+  Eye, ExternalLink, Copy, Check, Sparkles, QrCode
 } from 'lucide-react';
 
 const STATUS_COLORS = {
@@ -46,6 +47,10 @@ export default function ClubEvents() {
   const [calMonthDate, setCalMonthDate] = useState(new Date());
   const [toast, setToast] = useState(null);
   const [regGlobalStats, setRegGlobalStats] = useState(null);
+
+  // ── QR Code Modal state ──
+  const [qrEvent, setQrEvent] = useState(null);
+  const [qrCopied, setQrCopied] = useState(false);
 
   // ── Registrations Drawer state ──
   const [registrationsEvent, setRegistrationsEvent] = useState(null); // event for which drawer is open
@@ -629,6 +634,14 @@ export default function ClubEvents() {
                       className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-[1rem] bg-indigo-50 dark:bg-indigo-500/10 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-xs font-bold transition-all"
                     >
                       REGISTRATIONS
+                    </button>
+                    {/* QR Code Button */}
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setQrEvent(event); setQrCopied(false); }}
+                      title="Generate QR Code"
+                      className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-[1rem] bg-slate-100 dark:bg-white/5 hover:bg-violet-50 dark:hover:bg-violet-500/10 text-slate-600 dark:text-slate-300 hover:text-violet-600 dark:hover:text-violet-400 text-xs font-bold transition-all"
+                    >
+                      <QrCode className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={(e) => openEdit(event, e)}
@@ -1219,6 +1232,96 @@ export default function ClubEvents() {
           onClose={() => setRegistrationsEvent(null)}
         />
       )}
+
+      {/* ───── QR CODE MODAL ───── */}
+      {qrEvent && (() => {
+        const qrUrl = `${window.location.origin}/events/${qrEvent.id}`;
+        const handleDownload = () => {
+          const canvas = document.getElementById('event-qr-canvas');
+          if (!canvas) return;
+          const png = canvas.toDataURL('image/png');
+          const a = document.createElement('a');
+          a.href = png;
+          a.download = `${(qrEvent.title || 'event').replace(/[^a-z0-9]/gi, '_')}_QR.png`;
+          a.click();
+        };
+        const handleCopy = () => {
+          navigator.clipboard.writeText(qrUrl);
+          setQrCopied(true);
+          setTimeout(() => setQrCopied(false), 2000);
+        };
+        return (
+          <div className="fixed inset-0 z-[400] flex items-center justify-center p-4 animate-in fade-in duration-200">
+            <div
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={() => setQrEvent(null)}
+            />
+            <div className="relative bg-white dark:bg-[#0c0c0e] border border-slate-200 dark:border-white/10 rounded-[2.5rem] shadow-2xl w-full max-w-sm p-8 flex flex-col items-center gap-6 animate-in zoom-in-95 duration-200">
+              {/* Close */}
+              <button
+                onClick={() => setQrEvent(null)}
+                className="absolute top-5 right-5 w-9 h-9 rounded-full bg-slate-100 dark:bg-white/5 hover:bg-red-50 dark:hover:bg-red-500/10 text-slate-500 hover:text-red-500 flex items-center justify-center transition-all"
+              >
+                <X className="w-4 h-4" />
+              </button>
+
+              {/* Header */}
+              <div className="text-center">
+                <div className="w-12 h-12 rounded-2xl bg-violet-50 dark:bg-violet-500/10 border border-violet-100 dark:border-violet-500/20 flex items-center justify-center mx-auto mb-3">
+                  <QrCode className="w-6 h-6 text-violet-600 dark:text-violet-400" />
+                </div>
+                <h3 className="text-xl font-black text-slate-900 dark:text-white">Event QR Code</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 font-medium line-clamp-1">{qrEvent.title}</p>
+              </div>
+
+              {/* QR Code Canvas */}
+              <div className="p-4 bg-white rounded-2xl shadow-inner border border-slate-100">
+                <QRCodeCanvas
+                  id="event-qr-canvas"
+                  value={qrUrl}
+                  size={200}
+                  bgColor="#ffffff"
+                  fgColor="#0f172a"
+                  level="H"
+                  includeMargin={false}
+                />
+              </div>
+
+              {/* URL preview */}
+              <div className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Scan URL</p>
+                <p className="text-xs font-mono text-slate-700 dark:text-slate-300 break-all leading-relaxed">{qrUrl}</p>
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-3 w-full">
+                <button
+                  onClick={handleDownload}
+                  className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-sm transition-all shadow-lg shadow-violet-500/20 active:scale-95"
+                >
+                  <Download className="w-4 h-4" />
+                  Download PNG
+                </button>
+                <button
+                  onClick={handleCopy}
+                  className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl font-bold text-sm transition-all active:scale-95 border ${
+                    qrCopied
+                      ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20'
+                      : 'bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10'
+                  }`}
+                >
+                  {qrCopied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                  {qrCopied ? 'Copied!' : 'Copy Link'}
+                </button>
+              </div>
+
+              <p className="text-[11px] text-slate-400 text-center font-medium">
+                Students scan this to view &amp; register for the event
+              </p>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
