@@ -24,6 +24,7 @@ import ClubEvents from './pages/club/ClubEvents';
 import ClubNotices from './pages/club/ClubNotices';
 import ClubMembers from './pages/club/ClubMembers';
 import NotFound from './pages/NotFound';
+import PublicEventPage from './pages/PublicEventPage';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import './App.css';
 
@@ -113,16 +114,12 @@ function AppRoutes() {
         }
       />
 
-      {/* ─── QR Code Deep-link: /events/:eventId ────────────────────── */}
-      {/* Requires login. After login, StudentEvents auto-opens the event modal. */}
-      <Route
-        path="/events/:eventId"
-        element={
-          <StudentRoute>
-            <StudentEvents />
-          </StudentRoute>
-        }
-      />
+      {/* ─── QR Code Deep-link: /events/:eventId ──────────────────────── */}
+      {/* PUBLIC — no login needed. Shows event info + Sign in to Register. */}
+      <Route path="/events/:eventId" 
+      element={
+      <PublicEventPage />
+      } />
 
       <Route
         path="/student/clubs"

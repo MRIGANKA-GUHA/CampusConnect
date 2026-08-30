@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -11,6 +11,9 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const { loginWithEmail, loginWithGoogle, loginWithGithub } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  // Where to redirect after login (e.g. came from a QR event page)
+  const from = location.state?.from || null;
 
   const handleEmailLogin = async (e) => {
     e.preventDefault();
@@ -19,8 +22,8 @@ export default function LoginPage() {
     try {
       const { user: userData } = await loginWithEmail(email, password);
       const role = userData?.role;
-      const dest = role === 'admin' ? '/admin' : role === 'club' ? '/club/dashboard' : '/dashboard';
-      navigate(dest);
+      const defaultDest = role === 'admin' ? '/admin' : role === 'club' ? '/club/dashboard' : '/dashboard';
+      navigate(from || defaultDest);
     } catch (err) {
       setError(err.response?.data?.error || err.message || 'Failed to sign in');
     } finally {
@@ -34,8 +37,8 @@ export default function LoginPage() {
     try {
       const { user: userData } = await providerFn();
       const role = userData?.role;
-      const dest = role === 'admin' ? '/admin' : role === 'club' ? '/club/dashboard' : '/dashboard';
-      navigate(dest);
+      const defaultDest = role === 'admin' ? '/admin' : role === 'club' ? '/club/dashboard' : '/dashboard';
+      navigate(from || defaultDest);
     } catch (err) {
       setError(err.response?.data?.error || err.message || 'Failed to sign in');
     } finally {
