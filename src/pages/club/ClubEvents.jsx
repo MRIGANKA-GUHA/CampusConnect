@@ -1267,9 +1267,6 @@ export default function ClubEvents() {
 
               {/* Header */}
               <div className="text-center">
-                <div className="w-12 h-12 rounded-2xl bg-violet-50 dark:bg-violet-500/10 border border-violet-100 dark:border-violet-500/20 flex items-center justify-center mx-auto mb-3">
-                  <QrCode className="w-6 h-6 text-violet-600 dark:text-violet-400" />
-                </div>
                 <h3 className="text-xl font-black text-slate-900 dark:text-white">Event QR Code</h3>
                 <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 font-medium line-clamp-1">{qrEvent.title}</p>
               </div>
@@ -1297,9 +1294,8 @@ export default function ClubEvents() {
               <div className="flex gap-3 w-full">
                 <button
                   onClick={handleDownload}
-                  className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-sm transition-all shadow-lg shadow-violet-500/20 active:scale-95"
+                  className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm transition-all shadow-lg shadow-indigo-500/20 active:scale-95"
                 >
-                  <Download className="w-4 h-4" />
                   Download PNG
                 </button>
                 <button
@@ -1368,7 +1364,6 @@ function RegistrationsDrawer({
             <div className="min-w-0 pr-3">
               <div className="flex flex-wrap items-center gap-2 mb-2">
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-black tracking-wider uppercase bg-indigo-50 text-indigo-600 border border-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-400 dark:border-indigo-500/20">
-                  <Users className="w-3.5 h-3.5" />
                   Registrations
                 </span>
                 <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-[11px] font-bold tracking-wider uppercase border ${event.price > 0

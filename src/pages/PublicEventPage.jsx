@@ -235,15 +235,15 @@ export default function PublicEventPage() {
                       className="w-full py-4 rounded-2xl bg-slate-900 text-white dark:bg-white dark:text-black font-black text-base tracking-wide transition-all hover:scale-[1.01] active:scale-[0.99] shadow-xl hover:shadow-slate-500/20 dark:hover:shadow-white/20 flex items-center justify-center gap-2"
                     >
                       {user ? (
-                        <><CheckCircle className="w-5 h-5" /> Go to Events &amp; Register</>
+                        <> Go to Events &amp; Register</>
                       ) : (
-                        <><LogIn className="w-5 h-5" /> Sign in to Register</>
+                        <>Sign in to Register</>
                       )}
                     </button>
                     {!user && (
                       <p className="text-center text-xs font-medium text-slate-400">
                         Need an account?{' '}
-                        <Link to="/register" state={{ from: `/events/${eventId}` }} className="text-indigo-500 font-bold hover:underline">
+                        <Link to="/register" state={{ from: `/events/${eventId}` }} className="text-sm font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 underline underline-offset-4 decoration-2 decoration-indigo-200 dark:decoration-indigo-900 transition-all">
                           Register free
                         </Link>
                       </p>
