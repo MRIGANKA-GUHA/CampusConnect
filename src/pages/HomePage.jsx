@@ -121,27 +121,31 @@ export default function HomePage() {
           </div>
 
           {/* Stats */}
-          <div className={`mt-16 sm:mt-20 w-full max-w-3xl mx-auto flex flex-row items-center justify-between divide-x divide-slate-200 dark:divide-white/10 py-5 sm:py-0 rounded-3xl sm:rounded-none bg-white/40 dark:bg-white/5 sm:bg-transparent sm:dark:bg-transparent border border-slate-200/60 dark:border-white/10 sm:border-0 shadow-sm sm:shadow-none backdrop-blur-md sm:backdrop-blur-none ${typingDone ? 'animate-fade-up-slow' : 'opacity-0'}`}
+          <div className={`mt-16 sm:mt-20 w-full max-w-4xl mx-auto grid grid-cols-3 border-y border-slate-200 dark:border-[#1E2235] py-8 ${typingDone ? 'animate-fade-up-slow' : 'opacity-0'}`}
             style={{ animationDelay: '500ms' }}>
 
             {!statsLoaded ? (
               /* Inline Skeleton Loader for Stats */
               [1, 2, 3].map((_, i) => (
-                <div key={`skeleton-${i}`} className="flex-1 flex flex-col items-center justify-center px-1 sm:px-8">
-                  <div className="h-8 sm:h-10 w-16 sm:w-20 bg-slate-200 dark:bg-white/10 rounded-lg animate-pulse mb-1 sm:mb-2"></div>
-                  <div className="h-3 sm:h-4 w-12 sm:w-16 bg-slate-200 dark:bg-white/10 rounded animate-pulse mt-1"></div>
+                <div key={`skeleton-${i}`} className={`flex-1 flex flex-col items-center justify-center px-2 sm:px-8 py-2 ${i > 0 ? 'border-l border-slate-200 dark:border-[#1E2235]' : ''}`}>
+                  <div className="h-8 sm:h-12 w-16 sm:w-24 bg-slate-200 dark:bg-white/5 rounded-lg animate-pulse mb-2"></div>
+                  <div className="h-3 sm:h-4 w-12 sm:w-16 bg-slate-200 dark:bg-white/5 rounded animate-pulse"></div>
                 </div>
               ))
             ) : (
               /* Actual Real-Time Stats */
               [
-                { value: stats.clubs > 0 ? `${stats.clubs}` : '0', label: 'Clubs' },
-                { value: stats.events > 0 ? `${stats.events}` : '0', label: 'Events' },
-                { value: stats.members >= 1000 ? `${(stats.members / 1000).toFixed(1)}k+` : stats.members, label: 'Members' },
+                { value: stats.clubs > 0 ? `${stats.clubs}` : '0', label: 'CLUBS' },
+                { value: stats.events > 0 ? `${stats.events}` : '0', label: 'EVENTS' },
+                { value: stats.members >= 1000 ? `${(stats.members / 1000).toFixed(1)}k+` : stats.members, label: 'MEMBERS' },
               ].map((stat, i) => (
-                <div key={i} className="flex-1 flex flex-col items-center justify-center px-1 sm:px-8 animate-fade-in">
-                  <p className="text-2xl sm:text-4xl font-black text-slate-900 dark:text-white drop-shadow-sm">{stat.value}</p>
-                  <p className="text-[11px] sm:text-sm text-slate-500 dark:text-slate-400 mt-1 sm:mt-2 font-bold uppercase tracking-wider">{stat.label}</p>
+                <div key={i} className={`text-center px-2 sm:px-8 py-2 ${i > 0 ? 'border-l border-slate-200 dark:border-[#1E2235]' : ''} animate-fade-in`}>
+                  <div className="font-['Outfit',_sans-serif] text-[clamp(2rem,6vw,2.8rem)] font-[800] tracking-[-0.04em] leading-none mb-1.5 text-slate-900 dark:text-white drop-shadow-sm">
+                    {stat.value}
+                  </div>
+                  <div className="text-[clamp(0.6rem,1.5vw,0.7rem)] font-semibold tracking-[0.1em] text-slate-500 dark:text-slate-400">
+                    {stat.label}
+                  </div>
                 </div>
               ))
             )}
