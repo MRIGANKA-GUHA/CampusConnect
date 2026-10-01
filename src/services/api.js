@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: import.meta.env.DEV 
+  baseURL: import.meta.env.DEV
     ? 'http://localhost:5000/api'
     : 'https://campuscon-backend.vercel.app/api',
 });

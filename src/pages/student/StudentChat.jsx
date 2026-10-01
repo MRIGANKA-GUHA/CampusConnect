@@ -45,7 +45,7 @@ const getMessageDateGroup = (isoString) => {
   if (!isoString) return '';
   const d = new Date(isoString);
   const now = new Date();
-  
+
   const isToday = d.toDateString() === now.toDateString();
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
@@ -74,23 +74,20 @@ const DateDivider = ({ dateStr }) => (
 // ─── MessageBubble Component ──────────────────────────────────────────────────
 const MessageBubble = ({ msg, isMine, isConsecutive }) => (
   <div
-    className={`flex items-end gap-2 ${isMine ? 'flex-row-reverse' : 'flex-row'} ${
-      isConsecutive ? 'mt-1' : 'mt-2.5'
-    }`}
+    className={`flex items-end gap-2 ${isMine ? 'flex-row-reverse' : 'flex-row'} ${isConsecutive ? 'mt-1' : 'mt-2.5'
+      }`}
   >
     <div
-      className={`max-w-[82%] sm:max-w-[70%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed break-words shadow-sm ${
-        isMine
-          ? 'bg-indigo-600 text-white rounded-br-xs shadow-indigo-600/20'
-          : 'bg-white dark:bg-[#141414] text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-white/10 rounded-bl-xs'
-      }`}
+      className={`max-w-[82%] sm:max-w-[70%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed break-words shadow-sm ${isMine
+        ? 'bg-indigo-600 text-white rounded-br-xs shadow-indigo-600/20'
+        : 'bg-white dark:bg-[#141414] text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-white/10 rounded-bl-xs'
+        }`}
     >
       <p className="whitespace-pre-wrap">{msg.text}</p>
-      
+
       <div
-        className={`flex items-center justify-end gap-1 mt-1 text-[10px] select-none ${
-          isMine ? 'text-indigo-200' : 'text-slate-400'
-        }`}
+        className={`flex items-center justify-end gap-1 mt-1 text-[10px] select-none ${isMine ? 'text-indigo-200' : 'text-slate-400'
+          }`}
       >
         <span>{formatMessageTime(msg.createdAt)}</span>
         {isMine && (
@@ -113,8 +110,8 @@ const TypingDots = ({ size = 'sm', color = 'bg-indigo-500' }) => {
     size === 'xs'
       ? 'w-1 h-1'
       : size === 'md'
-      ? 'w-2 h-2'
-      : 'w-1.5 h-1.5';
+        ? 'w-2 h-2'
+        : 'w-1.5 h-1.5';
   return (
     <span className="inline-flex items-center gap-1">
       <span
@@ -136,10 +133,10 @@ const TypingDots = ({ size = 'sm', color = 'bg-indigo-500' }) => {
 // ─── Typing Indicator Bubble ──────────────────────────────────────────────────
 const TypingBubble = ({ name, avatar }) => (
   <div className="flex items-end gap-2 mt-2 mb-1 select-none">
-    
+
     <div className="px-3.5 py-2 rounded-2xl rounded-bl-xs bg-white dark:bg-[#141414] border border-slate-200 dark:border-white/10 shadow-xs flex items-center gap-2">
       <TypingDots size="sm" color="bg-indigo-500 dark:bg-indigo-400" />
-      
+
     </div>
   </div>
 );
@@ -191,7 +188,7 @@ const AddFriendModal = ({ onClose, currentFriends, onRequestSent }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
       <div className="bg-white dark:bg-[#0a0a0a] border border-slate-200 dark:border-white/10 rounded-3xl shadow-2xl w-full max-w-md p-6 overflow-hidden">
-        
+
         {/* Modal Header */}
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-xl font-bold text-slate-900 dark:text-white">Find Classmates</h2>
@@ -297,7 +294,7 @@ const AddFriendModal = ({ onClose, currentFriends, onRequestSent }) => {
 const FriendRequestsPanel = ({ requests, onRespond, onClose }) => (
   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
     <div className="bg-white dark:bg-[#0a0a0a] border border-slate-200 dark:border-white/10 rounded-3xl shadow-2xl w-full max-w-md p-6 overflow-hidden">
-      
+
       {/* Header */}
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-2">
@@ -339,7 +336,7 @@ const FriendRequestsPanel = ({ requests, onRespond, onClose }) => (
                   {req.sender.rollNo} {req.sender.department && `· ${req.sender.department}`}
                 </p>
               </div>
-              
+
               <div className="flex items-center gap-1.5">
                 <button
                   onClick={() => onRespond(req.friendshipId, 'accepted')}
@@ -401,7 +398,7 @@ const RemoveFriendModal = ({ friend, onConfirm, onCancel }) => {
 // ─── Main StudentChat Page ────────────────────────────────────────────────────
 export default function StudentChat() {
   const { user } = useAuth();
-  const { sendMessage, markRead, emitTyping, emitStopTyping, on, off, onlineUsers } = useSocket();
+  const { sendMessage, markRead, emitTyping, emitStopTyping, on, off, onlineUsers, isConnected } = useSocket();
 
   // ── State ──────────────────────────────────────────────────────────────────
   const [friends, setFriends] = useState([]);
@@ -530,6 +527,29 @@ export default function StudentChat() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, typingFriends]);
 
+  // ── HTTP fallback polling when socket is disconnected (e.g. Vercel deployment) ──
+  useEffect(() => {
+    if (!selectedFriend || isConnected) return;
+
+    const pollInterval = setInterval(async () => {
+      try {
+        const res = await getConversationHistory(selectedFriend.uid);
+        if (res.data?.messages) {
+          setMessages((prev) => {
+            if (res.data.messages.length !== prev.length) {
+              return res.data.messages;
+            }
+            return prev;
+          });
+        }
+      } catch (err) {
+        // Silently ignore polling error
+      }
+    }, 3500);
+
+    return () => clearInterval(pollInterval);
+  }, [selectedFriend, isConnected]);
+
   // ── Select friend & load history ────────────────────────────────────────────
   const selectFriend = async (friend) => {
     setSelectedFriend(friend);
@@ -595,9 +615,9 @@ export default function StudentChat() {
   };
 
   const handleKeyDown = (e) => {
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSend();
+      handleSend(e);
     }
   };
 
@@ -671,13 +691,10 @@ export default function StudentChat() {
       <main className="flex-1 w-full max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 pt-18 sm:pt-24 pb-2 sm:pb-6 flex flex-col min-h-0">
         <div className="flex-1 w-full bg-white dark:bg-[#0a0a0a] border border-slate-200 dark:border-white/10 rounded-2xl sm:rounded-3xl shadow-sm overflow-hidden flex min-h-0">
 
-          {/* ════════════════════════════════════════════════════════════════════
-              LEFT PANEL: Friends List
-             ════════════════════════════════════════════════════════════════════ */}
+          {/*LEFT PANEL: Friends List */}
           <div
-            className={`${
-              mobileShowChat ? 'hidden md:flex' : 'flex'
-            } flex-col w-full md:w-80 lg:w-96 shrink-0 bg-white dark:bg-[#0a0a0a] border-r border-slate-200 dark:border-white/10 overflow-hidden`}
+            className={`${mobileShowChat ? 'hidden md:flex' : 'flex'
+              } flex-col w-full md:w-80 lg:w-96 shrink-0 bg-white dark:bg-[#0a0a0a] border-r border-slate-200 dark:border-white/10 overflow-hidden`}
           >
             {/* Header */}
             <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-white/10 space-y-3">
@@ -736,32 +753,29 @@ export default function StudentChat() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setFilterTab('all')}
-                  className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all border ${
-                    filterTab === 'all'
-                      ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm shadow-indigo-600/20'
-                      : 'bg-white dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-white/20'
-                  }`}
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all border ${filterTab === 'all'
+                    ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm shadow-indigo-600/20'
+                    : 'bg-white dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-white/20'
+                    }`}
                 >
                   All ({friends.length})
                 </button>
                 <button
                   onClick={() => setFilterTab('online')}
-                  className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all border ${
-                    filterTab === 'online'
-                      ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm shadow-indigo-600/20'
-                      : 'bg-white dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-white/20'
-                  }`}
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all border ${filterTab === 'online'
+                    ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm shadow-indigo-600/20'
+                    : 'bg-white dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-white/20'
+                    }`}
                 >
                   Online ({onlineFriendsCount})
                 </button>
                 {totalUnreadCount > 0 && (
                   <button
                     onClick={() => setFilterTab('unread')}
-                    className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all border ${
-                      filterTab === 'unread'
-                        ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm shadow-indigo-600/20'
-                        : 'bg-white dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-white/20'
-                    }`}
+                    className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all border ${filterTab === 'unread'
+                      ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm shadow-indigo-600/20'
+                      : 'bg-white dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-white/20'
+                      }`}
                   >
                     Unread ({totalUnreadCount})
                   </button>
@@ -798,11 +812,10 @@ export default function StudentChat() {
                     <div
                       key={friend.uid}
                       onClick={() => selectFriend(friend)}
-                      className={`flex items-center gap-3 p-3 rounded-2xl cursor-pointer transition-all group ${
-                        isSelected
-                          ? 'bg-indigo-50 dark:bg-indigo-500/15 border border-indigo-200/60 dark:border-indigo-500/20 shadow-xs'
-                          : 'hover:bg-slate-50 dark:hover:bg-white/5 border border-transparent'
-                      }`}
+                      className={`flex items-center gap-3 p-3 rounded-2xl cursor-pointer transition-all group ${isSelected
+                        ? 'bg-indigo-50 dark:bg-indigo-500/15 border border-indigo-200/60 dark:border-indigo-500/20 shadow-xs'
+                        : 'hover:bg-slate-50 dark:hover:bg-white/5 border border-transparent'
+                        }`}
                     >
                       {/* Avatar with status dot */}
                       <div className="relative flex-shrink-0">
@@ -812,20 +825,18 @@ export default function StudentChat() {
                           className="w-11 h-11 rounded-full object-cover ring-2 ring-slate-100 dark:ring-white/5"
                         />
                         <span
-                          className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white dark:border-[#0a0a0a] ${
-                            isOnline ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-zinc-600'
-                          }`}
+                          className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white dark:border-[#0a0a0a] ${isOnline ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-zinc-600'
+                            }`}
                         />
                       </div>
 
                       {/* Info */}
                       <div className="flex-1 min-w-0">
                         <p
-                          className={`text-sm font-bold truncate ${
-                            isSelected
-                              ? 'text-indigo-600 dark:text-indigo-400'
-                              : 'text-slate-900 dark:text-white'
-                          }`}
+                          className={`text-sm font-bold truncate ${isSelected
+                            ? 'text-indigo-600 dark:text-indigo-400'
+                            : 'text-slate-900 dark:text-white'
+                            }`}
                         >
                           {friend.displayName}
                         </p>
@@ -868,14 +879,13 @@ export default function StudentChat() {
             </div>
           </div>
 
-        {/* ════════════════════════════════════════════════════════════════════
+          {/* ════════════════════════════════════════════════════════════════════
             RIGHT PANEL: Chat Window (Direct Full Height)
            ════════════════════════════════════════════════════════════════════ */}
-        <div
-          className={`${
-            !mobileShowChat ? 'hidden md:flex' : 'flex'
-          } flex-1 flex-col bg-white dark:bg-[#0a0a0a] overflow-hidden`}
-        >
+          <div
+            className={`${!mobileShowChat ? 'hidden md:flex' : 'flex'
+              } flex-1 flex-col bg-white dark:bg-[#0a0a0a] overflow-hidden`}
+          >
             {!selectedFriend ? (
               /* Empty state: No conversation selected */
               <div className="flex-1 flex flex-col items-center justify-center gap-3 text-center p-8 select-none">
@@ -912,11 +922,10 @@ export default function StudentChat() {
                         className="w-10 h-10 rounded-full object-cover ring-2 ring-indigo-500/20"
                       />
                       <span
-                        className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white dark:border-[#0a0a0a] ${
-                          onlineUsers.includes(selectedFriend.uid)
-                            ? 'bg-emerald-500'
-                            : 'bg-slate-300 dark:bg-zinc-600'
-                        }`}
+                        className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white dark:border-[#0a0a0a] ${onlineUsers.includes(selectedFriend.uid)
+                          ? 'bg-emerald-500'
+                          : 'bg-slate-300 dark:bg-zinc-600'
+                          }`}
                       />
                     </div>
 
@@ -1030,19 +1039,18 @@ export default function StudentChat() {
                     />
                     <button
                       type="submit"
-                      onPointerDown={(e) => {
-                        // Prevent the input from losing focus when tapping send on touch screens
+                      onClick={(e) => {
                         e.preventDefault();
+                        handleSend();
                       }}
                       onMouseDown={(e) => {
                         // Prevent the input from losing focus on desktop clicks
                         e.preventDefault();
                       }}
-                      className={`w-10 h-10 sm:w-9 sm:h-9 rounded-full flex items-center justify-center transition-all active:scale-95 shadow-sm shadow-indigo-600/20 shrink-0 cursor-pointer touch-manipulation ${
-                        canSend
-                          ? 'bg-indigo-600 hover:bg-indigo-700 text-white'
-                          : 'bg-indigo-600/40 text-white/50 cursor-not-allowed'
-                      }`}
+                      className={`w-10 h-10 sm:w-9 sm:h-9 rounded-full flex items-center justify-center transition-all active:scale-95 shadow-sm shadow-indigo-600/20 shrink-0 cursor-pointer touch-manipulation ${canSend
+                        ? 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                        : 'bg-indigo-600/40 text-white/50 cursor-not-allowed'
+                        }`}
                       title="Send message"
                     >
                       {sending ? (
@@ -1064,7 +1072,7 @@ export default function StudentChat() {
         <AddFriendModal
           onClose={() => setShowAddFriend(false)}
           currentFriends={friends}
-          onRequestSent={() => {}}
+          onRequestSent={() => { }}
         />
       )}
 

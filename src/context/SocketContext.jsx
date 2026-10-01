@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { io } from "socket.io-client";
 import { useAuth } from "./AuthContext";
+import { postMessage, patchMarkRead } from "../services/chatService";
 
 const SocketContext = createContext(null);
 
@@ -52,7 +53,7 @@ export const SocketProvider = ({ children }) => {
     });
 
     socket.on("connect_error", (err) => {
-      console.error("[Socket] Connection error:", err.message);
+      console.warn("[Socket] Connection notice:", err.message);
       setIsConnected(false);
     });
 
@@ -65,22 +66,36 @@ export const SocketProvider = ({ children }) => {
     };
   }, [user]);
 
-  // ── sendMessage — emit via socket, return a promise ─────────────────────────
-  const sendMessage = (toUid, text) => {
-    return new Promise((resolve, reject) => {
-      if (!socketRef.current?.connected) {
-        return reject(new Error("Socket not connected"));
+  // ── sendMessage — Try Socket.IO first; fallback to HTTP REST (for Vercel serverless) ──
+  const sendMessage = async (toUid, text) => {
+    // If socket is connected, try real-time socket emit
+    if (socketRef.current?.connected) {
+      try {
+        return await new Promise((resolve, reject) => {
+          socketRef.current.emit("send_message", { toUid, text }, (response) => {
+            if (response?.error) reject(new Error(response.error));
+            else resolve(response);
+          });
+        });
+      } catch (err) {
+        console.warn("[Socket] Real-time send failed, falling back to HTTP:", err);
       }
-      socketRef.current.emit("send_message", { toUid, text }, (response) => {
-        if (response?.error) reject(new Error(response.error));
-        else resolve(response);
-      });
-    });
+    }
+
+    // HTTP fallback: works everywhere, including Vercel serverless deployments!
+    const res = await postMessage(toUid, text);
+    return res.data;
   };
 
-  // ── markRead — notify server that messages are read ──────────────────────────
+  // ── markRead — notify server via Socket & HTTP ───────────────────────────────
   const markRead = (convId, friendUid) => {
-    socketRef.current?.emit("mark_read", { convId, friendUid });
+    if (socketRef.current?.connected) {
+      socketRef.current.emit("mark_read", { convId, friendUid });
+    }
+    // Also patch via HTTP so database updates even on Vercel
+    if (convId) {
+      patchMarkRead(convId, friendUid).catch(() => {});
+    }
   };
 
   // ── typing indicators ────────────────────────────────────────────────────────

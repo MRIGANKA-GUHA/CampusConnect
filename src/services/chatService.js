@@ -21,6 +21,12 @@ export const removeFriend = (friendUid) =>
 export const getConversationHistory = (friendUid, limit = 50) =>
   api.get(`/chat/messages/${friendUid}`, { params: { limit } });
 
+export const postMessage = (toUid, text) =>
+  api.post("/chat/messages", { toUid, text });
+
+export const patchMarkRead = (convId, friendUid) =>
+  api.patch("/chat/mark-read", { convId, friendUid });
+
 // ─── Student Search ───────────────────────────────────────────────────────────
 export const searchStudents = (q) =>
   api.get("/chat/search-students", { params: { q } });
