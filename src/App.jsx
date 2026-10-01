@@ -27,6 +27,7 @@ import ClubMembers from './pages/club/ClubMembers';
 import NotFound from './pages/NotFound';
 import PublicEventPage from './pages/PublicEventPage';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { SocketProvider } from './context/SocketContext';
 import './App.css';
 
 // ─── Protected Route Component ─────────────────────────────────────────────
@@ -263,10 +264,12 @@ function AppRoutes() {
 function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <AppRoutes />
-        <Analytics />
-      </BrowserRouter>
+      <SocketProvider>
+        <BrowserRouter>
+          <AppRoutes />
+          <Analytics />
+        </BrowserRouter>
+      </SocketProvider>
     </AuthProvider>
   );
 }
