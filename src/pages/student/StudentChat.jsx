@@ -553,7 +553,12 @@ export default function StudentChat() {
   };
 
   // ── Send message ────────────────────────────────────────────────────────────
-  const handleSend = async () => {
+  const handleSend = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+
+    // Immediately keep focus synchronously on input so mobile virtual keyboard stays open
+    inputRef.current?.focus();
+
     const text = inputText.trim();
     if (!text || !selectedFriend || sending) return;
 
@@ -585,6 +590,7 @@ export default function StudentChat() {
       setInputText(text);
     } finally {
       setSending(false);
+      inputRef.current?.focus();
     }
   };
 
@@ -656,12 +662,13 @@ export default function StudentChat() {
 
   const onlineFriendsCount = friends.filter((f) => onlineUsers.includes(f.uid)).length;
   const totalUnreadCount = Object.values(unreadMap).reduce((sum, count) => sum + count, 0);
+  const canSend = Boolean(inputText.trim()) && !sending;
 
   return (
-    <div className="h-screen bg-slate-50 dark:bg-black text-slate-900 dark:text-white font-sans selection:bg-indigo-500/30 overflow-hidden flex flex-col">
+    <div className="h-screen h-[100dvh] bg-slate-50 dark:bg-black text-slate-900 dark:text-white font-sans selection:bg-indigo-500/30 overflow-hidden flex flex-col">
       <SmartHeader />
 
-      <main className="flex-1 w-full max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-3 sm:pb-6 flex flex-col min-h-0">
+      <main className="flex-1 w-full max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 pt-18 sm:pt-24 pb-2 sm:pb-6 flex flex-col min-h-0">
         <div className="flex-1 w-full bg-white dark:bg-[#0a0a0a] border border-slate-200 dark:border-white/10 rounded-2xl sm:rounded-3xl shadow-sm overflow-hidden flex min-h-0">
 
           {/* ════════════════════════════════════════════════════════════════════
@@ -889,6 +896,7 @@ export default function StudentChat() {
                   <div className="flex items-center gap-3 min-w-0">
                     <button
                       onClick={() => {
+                        inputRef.current?.blur();
                         setMobileShowChat(false);
                         setSelectedFriend(null);
                       }}
@@ -941,7 +949,14 @@ export default function StudentChat() {
                 </div>
 
                 {/* Messages Feed */}
-                <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-1 custom-scrollbar bg-slate-50/50 dark:bg-[#060606]">
+                <div
+                  onPointerDown={(e) => {
+                    // Clicking or scrolling the message feed dismisses the mobile keyboard
+                    if (e.target.closest('button') || e.target.closest('a')) return;
+                    inputRef.current?.blur();
+                  }}
+                  className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-1 custom-scrollbar bg-slate-50/50 dark:bg-[#060606]"
+                >
                   {loadingMessages ? (
                     <div className="flex justify-center py-12">
                       <Loader2 className="w-6 h-6 animate-spin text-indigo-500" />
@@ -997,21 +1012,37 @@ export default function StudentChat() {
                 </div>
 
                 {/* Input Bar */}
-                <div className="p-3 sm:p-4 border-t border-slate-100 dark:border-white/10 bg-white dark:bg-[#0a0a0a] shrink-0">
-                  <div className="flex items-center gap-2 bg-slate-50 dark:bg-[#141414] border border-slate-200 dark:border-white/10 rounded-full pl-4 pr-1.5 py-1.5 focus-within:border-indigo-500/50 focus-within:ring-4 focus-within:ring-indigo-500/10 shadow-sm transition-all">
+                <div className="p-2 sm:p-4 border-t border-slate-100 dark:border-white/10 bg-white dark:bg-[#0a0a0a] shrink-0">
+                  <form
+                    onSubmit={handleSend}
+                    className="flex items-center gap-1.5 sm:gap-2 bg-slate-50 dark:bg-[#141414] border border-slate-200 dark:border-white/10 rounded-full pl-3.5 sm:pl-4 pr-1 sm:pr-1.5 py-1 sm:py-1.5 focus-within:border-indigo-500/50 focus-within:ring-4 focus-within:ring-indigo-500/10 shadow-sm transition-all"
+                  >
                     <input
                       ref={inputRef}
                       type="text"
+                      enterKeyHint="send"
+                      autoComplete="off"
                       value={inputText}
                       onChange={handleInputChange}
                       onKeyDown={handleKeyDown}
                       placeholder={`Message ${selectedFriend.displayName.split(' ')[0]}…`}
-                      className="flex-1 bg-transparent py-1.5 text-sm text-slate-900 dark:text-white placeholder-slate-400 outline-none"
+                      className="flex-1 min-w-0 bg-transparent py-1.5 text-sm text-slate-900 dark:text-white placeholder-slate-400 outline-none"
                     />
                     <button
-                      onClick={handleSend}
-                      disabled={!inputText.trim() || sending}
-                      className="w-9 h-9 rounded-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 disabled:hover:bg-indigo-600 text-white flex items-center justify-center transition-all active:scale-95 shadow-sm shadow-indigo-600/20 shrink-0"
+                      type="submit"
+                      onPointerDown={(e) => {
+                        // Prevent the input from losing focus when tapping send on touch screens
+                        e.preventDefault();
+                      }}
+                      onMouseDown={(e) => {
+                        // Prevent the input from losing focus on desktop clicks
+                        e.preventDefault();
+                      }}
+                      className={`w-10 h-10 sm:w-9 sm:h-9 rounded-full flex items-center justify-center transition-all active:scale-95 shadow-sm shadow-indigo-600/20 shrink-0 cursor-pointer touch-manipulation ${
+                        canSend
+                          ? 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                          : 'bg-indigo-600/40 text-white/50 cursor-not-allowed'
+                      }`}
                       title="Send message"
                     >
                       {sending ? (
@@ -1020,7 +1051,7 @@ export default function StudentChat() {
                         <Send className="w-4 h-4 ml-0.5" />
                       )}
                     </button>
-                  </div>
+                  </form>
                 </div>
               </>
             )}
