@@ -688,31 +688,86 @@ export default function StudentChat() {
     <div className="h-screen h-[100dvh] bg-slate-50 dark:bg-black text-slate-900 dark:text-white font-sans selection:bg-indigo-500/30 overflow-hidden flex flex-col">
       <SmartHeader />
 
-      <main className="flex-1 w-full max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 pt-18 sm:pt-24 pb-2 sm:pb-6 flex flex-col min-h-0">
-        <div className="flex-1 w-full bg-white dark:bg-[#0a0a0a] border border-slate-200 dark:border-white/10 rounded-2xl sm:rounded-3xl shadow-sm overflow-hidden flex min-h-0">
+      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 sm:pt-32 pb-2 sm:pb-6 flex min-h-0 overflow-hidden">
+        <div className="flex-1 w-full flex min-h-0 overflow-hidden gap-0 sm:gap-6">
 
-          {/*LEFT PANEL: Friends List */}
+          {/* ════════════════════════════════════════════════════════════════════
+            LEFT PANEL: Friends / Messages Feed (Direct Screen on Mobile, Column on Desktop)
+           ════════════════════════════════════════════════════════════════════ */}
           <div
             className={`${mobileShowChat ? 'hidden md:flex' : 'flex'
-              } flex-col w-full md:w-80 lg:w-96 shrink-0 bg-white dark:bg-[#0a0a0a] border-r border-slate-200 dark:border-white/10 overflow-hidden`}
+              } flex-col w-full md:w-80 lg:w-96 shrink-0 bg-slate-50 dark:bg-black sm:bg-transparent overflow-hidden`}
           >
-            {/* Header */}
-            <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-white/10 space-y-3">
-              <div className="flex items-center justify-between">
-                <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-                  Messages
-                </h1>
+            {/* Controls: Search Bar on top, Filter pills and action buttons below */}
+            <div className="pb-3 space-y-3 shrink-0">
+              {/* Search Bar matching Notice page */}
+              <div className="relative group">
+                <div className="absolute inset-y-0 left-0 pl-4.5 flex items-center pointer-events-none">
+                  <Search className="w-4.5 h-4.5 text-slate-400 dark:text-slate-500 group-focus-within:text-indigo-500 transition-colors" />
+                </div>
+                <input
+                  type="text"
+                  value={friendSearch}
+                  onChange={(e) => setFriendSearch(e.target.value)}
+                  placeholder="Search friends or roll no…"
+                  className="w-full pl-12 pr-10 py-3.5 sm:py-4 rounded-[2rem] bg-white dark:bg-[#0a0a0a] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white placeholder-slate-400 text-xs sm:text-sm focus:outline-none focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10 shadow-xs hover:shadow-sm transition-all font-medium"
+                />
+                {friendSearch && (
+                  <button
+                    onClick={() => setFriendSearch('')}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-md"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
 
-                <div className="flex items-center gap-1.5">
+              {/* Row Under Search Bar: Filter Pills + Action Buttons (Bell & Add Friend) */}
+              <div className="flex items-center justify-between gap-2">
+                {/* Individual Filter Pills matching Notice page style */}
+                <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 no-scrollbar">
+                  <button
+                    onClick={() => setFilterTab('all')}
+                    className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${filterTab === 'all'
+                      ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
+                      : 'bg-white dark:bg-[#0a0a0a] border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white shadow-xs'
+                      }`}
+                  >
+                    All ({friends.length})
+                  </button>
+                  <button
+                    onClick={() => setFilterTab('online')}
+                    className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${filterTab === 'online'
+                      ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
+                      : 'bg-white dark:bg-[#0a0a0a] border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white shadow-xs'
+                      }`}
+                  >
+                    Online ({onlineFriendsCount})
+                  </button>
+                  {totalUnreadCount > 0 && (
+                    <button
+                      onClick={() => setFilterTab('unread')}
+                      className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${filterTab === 'unread'
+                        ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
+                        : 'bg-white dark:bg-[#0a0a0a] border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white shadow-xs'
+                        }`}
+                    >
+                      Unread ({totalUnreadCount})
+                    </button>
+                  )}
+                </div>
+
+                {/* Friend Requests Bell & Add Friend Buttons */}
+                <div className="flex items-center gap-1.5 shrink-0">
                   {/* Friend Requests Bell Button */}
                   <button
                     onClick={() => setShowRequests(true)}
-                    className="relative w-9 h-9 rounded-full bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 flex items-center justify-center text-slate-600 dark:text-slate-300 transition-colors"
+                    className="relative w-8.5 h-8.5 sm:w-9 sm:h-9 rounded-xl bg-white dark:bg-[#0a0a0a] border border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/5 flex items-center justify-center text-slate-700 dark:text-slate-300 transition-all shadow-xs"
                     title="Friend Requests"
                   >
                     <Bell className="w-4 h-4" />
                     {friendRequests.length > 0 && (
-                      <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-rose-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+                      <span className="absolute -top-1 -right-1 w-4.5 h-4.5 bg-rose-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center ring-2 ring-white dark:ring-black">
                         {friendRequests.length}
                       </span>
                     )}
@@ -721,70 +776,17 @@ export default function StudentChat() {
                   {/* Add Friend Button */}
                   <button
                     onClick={() => setShowAddFriend(true)}
-                    className="w-9 h-9 rounded-full bg-indigo-600 hover:bg-indigo-700 flex items-center justify-center text-white transition-colors shadow-sm shadow-indigo-600/20 active:scale-95"
+                    className="w-8.5 h-8.5 sm:w-9 sm:h-9 rounded-xl bg-indigo-600 hover:bg-indigo-700 flex items-center justify-center text-white transition-all shadow-md shadow-indigo-600/20 active:scale-95"
                     title="Add new friend"
                   >
-                    <Plus className="w-4 h-4" />
+                    <Plus className="w-4.5 h-4.5" />
                   </button>
                 </div>
               </div>
-
-              {/* Search Bar matching Notice page */}
-              <div className="relative group">
-                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500 group-focus-within:text-indigo-500 transition-colors" />
-                <input
-                  type="text"
-                  value={friendSearch}
-                  onChange={(e) => setFriendSearch(e.target.value)}
-                  placeholder="Search friends or roll no…"
-                  className="w-full pl-10 pr-9 py-2.5 bg-slate-50 dark:bg-[#141414] border border-slate-200 dark:border-white/10 rounded-full text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10 shadow-sm transition-all"
-                />
-                {friendSearch && (
-                  <button
-                    onClick={() => setFriendSearch('')}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                )}
-              </div>
-
-              {/* Individual Filter Pills matching Notice page style */}
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setFilterTab('all')}
-                  className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all border ${filterTab === 'all'
-                    ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm shadow-indigo-600/20'
-                    : 'bg-white dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-white/20'
-                    }`}
-                >
-                  All ({friends.length})
-                </button>
-                <button
-                  onClick={() => setFilterTab('online')}
-                  className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all border ${filterTab === 'online'
-                    ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm shadow-indigo-600/20'
-                    : 'bg-white dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-white/20'
-                    }`}
-                >
-                  Online ({onlineFriendsCount})
-                </button>
-                {totalUnreadCount > 0 && (
-                  <button
-                    onClick={() => setFilterTab('unread')}
-                    className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all border ${filterTab === 'unread'
-                      ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm shadow-indigo-600/20'
-                      : 'bg-white dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-white/20'
-                      }`}
-                  >
-                    Unread ({totalUnreadCount})
-                  </button>
-                )}
-              </div>
             </div>
 
-            {/* Friends List */}
-            <div className="flex-1 overflow-y-auto p-2.5 sm:p-3 space-y-1 custom-scrollbar">
+            {/* Friends List: Individual Cards matching Notice cards */}
+            <div className="flex-1 overflow-y-auto pt-1 pb-6 space-y-2.5 custom-scrollbar">
               {loadingFriends ? (
                 <div className="flex justify-center py-12">
                   <Loader2 className="w-6 h-6 animate-spin text-indigo-500" />
@@ -797,7 +799,7 @@ export default function StudentChat() {
                   <p className="text-sm font-bold text-slate-700 dark:text-slate-200">
                     {friendSearch ? 'No friends found' : 'No friends yet'}
                   </p>
-                  <p className="text-xs text-slate-400 mt-0.5">
+                  <p className="text-xs text-slate-400 mt-1">
                     {friendSearch ? 'Try a different search' : 'Click + to add classmates'}
                   </p>
                 </div>
@@ -812,9 +814,9 @@ export default function StudentChat() {
                     <div
                       key={friend.uid}
                       onClick={() => selectFriend(friend)}
-                      className={`flex items-center gap-3 p-3 rounded-2xl cursor-pointer transition-all group ${isSelected
-                        ? 'bg-indigo-50 dark:bg-indigo-500/15 border border-indigo-200/60 dark:border-indigo-500/20 shadow-xs'
-                        : 'hover:bg-slate-50 dark:hover:bg-white/5 border border-transparent'
+                      className={`group relative flex items-center gap-3.5 p-3.5 sm:p-4 rounded-2xl cursor-pointer transition-all active:scale-[0.99] ${isSelected
+                        ? 'bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-300 dark:border-indigo-500/40 shadow-sm ring-1 ring-indigo-500/20'
+                        : 'bg-white dark:bg-[#0a0a0a] hover:bg-slate-100 dark:hover:bg-[#121212] border border-slate-200 dark:border-white/10 shadow-xs hover:shadow-md'
                         }`}
                     >
                       {/* Avatar with status dot */}
@@ -822,24 +824,32 @@ export default function StudentChat() {
                         <img
                           src={avatarUrl(friend)}
                           alt={friend.displayName}
-                          className="w-11 h-11 rounded-full object-cover ring-2 ring-slate-100 dark:ring-white/5"
+                          className="w-11 h-11 sm:w-12 sm:h-12 rounded-full object-cover ring-2 ring-slate-100 dark:ring-white/5"
                         />
                         <span
-                          className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white dark:border-[#0a0a0a] ${isOnline ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-zinc-600'
+                          className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-white dark:border-[#0a0a0a] ${isOnline ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-zinc-600'
                             }`}
                         />
                       </div>
 
                       {/* Info */}
                       <div className="flex-1 min-w-0">
-                        <p
-                          className={`text-sm font-bold truncate ${isSelected
-                            ? 'text-indigo-600 dark:text-indigo-400'
-                            : 'text-slate-900 dark:text-white'
-                            }`}
-                        >
-                          {friend.displayName}
-                        </p>
+                        <div className="flex items-center justify-between gap-1">
+                          <p
+                            className={`text-sm sm:text-base font-bold truncate ${isSelected
+                              ? 'text-indigo-600 dark:text-indigo-400'
+                              : 'text-slate-900 dark:text-white'
+                              }`}
+                          >
+                            {friend.displayName}
+                          </p>
+                          {unread > 0 && (
+                            <span className="w-5 h-5 bg-indigo-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-xs shrink-0">
+                              {unread > 9 ? '9+' : unread}
+                            </span>
+                          )}
+                        </div>
+
                         <p className="text-xs text-slate-400 truncate mt-0.5">
                           {isTyping ? (
                             <span className="text-indigo-500 font-semibold flex items-center gap-1.5">
@@ -854,24 +864,17 @@ export default function StudentChat() {
                         </p>
                       </div>
 
-                      {/* Unread badge & remove button */}
-                      <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                        {unread > 0 && (
-                          <span className="w-5 h-5 bg-indigo-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-xs">
-                            {unread > 9 ? '9+' : unread}
-                          </span>
-                        )}
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setFriendToRemove(friend);
-                          }}
-                          className="opacity-0 group-hover:opacity-100 w-6 h-6 rounded-full hover:bg-rose-50 dark:hover:bg-rose-500/10 text-slate-400 hover:text-rose-500 flex items-center justify-center transition-all"
-                          title="Remove friend"
-                        >
-                          <UserMinus className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
+                      {/* Remove button */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setFriendToRemove(friend);
+                        }}
+                        className="opacity-0 group-hover:opacity-100 w-7 h-7 rounded-full hover:bg-rose-50 dark:hover:bg-rose-500/10 text-slate-400 hover:text-rose-500 flex items-center justify-center transition-all shrink-0"
+                        title="Remove friend"
+                      >
+                        <UserMinus className="w-3.5 h-3.5" />
+                      </button>
                     </div>
                   );
                 })
@@ -880,29 +883,29 @@ export default function StudentChat() {
           </div>
 
           {/* ════════════════════════════════════════════════════════════════════
-            RIGHT PANEL: Chat Window (Direct Full Height)
+            RIGHT PANEL: Chat Window (Direct Full Screen on Mobile, Clean Card on Desktop)
            ════════════════════════════════════════════════════════════════════ */}
           <div
             className={`${!mobileShowChat ? 'hidden md:flex' : 'flex'
-              } flex-1 flex-col bg-white dark:bg-[#0a0a0a] overflow-hidden`}
+              } flex-1 flex-col bg-slate-50 dark:bg-black sm:bg-white sm:dark:bg-[#0a0a0a] sm:border sm:border-slate-200 sm:dark:border-white/10 sm:rounded-3xl sm:shadow-sm overflow-hidden`}
           >
             {!selectedFriend ? (
-              /* Empty state: No conversation selected */
+              /* Empty state: No conversation selected (Desktop) */
               <div className="flex-1 flex flex-col items-center justify-center gap-3 text-center p-8 select-none">
-                <div className="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-400 dark:text-slate-500 mb-2">
-                  <MessageSquare className="w-8 h-8 text-indigo-500" />
+                <div className="w-16 h-16 rounded-2xl bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-500 mb-2">
+                  <MessageSquare className="w-8 h-8" />
                 </div>
                 <h2 className="text-xl font-bold text-slate-800 dark:text-white">
                   Select a conversation
                 </h2>
                 <p className="text-sm text-slate-500 dark:text-slate-400 max-w-xs">
-                  Choose a friend from the left sidebar to start chatting
+                  Choose a classmate from the list on the left to start chatting
                 </p>
               </div>
             ) : (
               <>
                 {/* Chat Header */}
-                <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 border-b border-slate-100 dark:border-white/10 shrink-0 bg-white dark:bg-[#0a0a0a]">
+                <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 border-b border-slate-200 dark:border-white/10 shrink-0 bg-white/80 dark:bg-[#0a0a0a]/80 sm:bg-white sm:dark:bg-[#0a0a0a] backdrop-blur-md sticky top-0 z-10">
                   <div className="flex items-center gap-3 min-w-0">
                     <button
                       onClick={() => {
@@ -910,9 +913,9 @@ export default function StudentChat() {
                         setMobileShowChat(false);
                         setSelectedFriend(null);
                       }}
-                      className="md:hidden w-8 h-8 rounded-full hover:bg-slate-100 dark:hover:bg-white/10 flex items-center justify-center text-slate-600 dark:text-slate-300 transition-colors"
+                      className="md:hidden w-9 h-9 -ml-1 rounded-full hover:bg-slate-100 dark:hover:bg-white/10 flex items-center justify-center text-slate-700 dark:text-slate-300 transition-colors"
                     >
-                      <ChevronLeft className="w-5 h-5" />
+                      <ChevronLeft className="w-6 h-6" />
                     </button>
 
                     <div className="relative flex-shrink-0">
@@ -960,11 +963,11 @@ export default function StudentChat() {
                 {/* Messages Feed */}
                 <div
                   onPointerDown={(e) => {
-                    // Clicking or scrolling the message feed dismisses the mobile keyboard
+                    // Dismiss keyboard only when touching background/message area, not buttons
                     if (e.target.closest('button') || e.target.closest('a')) return;
                     inputRef.current?.blur();
                   }}
-                  className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-1 custom-scrollbar bg-slate-50/50 dark:bg-[#060606]"
+                  className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-1.5 custom-scrollbar bg-slate-50 dark:bg-black sm:bg-slate-50/50 sm:dark:bg-[#060606]"
                 >
                   {loadingMessages ? (
                     <div className="flex justify-center py-12">
@@ -1021,10 +1024,10 @@ export default function StudentChat() {
                 </div>
 
                 {/* Input Bar */}
-                <div className="p-2 sm:p-4 border-t border-slate-100 dark:border-white/10 bg-white dark:bg-[#0a0a0a] shrink-0">
+                <div className="p-2.5 sm:p-4 border-t border-slate-200 dark:border-white/10 bg-white/90 dark:bg-[#0a0a0a]/90 sm:bg-white sm:dark:bg-[#0a0a0a] backdrop-blur-md shrink-0">
                   <form
                     onSubmit={handleSend}
-                    className="flex items-center gap-1.5 sm:gap-2 bg-slate-50 dark:bg-[#141414] border border-slate-200 dark:border-white/10 rounded-full pl-3.5 sm:pl-4 pr-1 sm:pr-1.5 py-1 sm:py-1.5 focus-within:border-indigo-500/50 focus-within:ring-4 focus-within:ring-indigo-500/10 shadow-sm transition-all"
+                    className="flex items-center gap-1.5 sm:gap-2 bg-slate-100 dark:bg-[#141414] border border-slate-200 dark:border-white/10 rounded-full pl-4 pr-1 sm:pr-1.5 py-1 sm:py-1.5 focus-within:border-indigo-500/50 focus-within:ring-4 focus-within:ring-indigo-500/10 shadow-xs transition-all"
                   >
                     <input
                       ref={inputRef}
@@ -1044,10 +1047,10 @@ export default function StudentChat() {
                         handleSend();
                       }}
                       onMouseDown={(e) => {
-                        // Prevent the input from losing focus on desktop clicks
+                        // Prevent the input from losing focus on desktop/mobile clicks
                         e.preventDefault();
                       }}
-                      className={`w-10 h-10 sm:w-9 sm:h-9 rounded-full flex items-center justify-center transition-all active:scale-95 shadow-sm shadow-indigo-600/20 shrink-0 cursor-pointer touch-manipulation ${canSend
+                      className={`w-10 h-10 sm:w-9 sm:h-9 rounded-full flex items-center justify-center transition-all active:scale-95 shadow-md shadow-indigo-600/20 shrink-0 cursor-pointer touch-manipulation ${canSend
                         ? 'bg-indigo-600 hover:bg-indigo-700 text-white'
                         : 'bg-indigo-600/40 text-white/50 cursor-not-allowed'
                         }`}
