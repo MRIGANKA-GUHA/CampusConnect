@@ -780,10 +780,10 @@ export default function ClubEvents() {
                               disabled={isPast}
                               onClick={() => handleSelectDay(dayNum)}
                               className={`h-9 w-9 rounded-xl flex items-center justify-center transition-all ${isSelected
-                                ? 'bg-gradient-to-tr from-indigo-600 to-indigo-500 text-white shadow-lg shadow-indigo-500/40 font-black scale-105'
+                                ? 'bg-gradient-to-tr from-[#D4621A] to-[#F4AE52] text-white shadow-lg shadow-[#D4621A]/30 font-black scale-105'
                                 : isPast
                                   ? 'text-slate-300 dark:text-slate-700 cursor-not-allowed opacity-50'
-                                  : 'text-slate-700 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-white/10'
+                                  : 'text-slate-700 dark:text-slate-300 hover:bg-[#F4AE52]/20 dark:hover:bg-white/10'
                                 }`}
                             >
                               {dayNum}
@@ -797,21 +797,21 @@ export default function ClubEvents() {
                         <button
                           type="button"
                           onClick={() => handlePresetDate(0)}
-                          className="flex-1 py-2 px-2 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-indigo-50 dark:hover:bg-indigo-500/20 text-slate-600 dark:text-slate-300 hover:text-indigo-600 text-[11px] font-bold transition-all text-center"
+                          className="flex-1 py-2 px-2 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-[#F4AE52]/20 dark:hover:bg-[#F4AE52]/10 text-slate-600 dark:text-slate-300 hover:text-[#D4621A] text-[11px] font-bold transition-all text-center"
                         >
                           Today
                         </button>
                         <button
                           type="button"
                           onClick={() => handlePresetDate(1)}
-                          className="flex-1 py-2 px-2 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-indigo-50 dark:hover:bg-indigo-500/20 text-slate-600 dark:text-slate-300 hover:text-indigo-600 text-[11px] font-bold transition-all text-center"
+                          className="flex-1 py-2 px-2 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-[#F4AE52]/20 dark:hover:bg-[#F4AE52]/10 text-slate-600 dark:text-slate-300 hover:text-[#D4621A] text-[11px] font-bold transition-all text-center"
                         >
                           Tomorrow
                         </button>
                         <button
                           type="button"
                           onClick={() => handlePresetDate(7)}
-                          className="flex-1 py-2 px-2 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-indigo-50 dark:hover:bg-indigo-500/20 text-slate-600 dark:text-slate-300 hover:text-indigo-600 text-[11px] font-bold transition-all text-center"
+                          className="flex-1 py-2 px-2 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-[#F4AE52]/20 dark:hover:bg-[#F4AE52]/10 text-slate-600 dark:text-slate-300 hover:text-[#D4621A] text-[11px] font-bold transition-all text-center"
                         >
                           +1 Week
                         </button>
@@ -827,10 +827,10 @@ export default function ClubEvents() {
                   <button
                     type="button"
                     onClick={() => setActiveDropdown(activeDropdown === 'time' ? null : 'time')}
-                    className={`w-full p-4.5 rounded-2xl bg-slate-50 dark:bg-zinc-900/90 border border-slate-200 dark:border-white/15 flex items-center justify-between transition-all font-bold text-sm ${activeDropdown === 'time' ? 'ring-4 ring-indigo-500/10 border-indigo-500' : ''}`}
+                    className={`w-full p-4.5 rounded-2xl bg-slate-50 dark:bg-zinc-900/90 border border-slate-200 dark:border-white/15 flex items-center justify-between transition-all font-bold text-sm ${activeDropdown === 'time' ? 'ring-4 ring-[#D4621A]/10 border-[#D4621A]' : ''}`}
                   >
                     <div className="flex items-center gap-3">
-                      <Clock className="w-5 h-5 text-indigo-500 shrink-0" />
+                      <Clock className="w-5 h-5 text-[#D4621A] shrink-0" />
                       <span className={form.time ? 'text-slate-900 dark:text-white' : 'text-slate-400'}>
                         {form.time || 'Select Time'}
                       </span>
@@ -842,10 +842,10 @@ export default function ClubEvents() {
                     <div className="absolute z-[120] top-full right-0 mt-2 w-full sm:w-80 bg-white/95 dark:bg-[#121215]/95 backdrop-blur-2xl border border-slate-200/80 dark:border-white/10 rounded-[2.5rem] p-5 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.3)] animate-in zoom-in-95 duration-200">
 
                       {/* Large Glowing Digital Clock Display Header */}
-                      <div className="flex items-center justify-between bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-500/10 dark:to-blue-500/10 border border-indigo-100 dark:border-indigo-500/20 rounded-2xl p-3.5 mb-4">
+                      <div className="flex items-center justify-between bg-gradient-to-r from-[#F4AE52]/15 to-[#D4621A]/10 dark:from-[#F4AE52]/10 dark:to-[#D4621A]/15 border border-[#F4AE52]/30 rounded-2xl p-3.5 mb-4">
                         <div className="flex items-center gap-2">
-                          <Clock className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-                          <span className="font-mono text-2xl font-black text-indigo-600 dark:text-indigo-400 tracking-wider">
+                          <Clock className="w-5 h-5 text-[#D4621A] dark:text-[#F4AE52]" />
+                          <span className="font-mono text-2xl font-black text-[#D4621A] dark:text-[#F4AE52] tracking-wider">
                             {form.time || '10:00 AM'}
                           </span>
                         </div>
@@ -860,7 +860,7 @@ export default function ClubEvents() {
                               setField('time', `${timePart} AM`);
                             }}
                             className={`px-3 py-1 rounded-lg text-xs font-black transition-all ${form.time?.includes('AM') || !form.time?.includes('PM')
-                              ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/30 scale-105'
+                              ? 'bg-[#D4621A] text-white shadow-md shadow-[#D4621A]/30 scale-105'
                               : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                               }`}
                           >
@@ -874,7 +874,7 @@ export default function ClubEvents() {
                               setField('time', `${timePart} PM`);
                             }}
                             className={`px-3 py-1 rounded-lg text-xs font-black transition-all ${form.time?.includes('PM')
-                              ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/30 scale-105'
+                              ? 'bg-[#D4621A] text-white shadow-md shadow-[#D4621A]/30 scale-105'
                               : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                               }`}
                           >
@@ -915,7 +915,7 @@ export default function ClubEvents() {
                                   setField('time', `${h}:${currentMin} ${currentAmpm}`);
                                 }}
                                 className={`py-2 text-xs font-extrabold rounded-xl transition-all ${isSel
-                                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/30 font-black scale-105'
+                                  ? 'bg-[#D4621A] text-white shadow-md shadow-[#D4621A]/30 font-black scale-105'
                                   : isPastHour
                                     ? 'opacity-30 cursor-not-allowed bg-slate-50 dark:bg-white/5 text-slate-400'
                                     : 'bg-slate-50 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300'
@@ -947,7 +947,7 @@ export default function ClubEvents() {
                                   setField('time', `${currentHour}:${m} ${currentAmpm}`);
                                 }}
                                 className={`py-2 text-xs font-extrabold rounded-xl transition-all ${isSel
-                                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/30 font-black scale-105'
+                                  ? 'bg-[#D4621A] text-white shadow-md shadow-[#D4621A]/30 font-black scale-105'
                                   : 'bg-slate-50 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300'
                                   }`}
                               >
@@ -985,7 +985,7 @@ export default function ClubEvents() {
                                 onClick={() => { setField('time', slot); setActiveDropdown(null); }}
                                 className={`py-1.5 px-3 rounded-xl text-[11px] font-bold transition-all whitespace-nowrap shrink-0 ${isPastSlot
                                   ? 'opacity-30 cursor-not-allowed bg-slate-100 dark:bg-white/5 text-slate-400'
-                                  : 'bg-slate-100 dark:bg-white/5 hover:bg-indigo-50 dark:hover:bg-indigo-500/20 text-slate-600 dark:text-slate-300 hover:text-indigo-600'
+                                  : 'bg-slate-100 dark:bg-white/5 hover:bg-[#F4AE52]/20 dark:hover:bg-[#F4AE52]/10 text-slate-600 dark:text-slate-300 hover:text-[#D4621A]'
                                   }`}
                               >
                                 {slot}

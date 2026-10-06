@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Menu, X, LogOut, LayoutDashboard, Calendar, Bell, Users, UserCircle } from 'lucide-react';
 import logoUrl from '../assets/images/technoLogo.png';
-import ThemeSwitch from './ThemeSwitch';
 import { useAuth } from '../context/AuthContext';
 
 /**
@@ -73,8 +72,6 @@ export default function ClubHeader() {
 
           {/* Right Side Controls */}
           <div className="flex items-center gap-1 sm:gap-3">
-            <ThemeSwitch />
-
             {/* Club avatar */}
             {user && (
               <Link to="/club/profile" className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-[1.5px] sm:border-2 border-indigo-200 dark:border-indigo-500/30 overflow-hidden shrink-0 shadow-sm cursor-pointer hover:border-indigo-500 dark:hover:border-indigo-400 hover:-translate-y-0.5 active:scale-95 transition-all bg-indigo-50 dark:bg-indigo-500/10" title="Club Profile">

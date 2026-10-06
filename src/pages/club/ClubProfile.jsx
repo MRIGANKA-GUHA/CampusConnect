@@ -134,9 +134,9 @@ export default function ClubProfile() {
         <div className="bg-white dark:bg-[#0a0a0a] border border-slate-200 dark:border-white/10 rounded-[2.5rem] overflow-hidden shadow-sm">
 
           {/* ── Cover Banner Header ── */}
-          <div className="relative h-44 sm:h-56 bg-gradient-to-r from-slate-950 via-zinc-900 to-black overflow-hidden group border-b border-slate-200/50 dark:border-white/10">
+          <div className="relative h-44 sm:h-56 bg-gradient-to-r from-[#24160C] via-[#2A1A0E] to-black overflow-hidden group border-b border-slate-200/50 dark:border-white/10">
             {!club?.coverURL && (
-              <div className="absolute inset-0 opacity-25 bg-[radial-gradient(#6366f1_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
+              <div className="absolute inset-0 opacity-25 bg-[radial-gradient(#F4AE52_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
             )}
             {club?.coverURL && (
               <img src={club.coverURL} alt="Cover Banner" className="w-full h-full object-cover" />
@@ -174,7 +174,7 @@ export default function ClubProfile() {
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
                 />
 
-                <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-full border-4 border-white dark:border-[#0a0a0a] overflow-hidden shadow-2xl bg-slate-100 dark:bg-white/5">
+                <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-full border-4 border-white dark:border-[#24160C] overflow-hidden shadow-2xl bg-slate-100 dark:bg-white/5">
                   <img src={avatarSrc} alt="Club Logo" className="w-full h-full object-cover" />
                   {uploadingLogo && (
                     <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-10 pointer-events-none">
@@ -184,14 +184,14 @@ export default function ClubProfile() {
                 </div>
 
                 {!uploadingLogo && (
-                  <div className="absolute bottom-1 right-1 bg-gradient-to-tr from-indigo-600 to-violet-500 text-white p-2 rounded-full shadow-lg ring-4 ring-white dark:ring-[#0a0a0a] z-10 group-hover:scale-110 transition-transform pointer-events-none">
+                  <div className="absolute bottom-1 right-1 bg-gradient-to-tr from-[#D4621A] to-[#F4AE52] text-white p-2 rounded-full shadow-lg shadow-[#D4621A]/35 ring-4 ring-white dark:ring-[#24160C] z-10 group-hover:scale-110 transition-transform pointer-events-none">
                     <Camera className="w-4 h-4" strokeWidth={2.5} />
                   </div>
                 )}
               </div>
 
               {/* Category Badge */}
-              <span className="px-3.5 py-1.5 text-xs font-extrabold uppercase tracking-widest rounded-full bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-500/20">
+              <span className="px-3.5 py-1.5 text-xs font-extrabold uppercase tracking-widest rounded-full bg-[#F4AE52]/10 text-[#D4621A] dark:text-[#F4AE52] border border-[#F4AE52]/30">
                 {club?.category || 'Technical Club'}
               </span>
             </div>
@@ -214,7 +214,7 @@ export default function ClubProfile() {
                 <span>Convenor: <strong className="text-slate-900 dark:text-white font-extrabold">{club?.convenorName || '—'}</strong></span>
               </div>
               {club?.convenorEmail && (
-                <span className="text-indigo-600 dark:text-indigo-400 font-semibold">{club.convenorEmail}</span>
+                <span className="text-[#D4621A] dark:text-[#F4AE52] font-semibold">{club.convenorEmail}</span>
               )}
             </div>
 
@@ -228,7 +228,7 @@ export default function ClubProfile() {
                 value={form.tagline}
                 onChange={handleChange}
                 placeholder="e.g. Building tomorrow's tech leaders"
-                className="w-full p-4 rounded-2xl bg-slate-50 dark:bg-zinc-900/90 border border-slate-200 dark:border-white/15 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-bold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 text-sm"
+                className="w-full p-4 rounded-2xl bg-slate-50 dark:bg-zinc-900/90 border border-slate-200 dark:border-white/15 focus:outline-none focus:ring-4 focus:ring-[#D4621A]/10 focus:border-[#D4621A] transition-all font-bold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 text-sm"
               />
             </div>
 
@@ -241,7 +241,7 @@ export default function ClubProfile() {
                 onChange={handleChange}
                 rows={4}
                 placeholder="Tell students about your club's vision, activities, and achievements..."
-                className="w-full p-4 rounded-2xl bg-slate-50 dark:bg-zinc-900/90 border border-slate-200 dark:border-white/15 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-medium text-slate-900 dark:text-white resize-none placeholder-slate-400 dark:placeholder-slate-500 text-sm"
+                className="w-full p-4 rounded-2xl bg-slate-50 dark:bg-zinc-900/90 border border-slate-200 dark:border-white/15 focus:outline-none focus:ring-4 focus:ring-[#D4621A]/10 focus:border-[#D4621A] transition-all font-medium text-slate-900 dark:text-white resize-none placeholder-slate-400 dark:placeholder-slate-500 text-sm"
               />
             </div>
 
@@ -260,7 +260,7 @@ export default function ClubProfile() {
                     value={form.instagram}
                     onChange={handleChange}
                     placeholder="https://instagram.com/..."
-                    className="w-full px-4 py-3.5 rounded-2xl bg-slate-50 dark:bg-zinc-900/90 border border-slate-200 dark:border-white/15 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all text-xs font-bold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500"
+                    className="w-full px-4 py-3.5 rounded-2xl bg-slate-50 dark:bg-zinc-900/90 border border-slate-200 dark:border-white/15 focus:outline-none focus:ring-4 focus:ring-[#D4621A]/10 focus:border-[#D4621A] transition-all text-xs font-bold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500"
                   />
                 </div>
 
@@ -273,7 +273,7 @@ export default function ClubProfile() {
                     value={form.linkedin}
                     onChange={handleChange}
                     placeholder="https://linkedin.com/..."
-                    className="w-full px-4 py-3.5 rounded-2xl bg-slate-50 dark:bg-zinc-900/90 border border-slate-200 dark:border-white/15 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all text-xs font-bold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500"
+                    className="w-full px-4 py-3.5 rounded-2xl bg-slate-50 dark:bg-zinc-900/90 border border-slate-200 dark:border-white/15 focus:outline-none focus:ring-4 focus:ring-[#D4621A]/10 focus:border-[#D4621A] transition-all text-xs font-bold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500"
                   />
                 </div>
 
@@ -286,7 +286,7 @@ export default function ClubProfile() {
                     value={form.website}
                     onChange={handleChange}
                     placeholder="https://..."
-                    className="w-full px-4 py-3.5 rounded-2xl bg-slate-50 dark:bg-zinc-900/90 border border-slate-200 dark:border-white/15 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all text-xs font-bold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500"
+                    className="w-full px-4 py-3.5 rounded-2xl bg-slate-50 dark:bg-zinc-900/90 border border-slate-200 dark:border-white/15 focus:outline-none focus:ring-4 focus:ring-[#D4621A]/10 focus:border-[#D4621A] transition-all text-xs font-bold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500"
                   />
                 </div>
 
@@ -297,7 +297,7 @@ export default function ClubProfile() {
               <button
                 type="submit"
                 disabled={saving}
-                className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white font-bold py-3.5 sm:py-4 rounded-2xl transition-all shadow-lg hover:shadow-indigo-500/30 hover:-translate-y-0.5 active:scale-95 mt-4 text-sm sm:text-base"
+                className="w-full flex items-center justify-center gap-2 bg-[#D4621A] hover:bg-[#b85214] disabled:opacity-60 text-white font-bold py-3.5 sm:py-4 rounded-2xl transition-all shadow-lg hover:shadow-[#D4621A]/30 hover:-translate-y-0.5 active:scale-95 mt-4 text-sm sm:text-base cursor-pointer"
               >
                 {saving ? (
                   <><Loader2 className="w-5 h-5 animate-spin" /> Saving Changes...</>

@@ -130,7 +130,7 @@ export default function ProfilePage() {
               />
 
               {/* Avatar image container */}
-              <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full border-[3px] border-indigo-100 dark:border-indigo-500/30 overflow-hidden shadow-xl group-hover:border-indigo-400 dark:group-hover:border-indigo-500 transition-colors">
+              <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full border-[3px] border-[#F4AE52]/40 dark:border-[#F4AE52]/30 overflow-hidden shadow-xl group-hover:border-[#D4621A] dark:group-hover:border-[#F4AE52] transition-colors">
                 <img src={avatarSrc} alt="Profile" referrerPolicy="no-referrer" className="w-full h-full object-cover" />
 
                 {/* Loading overlay inside the container */}
@@ -143,7 +143,7 @@ export default function ProfilePage() {
 
               {/* Premium Edit Icon Badge */}
               {!uploading && (
-                <div className="absolute bottom-0 right-0 bg-gradient-to-tr from-indigo-600 to-violet-500 text-white p-2 sm:p-2.5 rounded-full shadow-[0_4px_20px_rgb(99,102,241,0.5)] ring-4 ring-white dark:ring-[#13131a] z-10 group-hover:scale-110 transition-transform pointer-events-none">
+                <div className="absolute bottom-0 right-0 bg-gradient-to-tr from-[#D4621A] to-[#F4AE52] text-white p-2 sm:p-2.5 rounded-full shadow-lg shadow-[#D4621A]/35 ring-4 ring-white dark:ring-[#24160C] z-10 group-hover:scale-110 transition-transform pointer-events-none">
                   <Camera className="w-4 h-4" strokeWidth={2.5} />
                 </div>
               )}
@@ -186,7 +186,7 @@ export default function ProfilePage() {
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
                   required
-                  className="w-full bg-slate-100 dark:bg-black border border-slate-200 dark:border-white/10 rounded-2xl px-4 py-3 sm:px-5 sm:py-3.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-sm sm:text-base font-medium text-slate-900 dark:text-white"
+                  className="w-full bg-slate-100 dark:bg-[#1A1108] border border-slate-200 dark:border-white/10 rounded-2xl px-4 py-3 sm:px-5 sm:py-3.5 focus:outline-none focus:ring-2 focus:ring-[#D4621A] focus:border-transparent transition-all text-sm sm:text-base font-medium text-slate-900 dark:text-white"
                 />
               </div>
 
@@ -198,7 +198,7 @@ export default function ProfilePage() {
                   onChange={(e) => setPhoneNo(e.target.value)}
                   required
                   placeholder="e.g. +91..."
-                  className="w-full bg-slate-100 dark:bg-black border border-slate-200 dark:border-white/10 rounded-2xl px-4 py-3 sm:px-5 sm:py-3.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-sm sm:text-base font-medium text-slate-900 dark:text-white"
+                  className="w-full bg-slate-100 dark:bg-[#1A1108] border border-slate-200 dark:border-white/10 rounded-2xl px-4 py-3 sm:px-5 sm:py-3.5 focus:outline-none focus:ring-2 focus:ring-[#D4621A] focus:border-transparent transition-all text-sm sm:text-base font-medium text-slate-900 dark:text-white"
                 />
               </div>
             </div>
@@ -214,7 +214,7 @@ export default function ProfilePage() {
                       onChange={(e) => setDepartment(e.target.value)}
                       required
                       placeholder="e.g. CSE"
-                      className="w-full bg-slate-100 dark:bg-black border border-slate-200 dark:border-white/10 rounded-2xl px-4 py-3 sm:px-5 sm:py-3.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-sm sm:text-base font-medium text-slate-900 dark:text-white"
+                      className="w-full bg-slate-100 dark:bg-[#1A1108] border border-slate-200 dark:border-white/10 rounded-2xl px-4 py-3 sm:px-5 sm:py-3.5 focus:outline-none focus:ring-2 focus:ring-[#D4621A] focus:border-transparent transition-all text-sm sm:text-base font-medium text-slate-900 dark:text-white"
                     />
                   </div>
 
@@ -226,7 +226,7 @@ export default function ProfilePage() {
                       onChange={(e) => setRollNo(e.target.value)}
                       required
                       placeholder="e.g. 12345"
-                      className="w-full bg-slate-100 dark:bg-black border border-slate-200 dark:border-white/10 rounded-2xl px-4 py-3 sm:px-5 sm:py-3.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-sm sm:text-base font-medium text-slate-900 dark:text-white"
+                      className="w-full bg-slate-100 dark:bg-[#1A1108] border border-slate-200 dark:border-white/10 rounded-2xl px-4 py-3 sm:px-5 sm:py-3.5 focus:outline-none focus:ring-2 focus:ring-[#D4621A] focus:border-transparent transition-all text-sm sm:text-base font-medium text-slate-900 dark:text-white"
                     />
                   </div>
                 </div>
@@ -238,7 +238,7 @@ export default function ProfilePage() {
                     onChange={(e) => setBio(e.target.value)}
                     rows={3}
                     placeholder="Tell us a bit about yourself..."
-                    className="w-full bg-slate-100 dark:bg-black border border-slate-200 dark:border-white/10 rounded-2xl px-4 py-3 sm:px-5 sm:py-3.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-sm sm:text-base font-medium text-slate-900 dark:text-white resize-none"
+                    className="w-full bg-slate-100 dark:bg-[#1A1108] border border-slate-200 dark:border-white/10 rounded-2xl px-4 py-3 sm:px-5 sm:py-3.5 focus:outline-none focus:ring-2 focus:ring-[#D4621A] focus:border-transparent transition-all text-sm sm:text-base font-medium text-slate-900 dark:text-white resize-none"
                   />
                 </div>
               </>
@@ -259,7 +259,7 @@ export default function ProfilePage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full mt-2 py-4 rounded-full bg-indigo-600 dark:bg-indigo-500 hover:bg-indigo-700 dark:hover:bg-indigo-400 text-white font-black tracking-wide shadow-[0_8px_30px_rgb(79,70,229,0.3)] dark:shadow-[0_8px_30px_rgb(99,102,241,0.2)] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center disabled:opacity-70 disabled:hover:scale-100"
+              className="w-full mt-2 py-4 rounded-full bg-[#D4621A] hover:bg-[#b85214] text-white font-black tracking-wide shadow-lg shadow-[#D4621A]/30 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center disabled:opacity-70 disabled:hover:scale-100 cursor-pointer"
             >
               <span className="text-base">
                 {loading ? 'Saving details...' : 'Save profile details'}

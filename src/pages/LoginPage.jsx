@@ -108,17 +108,8 @@ export default function LoginPage() {
               </button>
             </div>
 
-            {/* Remember & Forgot */}
-            <div className="flex items-center justify-between px-1">
-              <label className="flex items-center gap-2 cursor-pointer select-none group">
-                <div className="relative flex items-center justify-center">
-                  <input type="checkbox" className="peer appearance-none w-[18px] h-[18px] rounded-[5px] border border-slate-300 dark:border-white/20 bg-slate-50 dark:bg-[#13131a] checked:bg-indigo-600 dark:checked:bg-indigo-500 checked:border-indigo-600 dark:checked:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:ring-offset-1 dark:focus:ring-offset-[#060608] transition-all cursor-pointer m-0" />
-                  <svg className="absolute w-[18px] h-[18px] p-1 text-white pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="20 6 9 17 4 12"></polyline>
-                  </svg>
-                </div>
-                <span className="text-sm font-medium text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-300 transition-colors">Remember me</span>
-              </label>
+            {/* Forgot Password */}
+            <div className="flex justify-end px-1">
               <Link to="/forgot-password" className="text-sm font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 transition-colors">
                 Forgot password?
               </Link>
