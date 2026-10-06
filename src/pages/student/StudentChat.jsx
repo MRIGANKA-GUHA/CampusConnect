@@ -248,6 +248,7 @@ const AddFriendModal = ({ onClose, currentFriends, onRequestSent }) => {
                 <img
                   src={avatarUrl(student)}
                   alt={student.displayName}
+                  referrerPolicy="no-referrer"
                   className="w-10 h-10 rounded-full object-cover flex-shrink-0"
                 />
                 <div className="flex-1 min-w-0">
@@ -326,6 +327,7 @@ const FriendRequestsPanel = ({ requests, onRespond, onClose }) => (
               <img
                 src={avatarUrl(req.sender)}
                 alt={req.sender.displayName}
+                referrerPolicy="no-referrer"
                 className="w-10 h-10 rounded-full object-cover flex-shrink-0"
               />
               <div className="flex-1 min-w-0">
@@ -824,6 +826,7 @@ export default function StudentChat() {
                         <img
                           src={avatarUrl(friend)}
                           alt={friend.displayName}
+                          referrerPolicy="no-referrer"
                           className="w-11 h-11 sm:w-12 sm:h-12 rounded-full object-cover ring-2 ring-slate-100 dark:ring-white/5"
                         />
                         <span
@@ -922,6 +925,7 @@ export default function StudentChat() {
                       <img
                         src={avatarUrl(selectedFriend)}
                         alt={selectedFriend.displayName}
+                        referrerPolicy="no-referrer"
                         className="w-10 h-10 rounded-full object-cover ring-2 ring-indigo-500/20"
                       />
                       <span

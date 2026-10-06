@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { MapPin, Clock, ArrowRight, CalendarDays, Ticket, X, AlignLeft, Download } from 'lucide-react';
 import api from '../services/api';
 
@@ -13,17 +13,20 @@ const CATEGORY_STYLES = {
   Other:      { bg: 'bg-slate-600',       text: 'text-slate-600',       light: 'bg-slate-100 dark:bg-slate-500/10' },
 };
 
+const INITIAL_COUNT = 3;
+
 export default function EventsSection() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
     const fetchEvents = async () => {
       try {
         const res = await api.get('/admin/events/public');
         const publishedEvents = (res.data.events || []).filter(evt => evt.status === 'published');
-        setEvents(publishedEvents.slice(0, 3));
+        setEvents(publishedEvents);
       } catch (err) {
         console.error('Failed to fetch events:', err);
       } finally {
@@ -55,6 +58,8 @@ export default function EventsSection() {
 
   if (events.length === 0) return null;
 
+  const displayedEvents = showAll ? events : events.slice(0, INITIAL_COUNT);
+
   return (
     <section id="events" className="py-12 sm:py-16 px-4 sm:px-6 scroll-mt-20 min-h-[calc(100vh-5rem)] flex flex-col justify-start">
       <div className="max-w-7xl mx-auto w-full">
@@ -70,18 +75,20 @@ export default function EventsSection() {
             </p>
           </div>
           
-          <Link
-            to="/events"
-            className="hidden sm:flex items-center gap-2 px-8 py-3 bg-slate-900 dark:bg-white text-white dark:text-black font-bold rounded-full hover:bg-slate-800 dark:hover:bg-slate-100 transition-all shadow-sm shrink-0"
-          >
-            <CalendarDays className="w-4 h-4" />
-            View All
-          </Link>
+          {events.length > INITIAL_COUNT && (
+            <button
+              onClick={() => setShowAll(prev => !prev)}
+              className="flex items-center gap-2 px-8 py-3 bg-slate-900 dark:bg-white text-white dark:text-black font-bold rounded-full hover:bg-slate-800 dark:hover:bg-slate-100 transition-all shadow-sm shrink-0 active:scale-95 cursor-pointer self-start sm:self-auto"
+            >
+              <CalendarDays className="w-4 h-4" />
+              {showAll ? 'Show Less' : 'View All'}
+            </button>
+          )}
         </div>
 
         {/* ── Events Grid ── */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-          {events.map((evt, i) => {
+          {displayedEvents.map((evt, i) => {
             const { month, day } = formatDate(evt.date);
             const style = CATEGORY_STYLES[evt.category] || CATEGORY_STYLES.Other;
 
@@ -169,17 +176,6 @@ export default function EventsSection() {
             );
           })}
         </div>
-
-        {/* Mobile View All */}
-        <div className="mt-10 flex justify-center sm:hidden">
-          <Link
-            to="/events"
-            className="flex items-center gap-2 px-8 py-3 bg-slate-900 dark:bg-white text-white dark:text-black font-bold rounded-full hover:bg-slate-800 dark:hover:bg-slate-100 transition-all shadow-sm"
-          >
-            <CalendarDays className="w-4 h-4" />
-            View All Events
-          </Link>
-        </div>
       </div>
 
       {/* Modal */}
@@ -257,21 +253,21 @@ function EventModal({ evt, onClose, formatDate }) {
         <div className="flex-1 overflow-y-auto p-6 sm:p-8">
           {/* Quick Info */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-8">
-            <div className="flex flex-col bg-slate-50 dark:bg-white/5 p-3 sm:p-4 rounded-2xl">
+            <div className="flex flex-col bg-slate-50 dark:bg-white/5 p-3 sm:p-4 rounded-2xl min-w-0">
                <span className="text-[10px] sm:text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Date</span>
-               <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">{day} {month}</span>
+               <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate">{day} {month}</span>
             </div>
-            <div className="flex flex-col bg-slate-50 dark:bg-white/5 p-3 sm:p-4 rounded-2xl">
+            <div className="flex flex-col bg-slate-50 dark:bg-white/5 p-3 sm:p-4 rounded-2xl min-w-0">
                <span className="text-[10px] sm:text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Time</span>
                <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate" title={evt.time}>{evt.time || 'TBA'}</span>
             </div>
-            <div className="flex flex-col bg-slate-50 dark:bg-white/5 p-3 sm:p-4 rounded-2xl">
+            <div className="flex flex-col bg-slate-50 dark:bg-white/5 p-3 sm:p-4 rounded-2xl min-w-0">
                <span className="text-[10px] sm:text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Venue</span>
                <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate" title={evt.venue}>{evt.venue || 'TBA'}</span>
             </div>
-            <div className="flex flex-col bg-slate-50 dark:bg-white/5 p-3 sm:p-4 rounded-2xl">
+            <div className="flex flex-col bg-slate-50 dark:bg-white/5 p-3 sm:p-4 rounded-2xl min-w-0">
                <span className="text-[10px] sm:text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Entry</span>
-               <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">{evt.price > 0 ? `₹${evt.price}` : 'Free'}</span>
+               <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate">{evt.price > 0 ? `₹${evt.price}` : 'Free'}</span>
             </div>
           </div>
 

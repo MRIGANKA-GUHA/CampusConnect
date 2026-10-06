@@ -90,6 +90,7 @@ export default function ClubMembers() {
                   <img
                     src={avatar}
                     alt={member.displayName}
+                    referrerPolicy="no-referrer"
                     className="w-12 h-12 rounded-full object-cover border-2 border-indigo-200 dark:border-indigo-500/30 shrink-0"
                   />
 

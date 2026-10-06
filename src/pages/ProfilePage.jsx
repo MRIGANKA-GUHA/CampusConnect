@@ -131,7 +131,7 @@ export default function ProfilePage() {
 
               {/* Avatar image container */}
               <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full border-[3px] border-indigo-100 dark:border-indigo-500/30 overflow-hidden shadow-xl group-hover:border-indigo-400 dark:group-hover:border-indigo-500 transition-colors">
-                <img src={avatarSrc} alt="Profile" className="w-full h-full object-cover" />
+                <img src={avatarSrc} alt="Profile" referrerPolicy="no-referrer" className="w-full h-full object-cover" />
 
                 {/* Loading overlay inside the container */}
                 {uploading && (

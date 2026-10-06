@@ -144,31 +144,31 @@ export default function PublicEventPage() {
 
               {/* Info Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-7 p-5 bg-slate-50 dark:bg-white/[0.03] rounded-2xl border border-slate-100 dark:border-white/5">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 min-w-0">
                   <div className="w-10 h-10 rounded-xl bg-white dark:bg-white/10 flex items-center justify-center shadow-sm shrink-0">
                     <Calendar className="w-5 h-5 text-indigo-500" />
                   </div>
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-0.5">Date</p>
-                    <p className="font-bold text-sm leading-tight text-slate-800 dark:text-slate-200">{formatDate(event.date)}</p>
+                    <p className="font-bold text-sm leading-tight text-slate-800 dark:text-slate-200 truncate">{formatDate(event.date)}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 min-w-0">
                   <div className="w-10 h-10 rounded-xl bg-white dark:bg-white/10 flex items-center justify-center shadow-sm shrink-0">
                     <Clock className="w-5 h-5 text-indigo-500" />
                   </div>
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-0.5">Time</p>
-                    <p className="font-bold text-sm text-slate-800 dark:text-slate-200">{formatTime(event.time) || 'TBA'}</p>
+                    <p className="font-bold text-sm text-slate-800 dark:text-slate-200 truncate">{formatTime(event.time) || 'TBA'}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 min-w-0">
                   <div className="w-10 h-10 rounded-xl bg-white dark:bg-white/10 flex items-center justify-center shadow-sm shrink-0">
                     <MapPin className="w-5 h-5 text-indigo-500" />
                   </div>
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-0.5">Venue</p>
-                    <p className="font-bold text-sm leading-tight text-slate-800 dark:text-slate-200">{event.venue || 'TBA'}</p>
+                    <p className="font-bold text-sm leading-tight text-slate-800 dark:text-slate-200 line-clamp-2 break-words" title={event.venue || 'TBA'}>{event.venue || 'TBA'}</p>
                   </div>
                 </div>
               </div>

@@ -410,19 +410,19 @@ export default function StudentEvents() {
 
                       {/* Metadata Icons */}
                       <div className="flex flex-col gap-1 mt-auto">
-                        <div className="flex items-center gap-3 text-sm font-semibold text-slate-600 dark:text-slate-300">
+                        <div className="flex items-center gap-3 text-sm font-semibold text-slate-600 dark:text-slate-300 min-w-0">
                           <div className="w-8 h-8 rounded-full bg-slate-50 dark:bg-white/5 flex items-center justify-center shrink-0">
                             <MapPin className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                           </div>
-                          <span className="truncate">{event.venue || 'TBA'}</span>
+                          <span className="truncate" title={event.venue || 'TBA'}>{event.venue || 'TBA'}</span>
                         </div>
-                        <div className="flex items-center gap-3 text-sm font-semibold text-slate-600 dark:text-slate-300">
+                        <div className="flex items-center gap-3 text-sm font-semibold text-slate-600 dark:text-slate-300 min-w-0">
                           <div className="w-8 h-8 rounded-full bg-slate-50 dark:bg-white/5 flex items-center justify-center shrink-0">
                             <Clock className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                           </div>
                           <span className="truncate">{formatTime(event.time) || 'TBA'}</span>
                         </div>
-                        <div className="flex items-center gap-3 text-sm font-semibold text-slate-600 dark:text-slate-300">
+                        <div className="flex items-center gap-3 text-sm font-semibold text-slate-600 dark:text-slate-300 min-w-0">
                           <div className="w-8 h-8 rounded-full bg-slate-50 dark:bg-white/5 flex items-center justify-center shrink-0">
                             <IndianRupee className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                           </div>
@@ -435,11 +435,11 @@ export default function StudentEvents() {
                           </span>
                         </div>
                         {event.clubName && (
-                          <div className="flex items-center gap-3 text-sm font-semibold text-slate-600 dark:text-slate-300">
+                          <div className="flex items-center gap-3 text-sm font-semibold text-slate-600 dark:text-slate-300 min-w-0">
                             <div className="w-8 h-8 rounded-full bg-slate-50 dark:bg-white/5 flex items-center justify-center shrink-0">
                               <Users className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                             </div>
-                            <span className="truncate">{event.clubName}</span>
+                            <span className="truncate" title={event.clubName}>{event.clubName}</span>
                           </div>
                         )}
                       </div>
@@ -545,32 +545,34 @@ export default function StudentEvents() {
                 </h2>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8 bg-slate-50 dark:bg-white/5 p-5 rounded-3xl border border-slate-100 dark:border-white/10">
-                  <div className="flex items-center gap-4 text-slate-700 dark:text-slate-300">
+                  <div className="flex items-center gap-3.5 text-slate-700 dark:text-slate-300 min-w-0">
                     <div className="w-12 h-12 rounded-[1rem] bg-white dark:bg-white/10 flex items-center justify-center shadow-sm shrink-0">
                       <Calendar className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                     </div>
-                    <div>
+                    <div className="min-w-0 flex-1">
                       <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5">Date & Time</p>
-                      <p className="font-bold text-sm">{formatDate(selectedEvent.date)}</p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">{formatTime(selectedEvent.time) || 'TBA'}</p>
+                      <p className="font-bold text-sm truncate">{formatDate(selectedEvent.date)}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{formatTime(selectedEvent.time) || 'TBA'}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4 text-slate-700 dark:text-slate-300">
+                  <div className="flex items-center gap-3.5 text-slate-700 dark:text-slate-300 min-w-0">
                     <div className="w-12 h-12 rounded-[1rem] bg-white dark:bg-white/10 flex items-center justify-center shadow-sm shrink-0">
                       <MapPin className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                     </div>
-                    <div>
+                    <div className="min-w-0 flex-1">
                       <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5">Location</p>
-                      <p className="font-bold text-sm truncate">{selectedEvent.venue || 'TBA'}</p>
+                      <p className="font-bold text-sm line-clamp-2 break-words" title={selectedEvent.venue || 'TBA'}>
+                        {selectedEvent.venue || 'TBA'}
+                      </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4 text-slate-700 dark:text-slate-300">
+                  <div className="flex items-center gap-3.5 text-slate-700 dark:text-slate-300 min-w-0">
                     <div className="w-12 h-12 rounded-[1rem] bg-white dark:bg-white/10 flex items-center justify-center shadow-sm shrink-0">
                       <IndianRupee className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                     </div>
-                    <div>
+                    <div className="min-w-0 flex-1">
                       <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5">Entry Fee</p>
-                      <p className="font-bold text-sm">
+                      <p className="font-bold text-sm truncate">
                         {selectedEvent.price > 0 ? (
                           <span className="text-slate-900 dark:text-white font-black">₹{selectedEvent.price}</span>
                         ) : (

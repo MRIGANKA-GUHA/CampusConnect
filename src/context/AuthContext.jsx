@@ -90,8 +90,10 @@ export const AuthProvider = ({ children }) => {
   const loginWithGoogle = async () => {
     const result = await signInWithPopup(auth, googleProvider);
     const idToken = await result.user.getIdToken();
+    const photoURL = result.user.photoURL || "";
+    const displayName = result.user.displayName || "";
 
-    const response = await api.post("/auth/oauth", { idToken });
+    const response = await api.post("/auth/oauth", { idToken, photoURL, displayName });
     const { token, user: userData } = response.data;
 
     await signInWithCustomToken(auth, token);
@@ -106,8 +108,10 @@ export const AuthProvider = ({ children }) => {
   const loginWithGithub = async () => {
     const result = await signInWithPopup(auth, githubProvider);
     const idToken = await result.user.getIdToken();
+    const photoURL = result.user.photoURL || "";
+    const displayName = result.user.displayName || "";
 
-    const response = await api.post("/auth/oauth", { idToken });
+    const response = await api.post("/auth/oauth", { idToken, photoURL, displayName });
     const { token, user: userData } = response.data;
 
     await signInWithCustomToken(auth, token);

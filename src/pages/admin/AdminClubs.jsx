@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Users, Search, Loader2, Plus, X, ShieldCheck,
   Trash2, LayoutGrid, Info, CheckCircle, Ban,
-  Copy, Check, ChevronDown
+  Copy, Check, ChevronDown, UserCog
 } from 'lucide-react';
 import SmartHeader from '../../components/SmartHeader';
 import api from '../../services/api';
@@ -28,6 +28,11 @@ export default function AdminClubs() {
   const [createdAccountInfo, setCreatedAccountInfo] = useState(null);
   const [copiedLink, setCopiedLink] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState(null);
+  const [changeConvenorMode, setChangeConvenorMode] = useState(false);
+  const [newConvenorSelection, setNewConvenorSelection] = useState(null);
+  const [convenorDropdownOpen, setConvenorDropdownOpen] = useState(false);
+  const [convenorChangeSuccess, setConvenorChangeSuccess] = useState(false);
+  const [allConvenors, setAllConvenors] = useState([]);
 
   useEffect(() => {
     fetchClubs();
@@ -102,6 +107,46 @@ export default function AdminClubs() {
       setSelectedClub(null);
     } catch (err) {
       alert("Failed to delete club");
+    } finally {
+      setLoadingAction(null);
+    }
+  };
+
+  const openChangeConvenor = async () => {
+    setChangeConvenorMode(true);
+    setNewConvenorSelection(null);
+    setConvenorChangeSuccess(false);
+    try {
+      // Fetch all students (API filters out assigned ones, but we need all for reassignment)
+      const res = await api.get('/admin/convenors');
+      // Also include current convenor so admin can see who is currently assigned
+      const list = res.data.convenors || [];
+      setAllConvenors(list);
+    } catch (err) {
+      console.error('Failed to fetch convenors:', err);
+    }
+  };
+
+  const handleChangeConvenor = async () => {
+    if (!newConvenorSelection) return;
+    setLoadingAction('convenor');
+    try {
+      const res = await api.patch(`/admin/clubs/${selectedClub.id}/convenor`, {
+        convenorEmail: newConvenorSelection.email
+      });
+      const updated = {
+        ...selectedClub,
+        convenorName: res.data.convenorName,
+        convenorPhoto: res.data.convenorPhoto,
+        convenorEmail: res.data.convenorEmail
+      };
+      setSelectedClub(updated);
+      setClubs(clubs.map(c => c.id === selectedClub.id ? updated : c));
+      setConvenorChangeSuccess(true);
+      setChangeConvenorMode(false);
+      setNewConvenorSelection(null);
+    } catch (err) {
+      alert(err.response?.data?.error || 'Failed to update convenor');
     } finally {
       setLoadingAction(null);
     }
@@ -452,10 +497,10 @@ export default function AdminClubs() {
       {/* Details Modal */}
       {selectedClub && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-md animate-in fade-in duration-300" onClick={() => setSelectedClub(null)}></div>
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-md animate-in fade-in duration-300" onClick={() => { setSelectedClub(null); setChangeConvenorMode(false); setConvenorChangeSuccess(false); setNewConvenorSelection(null); setConvenorDropdownOpen(false); }}></div>
           <div className="relative bg-white dark:bg-[#0a0a0a] border border-white/20 dark:border-white/10 rounded-[3.5rem] w-full max-w-3xl shadow-[0_32px_80px_-16px_rgba(0,0,0,0.6)] animate-in slide-in-from-bottom-10 duration-500 flex flex-col max-h-[90vh] overflow-hidden">
 
-            <button onClick={() => setSelectedClub(null)} className="absolute top-6 right-6 p-3 rounded-full bg-black/50 backdrop-blur-md text-white hover:bg-black/70 transition-colors z-30">
+            <button onClick={() => { setSelectedClub(null); setChangeConvenorMode(false); setConvenorChangeSuccess(false); setNewConvenorSelection(null); setConvenorDropdownOpen(false); }} className="absolute top-6 right-6 p-3 rounded-full bg-black/50 backdrop-blur-md text-white hover:bg-black/70 transition-colors z-30">
               <X className="w-5 h-5" />
             </button>
 
@@ -539,6 +584,94 @@ export default function AdminClubs() {
                 <div className="flex items-center gap-2 mb-8 ml-2 text-rose-500">
                   <ShieldCheck className="w-5 h-5" />
                   <h3 className="font-black tracking-[0.2em] uppercase text-[10px]">Administrative Overwatch</h3>
+                </div>
+
+                {/* Change Convenor */}
+                <div className="mb-6 bg-indigo-50 dark:bg-indigo-500/5 rounded-[2rem] p-6 border border-indigo-200/60 dark:border-indigo-500/10">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-500">Change Convenor</p>
+                    </div>
+                    {!changeConvenorMode && (
+                      <button
+                        onClick={openChangeConvenor}
+                        className="px-4 py-2 text-[10px] font-black uppercase tracking-widest bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-all active:scale-95"
+                      >
+                        Reassign
+                      </button>
+                    )}
+                  </div>
+
+                  {convenorChangeSuccess && !changeConvenorMode && (
+                    <p className="text-xs text-emerald-500 font-bold flex items-center gap-1.5">
+                      <CheckCircle className="w-3.5 h-3.5" /> Convenor updated successfully.
+                    </p>
+                  )}
+
+                  {!changeConvenorMode && !convenorChangeSuccess && (
+                    <p className="text-xs text-slate-500 font-medium">
+                      Current: <span className="font-bold text-slate-700 dark:text-slate-300">{selectedClub.convenorName || '—'}</span>
+                    </p>
+                  )}
+
+                  {changeConvenorMode && (
+                    <div className="space-y-4">
+                      <p className="text-xs text-slate-500 font-medium mb-1">
+                        Current: <span className="font-bold text-slate-700 dark:text-slate-300">{selectedClub.convenorName || '—'}</span>
+                      </p>
+                      <div className="relative">
+                        <button
+                          type="button"
+                          onClick={() => setConvenorDropdownOpen(o => !o)}
+                          className={`w-full p-4 rounded-2xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center justify-between font-bold text-sm transition-all ${
+                            convenorDropdownOpen ? 'ring-4 ring-indigo-500/10 border-indigo-500' : ''
+                          }`}
+                        >
+                          <span className={newConvenorSelection ? 'text-slate-900 dark:text-white' : 'text-slate-400'}>
+                            {newConvenorSelection ? newConvenorSelection.displayName : 'Select new convenor...'}
+                          </span>
+                          <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${convenorDropdownOpen ? 'rotate-180' : ''}`} />
+                        </button>
+
+                        {convenorDropdownOpen && (
+                          <div className="absolute z-[120] left-0 right-0 mt-2 p-2 bg-white dark:bg-[#111] border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl animate-in zoom-in-95 duration-150 max-h-52 overflow-y-auto custom-scrollbar">
+                            {allConvenors.length > 0 ? allConvenors.map(conv => (
+                              <button
+                                key={conv.id}
+                                type="button"
+                                onClick={() => { setNewConvenorSelection(conv); setConvenorDropdownOpen(false); }}
+                                className="w-full text-left px-4 py-3 rounded-xl hover:bg-slate-50 dark:hover:bg-white/5 transition-colors group"
+                              >
+                                <p className="text-sm font-bold text-slate-700 dark:text-slate-300 group-hover:text-indigo-500 transition-colors">{conv.displayName}</p>
+                                <p className="text-[10px] text-slate-400 font-medium uppercase tracking-widest">{conv.email}</p>
+                              </button>
+                            )) : (
+                              <div className="px-4 py-5 text-center">
+                                <p className="text-xs text-slate-500 italic">No available convenors found.</p>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex gap-3">
+                        <button
+                          onClick={() => { setChangeConvenorMode(false); setConvenorDropdownOpen(false); setNewConvenorSelection(null); }}
+                          className="flex-1 py-3 rounded-xl border border-slate-200 dark:border-white/10 text-xs font-black uppercase tracking-widest text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-all"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          onClick={handleChangeConvenor}
+                          disabled={!newConvenorSelection || loadingAction === 'convenor'}
+                          className="flex-1 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black uppercase tracking-widest transition-all active:scale-95 disabled:opacity-40 flex items-center justify-center gap-2"
+                        >
+                          {loadingAction === 'convenor' ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserCog className="w-4 h-4" />}
+                          Confirm
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-5">

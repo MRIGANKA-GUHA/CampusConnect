@@ -213,7 +213,7 @@ export default function StudentsPage() {
                       {/* Card Header (Avatar + Name) */}
                       <div className="flex flex-col sm:flex-row sm:items-center gap-5 mb-8">
                         <div className="w-16 h-16 sm:w-20 sm:h-20 shrink-0 rounded-full border-[3px] border-indigo-50 dark:border-indigo-500/20 overflow-hidden shadow-sm group-hover:scale-105 group-hover:border-indigo-200 dark:group-hover:border-indigo-400/50 transition-all duration-300 bg-slate-100 dark:bg-white/5">
-                          <img src={avatarSrc} alt={student.displayName} className="w-full h-full object-cover" />
+                          <img src={avatarSrc} alt={student.displayName} referrerPolicy="no-referrer" className="w-full h-full object-cover" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-tight truncate">

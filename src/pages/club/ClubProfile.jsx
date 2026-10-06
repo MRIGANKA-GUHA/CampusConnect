@@ -211,7 +211,6 @@ export default function ClubProfile() {
             {/* Convenor Info Bar */}
             <div className="p-4 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs font-bold text-slate-600 dark:text-slate-300 mb-8">
               <div className="flex items-center gap-2">
-                <User className="w-4 h-4 text-indigo-500 shrink-0" />
                 <span>Convenor: <strong className="text-slate-900 dark:text-white font-extrabold">{club?.convenorName || '—'}</strong></span>
               </div>
               {club?.convenorEmail && (
@@ -305,7 +304,7 @@ export default function ClubProfile() {
                 ) : success ? (
                   <><CheckCircle2 className="w-5 h-5 text-emerald-300" /> Saved Successfully!</>
                 ) : (
-                  <><Save className="w-5 h-5" /> Save Changes</>
+                  <> Save Changes</>
                 )}
               </button>
             </form>

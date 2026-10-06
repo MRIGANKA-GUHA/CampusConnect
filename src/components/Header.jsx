@@ -54,6 +54,7 @@ export default function Header() {
                 <img
                   src={user.photoURL || `https://api.dicebear.com/7.x/initials/svg?seed=${user.displayName || user.email || 'Admin'}&backgroundColor=4f46e5&textColor=ffffff`}
                   alt="Profile"
+                  referrerPolicy="no-referrer"
                   className="w-full h-full object-cover"
                 />
               </Link>
