@@ -34,7 +34,13 @@ export default function RegisterPage() {
       await registerWithEmail(email, password, name, rollNo, accountType);
       setStep(1); // Move to OTP step
     } catch (err) {
-      setError(err.response?.data?.error || err.message || 'Failed to start registration');
+      const raw = err.response?.data?.message || err.response?.data?.error;
+      if (typeof raw === 'string' && raw.includes('PASSWORD_DOES_NOT_MEET_REQUIREMENTS')) {
+        const match = raw.match(/\[(.+?)\]/);
+        setError(match ? match[1] : 'Password does not meet requirements.');
+      } else {
+        setError((typeof raw === 'string' ? raw : null) || err.message || 'Failed to start registration');
+      }
     } finally {
       setLoading(false);
     }
@@ -53,7 +59,8 @@ export default function RegisterPage() {
       await verifyOtp(email, otpString);
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.error || err.message || 'Invalid or expired OTP');
+      const raw = err.response?.data?.message || err.response?.data?.error;
+      setError((typeof raw === 'string' ? raw : null) || err.message || 'Invalid or expired OTP');
     } finally {
       setLoading(false);
     }
