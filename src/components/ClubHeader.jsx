@@ -31,7 +31,7 @@ export default function ClubHeader() {
 
   // Club avatar: logo or fallback initials
   const avatarSrc = user?.photoURL || user?.logoURL ||
-    `https://api.dicebear.com/7.x/initials/svg?seed=${user?.displayName || 'Club'}&backgroundColor=7c3aed&textColor=ffffff`;
+    `https://api.dicebear.com/7.x/initials/svg?seed=${user?.displayName || 'Club'}&backgroundColor=d4621a&textColor=ffffff`;
 
   return (
     <>

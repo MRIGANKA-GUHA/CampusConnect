@@ -1,10 +1,71 @@
 @import "tailwindcss";
 
+@theme {
+  /* ─── Warm Brand Palette (#FEF3E2, #F4AE52, #D4621A, #2A1A0E) ─── */
+  --color-indigo-50: #FFF9F2;
+  --color-indigo-100: #FEF3E2;
+  --color-indigo-200: #FDE0BE;
+  --color-indigo-300: #FAC888;
+  --color-indigo-400: #F4AE52;
+  --color-indigo-500: #E5832E;
+  --color-indigo-600: #D4621A;
+  --color-indigo-700: #B64E10;
+  --color-indigo-800: #8E3B09;
+  --color-indigo-900: #642805;
+  --color-indigo-950: #2A1A0E;
+
+  /* ─── Warm Espresso-Tinted Neutrals (replaces cool slate) ─── */
+  --color-slate-50: #FAF6F0;
+  --color-slate-100: #FEF3E2;
+  --color-slate-200: #F2E4D2;
+  --color-slate-300: #D8C2AA;
+  --color-slate-400: #B49A80;
+  --color-slate-500: #8E755D;
+  --color-slate-600: #6B5540;
+  --color-slate-700: #503D2C;
+  --color-slate-800: #39281B;
+  --color-slate-900: #2A1A0E;
+  --color-slate-950: #1B1008;
+
+  /* ─── Dark Mode Card & Surface Overrides ─── */
+  --color-zinc-900: #2A1A0E;
+  --color-zinc-950: #1B1008;
+
+  /* ─── Named Semantic Brand Colors ─── */
+  --color-brand-cream: #FEF3E2;
+  --color-brand-amber: #F4AE52;
+  --color-brand-terracotta: #D4621A;
+  --color-brand-espresso: #2A1A0E;
+}
+
 @variant dark (&:where(.dark, .dark *));
 
 @layer base {
   html {
     scroll-behavior: smooth;
+    background-color: #FAF6F0;
+    color: #2A1A0E;
+  }
+
+  html.dark {
+    background-color: #1B1008;
+    color: #FEF3E2;
+  }
+
+  body {
+    background-color: #FAF6F0;
+    color: #2A1A0E;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  .dark body, html.dark body {
+    background-color: #1B1008;
+    color: #FEF3E2;
+  }
+
+  ::selection {
+    background-color: #F4AE52;
+    color: #2A1A0E;
   }
 
   @media (min-width: 1536px) {
@@ -27,6 +88,25 @@
       /* Scales everything substantially for 5K+ screens */
     }
   }
+}
+
+/* ─── Deep Espresso Overrides for Pure Black Arbitrary Utilities ─── */
+html.dark [class*="dark:bg-black"] {
+  background-color: #1B1008 !important;
+}
+
+html.dark [class*="dark:bg-[#0a0a0a]"],
+html.dark [class*="dark:bg-[#060606]"],
+html.dark [class*="dark:bg-[#111]"] {
+  background-color: #24160C !important;
+}
+
+html.dark [class*="dark:bg-zinc-950"] {
+  background-color: #201209 !important;
+}
+
+html.dark [class*="dark:border-[#1E2235]"] {
+  border-color: rgba(244, 174, 82, 0.15) !important;
 }
 
 @layer utilities {
@@ -127,20 +207,20 @@
   }
 
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: #e2e8f0;
+    background: #E6D3BD;
     border-radius: 10px;
   }
 
   .dark .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(244, 174, 82, 0.2);
   }
 
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: #cbd5e1;
+    background: #D4621A;
   }
 
   .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: #F4AE52;
   }
 
   /* Global Scrollbar Overrides (Optional but recommended for consistency) */
@@ -154,19 +234,19 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
+    background: #E6D3BD;
     border-radius: 10px;
   }
 
   .dark ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(244, 174, 82, 0.2);
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: #94a3b8;
+    background: #D4621A;
   }
 
   .dark ::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: #F4AE52;
   }
 }

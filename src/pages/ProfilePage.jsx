@@ -107,7 +107,7 @@ export default function ProfilePage() {
 
   const avatarSrc = user?.photoURL
     ? user.photoURL
-    : `https://api.dicebear.com/7.x/initials/svg?seed=${user?.displayName || user?.email || 'A'}&backgroundColor=4f46e5&textColor=ffffff`;
+    : `https://api.dicebear.com/7.x/initials/svg?seed=${user?.displayName || user?.email || 'A'}&backgroundColor=d4621a&textColor=ffffff`;
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-black text-slate-900 dark:text-white font-sans transition-colors duration-300">

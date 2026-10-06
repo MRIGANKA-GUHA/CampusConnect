@@ -541,7 +541,7 @@ export default function AdminClubs() {
                   <div className="flex items-center gap-4">
                     <div className="w-14 h-14 rounded-2xl overflow-hidden border border-slate-200 dark:border-white/10 shadow-lg shrink-0 bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
                       <img
-                        src={selectedClub.convenorPhoto || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(selectedClub.convenorName || 'C')}&backgroundColor=4f46e5&textColor=ffffff`}
+                        src={selectedClub.convenorPhoto || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(selectedClub.convenorName || 'C')}&backgroundColor=d4621a&textColor=ffffff`}
                         alt={selectedClub.convenorName}
                         className="w-full h-full object-cover"
                       />

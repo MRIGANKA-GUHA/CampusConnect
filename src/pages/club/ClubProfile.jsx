@@ -122,7 +122,7 @@ export default function ClubProfile() {
   );
 
   const avatarSrc = club?.logoURL ||
-    `https://api.dicebear.com/7.x/initials/svg?seed=${club?.name || 'Club'}&backgroundColor=4f46e5&textColor=ffffff`;
+    `https://api.dicebear.com/7.x/initials/svg?seed=${club?.name || 'Club'}&backgroundColor=d4621a&textColor=ffffff`;
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-black text-slate-900 dark:text-white font-sans selection:bg-indigo-500/30 transition-colors duration-300">

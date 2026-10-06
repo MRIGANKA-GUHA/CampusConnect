@@ -202,7 +202,7 @@ export default function StudentsPage() {
             {filteredStudents.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 sm:gap-8">
                 {filteredStudents.map((student, idx) => {
-                  const avatarSrc = student.photoURL || `https://api.dicebear.com/7.x/initials/svg?seed=${student.displayName || student.email || 'S'}&backgroundColor=4f46e5&textColor=ffffff`;
+                  const avatarSrc = student.photoURL || `https://api.dicebear.com/7.x/initials/svg?seed=${student.displayName || student.email || 'S'}&backgroundColor=d4621a&textColor=ffffff`;
 
                   return (
                     <div
@@ -331,7 +331,7 @@ export default function StudentsPage() {
             <div className="relative pt-12 pb-8 px-8 flex flex-col items-center bg-slate-50 dark:bg-white/[0.02] border-b border-slate-100 dark:border-white/5 shrink-0">
               <div className="w-32 h-32 rounded-full border-4 border-white dark:border-[#0a0a0a] shadow-xl overflow-hidden bg-slate-100 dark:bg-white/5 mb-5 relative z-10">
                 <img
-                  src={selectedStudent.photoURL || `https://api.dicebear.com/7.x/initials/svg?seed=${selectedStudent.displayName || selectedStudent.email || 'S'}&backgroundColor=4f46e5&textColor=ffffff`}
+                  src={selectedStudent.photoURL || `https://api.dicebear.com/7.x/initials/svg?seed=${selectedStudent.displayName || selectedStudent.email || 'S'}&backgroundColor=d4621a&textColor=ffffff`}
                   alt={selectedStudent.displayName}
                   className="w-full h-full object-cover"
                 />

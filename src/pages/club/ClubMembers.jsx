@@ -80,7 +80,7 @@ export default function ClubMembers() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {filtered.map((member) => {
               const avatar = member.photoURL ||
-                `https://api.dicebear.com/7.x/initials/svg?seed=${member.displayName || member.email}&backgroundColor=7c3aed&textColor=ffffff`;
+                `https://api.dicebear.com/7.x/initials/svg?seed=${member.displayName || member.email}&backgroundColor=d4621a&textColor=ffffff`;
 
               return (
                 <div key={member.uid}

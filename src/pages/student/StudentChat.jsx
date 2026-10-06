@@ -33,7 +33,7 @@ const getConversationId = (uid1, uid2) => [uid1, uid2].sort().join('_');
 
 const avatarUrl = (user) =>
   user?.photoURL ||
-  `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user?.displayName || user?.uid || 'U')}&backgroundColor=4f46e5&textColor=ffffff`;
+  `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user?.displayName || user?.uid || 'U')}&backgroundColor=d4621a&textColor=ffffff`;
 
 const formatMessageTime = (isoString) => {
   if (!isoString) return '';

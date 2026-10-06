@@ -52,9 +52,9 @@ const ThemeSwitch = () => {
 
 const StyledWrapper = styled.div`
   .theme {
-    --bg: #000000;
+    --bg: #2A1A0E;
     --transDur: 0.5s;
-    --primary: #6366f1;
+    --primary: #D4621A;
     
     display: flex;
     align-items: center;
@@ -70,7 +70,7 @@ const StyledWrapper = styled.div`
   }
 
   .theme__toggle {
-    background-color: #fcd34d;
+    background-color: #F4AE52;
     border-radius: 999px;
     width: 6em;
     height: 3em;
@@ -85,7 +85,7 @@ const StyledWrapper = styled.div`
   }
 
   .theme__toggle:checked {
-    background-color: #1e1b4b;
+    background-color: #2A1A0E;
   }
 
   .theme__icon {
@@ -101,7 +101,7 @@ const StyledWrapper = styled.div`
   .theme__icon-part {
     position: absolute;
     inset: 0;
-    background-color: #f59e0b;
+    background-color: #D4621A;
     border-radius: 50%;
     transition: all var(--transDur) cubic-bezier(0.4, 0, 0.2, 1);
   }
@@ -113,7 +113,7 @@ const StyledWrapper = styled.div`
     left: 50%;
     width: 0.2em;
     height: 0.6em;
-    background-color: #f59e0b;
+    background-color: #D4621A;
     border-radius: 0.1em;
     transform-origin: center -0.8em;
   }
@@ -133,8 +133,8 @@ const StyledWrapper = styled.div`
   }
 
   .theme__toggle:checked ~ .theme__icon .theme__icon-part:first-child {
-    background-color: #e0e7ff;
-    box-shadow: inset -0.8em 0.4em 0 0 #1e1b4b;
+    background-color: #FEF3E2;
+    box-shadow: inset -0.8em 0.4em 0 0 #2A1A0E;
     transform: scale(1.1);
   }
 

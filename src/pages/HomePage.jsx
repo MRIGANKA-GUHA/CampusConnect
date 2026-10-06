@@ -81,18 +81,18 @@ export default function HomePage() {
             <>
               {displayed}
               <span className={`inline-block w-[3px] h-[0.85em] align-middle ml-[2px] rounded-sm transition-opacity duration-100 ${cursorVisible ? 'opacity-100' : 'opacity-0'}`}
-                style={{ background: 'linear-gradient(to bottom, #4f46e5, #7c3aed, #ec4899, #f59e0b)' }}
+                style={{ background: 'linear-gradient(to bottom, #D4621A, #F4AE52)' }}
               />
             </>
           ) : (
             <>
               {plainPart}
-              <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-[#D4621A] via-[#E26F25] to-[#F4AE52] bg-clip-text text-transparent">
                 {gradientPart}
               </span>
               {!typingDone && (
                 <span className={`inline-block w-[3px] h-[0.85em] align-middle ml-[2px] rounded-sm transition-opacity duration-100 ${cursorVisible ? 'opacity-100' : 'opacity-0'}`}
-                  style={{ background: 'linear-gradient(to bottom, #4f46e5, #7c3aed, #ec4899, #f59e0b)' }}
+                  style={{ background: 'linear-gradient(to bottom, #D4621A, #F4AE52)' }}
                 />
               )}
             </>
@@ -121,13 +121,13 @@ export default function HomePage() {
           </div>
 
           {/* Stats */}
-          <div className={`mt-16 sm:mt-20 w-full max-w-4xl mx-auto grid grid-cols-3 border-y border-slate-200 dark:border-[#1E2235] py-8 ${typingDone ? 'animate-fade-up-slow' : 'opacity-0'}`}
+          <div className={`mt-16 sm:mt-20 w-full max-w-4xl mx-auto grid grid-cols-3 border-y border-slate-200 dark:border-white/10 py-8 ${typingDone ? 'animate-fade-up-slow' : 'opacity-0'}`}
             style={{ animationDelay: '500ms' }}>
 
             {!statsLoaded ? (
               /* Inline Skeleton Loader for Stats */
               [1, 2, 3].map((_, i) => (
-                <div key={`skeleton-${i}`} className={`flex-1 flex flex-col items-center justify-center px-2 sm:px-8 py-2 ${i > 0 ? 'border-l border-slate-200 dark:border-[#1E2235]' : ''}`}>
+                <div key={`skeleton-${i}`} className={`flex-1 flex flex-col items-center justify-center px-2 sm:px-8 py-2 ${i > 0 ? 'border-l border-slate-200 dark:border-white/10' : ''}`}>
                   <div className="h-8 sm:h-12 w-16 sm:w-24 bg-slate-200 dark:bg-white/5 rounded-lg animate-pulse mb-2"></div>
                   <div className="h-3 sm:h-4 w-12 sm:w-16 bg-slate-200 dark:bg-white/5 rounded animate-pulse"></div>
                 </div>
